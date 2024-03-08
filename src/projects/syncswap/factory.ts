@@ -1,5 +1,5 @@
 import { DataSourceContext, dataSource } from "@graphprotocol/graph-ts";
-import { PoolCreated } from "../../../generated/SyncSwap/SyncSwapFactory";
+import { PoolCreated } from "../../../generated/SyncSwapStable/SyncSwapFactory";
 import { SyncSwapPool } from "../../../generated/templates";
 
 export function handlePoolCreated(event: PoolCreated): void {

@@ -1,5 +1,5 @@
 {
   "network": "arbitrum-one",
-  "address": "0xC36442b4a4522E871399CD717aBDD847Ab11FE88",
+  "positionManager": "0xC36442b4a4522E871399CD717aBDD847Ab11FE88",
   "polling": 288000
 }

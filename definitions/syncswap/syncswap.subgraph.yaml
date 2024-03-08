@@ -76,3 +76,8 @@ templates:
           handler: handleMint
         - event: Burn(indexed address,uint256,uint256,uint256,indexed address)
           handler: handleBurn
+      blockHandlers:
+        - handler: handleBlock
+          filter:
+            kind: polling
+            every: {{polling}} # 1 hour

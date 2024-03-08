@@ -46,3 +46,11 @@ type PositionChange @entity(immutable: true) {
   # relationships
   position: Position!
 }
+
+
+# Only one entity 
+# => to track all holder because we cannot use like Position.loadAll()...
+type Holders @entity {
+  id: Bytes!
+  holders: [Bytes!]!
+}

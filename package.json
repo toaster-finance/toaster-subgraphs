@@ -2,9 +2,10 @@
   "name": "toaster-subgraphs",
   "license": "UNLICENSED",
   "scripts": {
-    "codegen": "graph codegen",
+    "_codegen": "graph codegen",
     "build": "graph build",
     "deploy": "sh deploy.sh --",
+    "codegen": "sh codegen.sh --",
     "test": "graph test"
   },
   "dependencies": {

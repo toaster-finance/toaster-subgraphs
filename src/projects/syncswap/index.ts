@@ -1,4 +1,4 @@
-import { Address, BigInt, DataSourceContext, dataSource } from "@graphprotocol/graph-ts";
+import { Address, BigInt, dataSource, ethereum } from "@graphprotocol/graph-ts";
 import { savePositionChange } from "../../common/savePositionChange";
 import { PositionChangeAction } from "../../common/PositionChangeAction.enum";
 import { findIndexForTopic } from "../../common/getEventLogData";
@@ -9,17 +9,10 @@ import {
   Mint,
   Burn,
 } from "../../../generated/templates/SyncSwapPool/SyncSwapPool";
+import { getHolders } from "../../common/getHolders";
+import { savePositionSnapshot } from "../../common/savePositionSnapshot";
 
 const SYNCSWAP_PROTOCOL = "SyncSwap";
-// Mint(address,uint256,uint256,uint256,address)
-// Mint(address -> indexed sender,uint256,uint256,uint256,address -> indexed to)
-const MINT_TOPIC =
-  "0xa8137fff86647d8a402117b9c5dbda627f721d3773338fb9678c83e54ed39080";
-// Burn(address,uint256,uint256,uint256,address)
-const BURN_TOPIC =
-  "0xd175a80c109434bb89948928ab2475a6647c94244cb70002197896423c883363";
-
-// export function snapshot(block: ethereum.Block) {}
 
 function lp2Amounts(
   reserves: SyncSwapPool__getReservesResult,
@@ -32,8 +25,43 @@ function lp2Amounts(
   ];
 }
 
+export function handleBlock(block: ethereum.Block): void {
+  const pool = SyncSwapPool.bind(dataSource.address());
+  const reserves = pool.getReserves();
+  const totalSupply = pool.totalSupply();
+
+  const holders = getHolders(SYNCSWAP_PROTOCOL).holders;
+  for (let i = 0; i < holders.length; i++) {
+    const owner = Address.fromBytes(holders[i]);
+    const balance = pool.balanceOf(owner);
+    savePositionSnapshot(
+      block, // block: ethereum.Block,
+      SYNCSWAP_PROTOCOL, // protocol: string,
+      pool._address, // investmentAddress: Address,
+      owner, // owner: Address,
+      "", // tag: string,
+      [pool.token0(), pool.token1()], // inputTokens: Address[],
+      [], // rewardTokens: Address[],
+      lp2Amounts(reserves, balance, totalSupply), // inputAmounts: BigInt[],
+      [] // rewardAmounts: BigInt[]
+    );
+  }
+}
+
+///////////////////////////////////////////
+//////////// Position Changes /////////////
+///////////////////////////////////////////
+
+// Mint(address,uint256,uint256,uint256,address)
+// Mint(address -> indexed sender,uint256,uint256,uint256,address -> indexed to)
+const MINT_TOPIC =
+  "0xa8137fff86647d8a402117b9c5dbda627f721d3773338fb9678c83e54ed39080";
+// Burn(address,uint256,uint256,uint256,address)
+const BURN_TOPIC =
+  "0xd175a80c109434bb89948928ab2475a6647c94244cb70002197896423c883363";
+
 export function handleMint(event: Mint): void {
-  const pool = SyncSwapPool.bind(event.address);
+  const pool = SyncSwapPool.bind(dataSource.address());
   const reserves = pool.getReserves();
   const totalSupply = pool.totalSupply();
   const token0 = pool.token0();
@@ -88,7 +116,9 @@ export function handleTransfer(event: Transfer): void {
   const token1 = pool.token1();
   const inputTokens = [token0, token1];
 
-  const router = Address.fromHexString(dataSource.context().getString("router"));
+  const router = Address.fromHexString(
+    dataSource.context().getString("router")
+  );
   if (
     event.params.from.equals(Address.zero()) ||
     event.params.to.equals(Address.zero()) ||

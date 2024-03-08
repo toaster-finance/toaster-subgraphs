@@ -46,6 +46,8 @@ fi
 # 명령어 실행
 mustache definitions/"$protocol"/"$protocol"."$network".json definitions/"$protocol"/"$protocol".subgraph.yaml > subgraph.yaml
 
+graph codegen
+
 if [[ -n "$GRAPH_AUTH_KEY" ]]; then
     graph auth --studio "$GRAPH_AUTH_KEY"
 else
@@ -62,6 +64,5 @@ if [ $? -eq 0 ]; then
     # if [[ "$last_output" == *"UNCAUGHT EXCEPTION: Error: EEXIT: 1"* ]]; then
     echo "\033[0;33mIf Subgraph does not exist, please create it at: https://thegraph.com/studio/?show=Create\033[0m"
     echo "\033[0;32mPlease create a subgraph named \033[0;92mtest-$protocol-$network\033[0;32m\033[0m"
-    exit 1
     # fi
 fi
