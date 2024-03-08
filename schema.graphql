@@ -1,0 +1,48 @@
+type Position @entity {
+  id: Bytes! # {chain}:{protocol}:{investmentAddress}:{owner}:{tag}
+  owner: Bytes! # address
+  investment: Bytes! # address
+  inputTokens: [Bytes!]!
+  rewardTokens: [Bytes!]!
+  initAmounts: [BigInt!]! # [...inputAmounts, ...rewardAmounts] : initiated when first generated or re-generated
+  amounts: [BigInt!]! # [...inputAmounts, ...rewardAmounts] : current amounts
+  closed: Boolean
+
+  # relations
+  snapshots: [PositionSnapshot!]! @derivedFrom(field: "position")
+  changes: [PositionChange!]! @derivedFrom(field: "position")
+}
+
+type PositionSnapshot @entity(immutable: true) {
+  id: Bytes!
+  amounts: [BigInt!]! # [...inputAmounts, ...rewardAmounts]
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+
+  # relationships
+  position: Position!
+}
+
+enum PositionChangeAction {
+  Deposit
+  Withdraw
+  Harvest
+  Borrow
+  Repay
+  Liquidate
+  Send
+  Receive
+}
+
+type PositionChange @entity(immutable: true) {
+  id: Bytes!
+  action: PositionChangeAction
+  dAmounts: [BigInt!]!
+  afterAmounts: [BigInt!]!
+
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+  # relationships
+  position: Position!
+}

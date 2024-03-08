@@ -1,0 +1,41 @@
+specVersion: 1.0.0
+indexerHints:
+  prune: auto
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: UniswapV3
+    network: {{network}}
+    source:
+      address: "{{positionManager}}"
+      abi: UniswapV3PositionManager
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - Collect
+        - IncreaseLiquidity
+        - Transfer
+      abis:
+        - name: UniswapV3PositionManager
+          file: ./abis/UniswapV3/UniswapV3PositionManager.json
+        - name: UniswapV3Pool
+          file: ./abis/UniswapV3/UniswapV3Pool.json
+        - name: UniswapV3Factory
+          file: ./abis/UniswapV3/UniswapV3Factory.json
+      eventHandlers:
+        - event: Collect(indexed uint256,address,uint256,uint256)
+          handler: handleCollect
+          receipt: true
+        - event: IncreaseLiquidity(indexed uint256,uint128,uint256,uint256)
+          handler: handleIncreaseLiquidity
+        - event: Transfer(indexed address,indexed address,indexed uint256)
+          handler: handleTransfer
+      blockHandlers:
+        - handler: handleBlock
+          filter:
+            kind: polling
+            every: {{polling}} # 1 hour
+      file: ./src/projects/uniswapV3/index.ts
