@@ -37,14 +37,14 @@ if [[ ! -f "definitions/$protocol/$protocol.$network.json" ]]; then
     exit 1
 fi
 
-if [[ ! -f "definitions/$protocol/$protocol.subgraph.yaml" ]]; then
-    echo "Error: definitions/$protocol/$protocol.subgraph.yaml file does not exist."
+if [[ ! -f "definitions/$protocol/subgraph.$protocol.yaml" ]]; then
+    echo "Error: definitions/$protocol/subgraph.$protocol.yaml file does not exist."
     exit 1
 fi
 
 
 # 명령어 실행
-mustache definitions/"$protocol"/"$protocol"."$network".json definitions/"$protocol"/"$protocol".subgraph.yaml > subgraph.yaml
+mustache definitions/"$protocol"/"$protocol"."$network".json definitions/"$protocol"/subgraph."$protocol".yaml > subgraph.yaml
 
 graph codegen
 

@@ -1,0 +1,5 @@
+{
+  "network": "bsc",
+  "positionManager": "0x7b8A01B39D58278b5DE7e48c8449c9f4F5170613",
+  "polling": 1200
+}

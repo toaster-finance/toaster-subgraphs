@@ -40,7 +40,9 @@ function saveUniswapV3PositionSnapshot(
 
 export function handleBlock(block: ethereum.Block): void {
   const pm = UniswapV3PositionManager.bind(dataSource.address());
-  const positionLength = pm.totalSupply().toI32();
+  const totalSupply = pm.try_totalSupply();
+  if (totalSupply.reverted) return;
+  const positionLength = totalSupply.value.toI32();
   const factory = pm.factory();
 
   for (let i = 0; i < positionLength; i++) {
