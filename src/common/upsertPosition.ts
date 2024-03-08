@@ -23,6 +23,7 @@ export function upsertPosition(
     position = new Position(positionId);
     position.investment = investmentAddress;
     position.owner = owner;
+    position.tag = tag;
     position.inputTokens = inputTokens.map<Bytes>((addr) =>
       Bytes.fromHexString(addr.toHexString())
     );

@@ -10,6 +10,7 @@ dataSources:
     source:
       address: "{{positionManager}}"
       abi: UniswapV3PositionManager
+      startBlock: {{startBlock}}
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7

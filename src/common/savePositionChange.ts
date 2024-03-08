@@ -1,5 +1,5 @@
-import { BigInt, Address, ethereum } from "@graphprotocol/graph-ts";
-import { PositionChange } from "../../generated/schema";
+import { BigInt, Address, ethereum, Bytes } from "@graphprotocol/graph-ts";
+import { PositionChange, PositionSnapshot } from "../../generated/schema";
 import { PositionChangeAction, getAction } from "./PositionChangeAction.enum";
 import { upsertPosition } from "./upsertPosition";
 
@@ -40,5 +40,16 @@ export function savePositionChange(
   pc.dAmounts = dInput.concat(dReward);
   pc.afterAmounts = inputAmounts.concat(rewardAmounts);
 
+  const snapshot = new PositionSnapshot(
+    position.id
+      .concat(Bytes.fromUTF8(":"))
+      .concat(Bytes.fromByteArray(Bytes.fromBigInt(event.block.number)))
+  );
+  snapshot.position = position.id;
+  snapshot.amounts = inputAmounts.concat(rewardAmounts);
+  snapshot.blockNumber = event.block.number;
+  snapshot.blockTimestamp = event.block.timestamp;
+
+  snapshot.save();
   pc.save();
 }

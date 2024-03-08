@@ -1,6 +1,7 @@
 type Position @entity {
   id: Bytes! # {chain}:{protocol}:{investmentAddress}:{owner}:{tag}
   owner: Bytes! # address
+  tag: String! # tag
   investment: Bytes! # address
   inputTokens: [Bytes!]!
   rewardTokens: [Bytes!]!
