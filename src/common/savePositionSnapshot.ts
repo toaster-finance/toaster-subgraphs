@@ -33,4 +33,6 @@ export function savePositionSnapshot(
   snapshot.amounts = inputAmounts.concat(rewardAmounts);
   snapshot.blockNumber = block.number;
   snapshot.blockTimestamp = block.timestamp;
+
+  snapshot.save();
 }

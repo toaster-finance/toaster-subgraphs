@@ -30,10 +30,12 @@ export function handleBlock(block: ethereum.Block): void {
   const reserves = pool.getReserves();
   const totalSupply = pool.totalSupply();
 
-  const holders = getHolders(SYNCSWAP_PROTOCOL).holders;
+  const holders = getHolders(SYNCSWAP_PROTOCOL, pool._address).holders;
   for (let i = 0; i < holders.length; i++) {
     const owner = Address.fromBytes(holders[i]);
     const balance = pool.balanceOf(owner);
+    if(balance.equals(BigInt.fromI32(0))) continue;
+
     savePositionSnapshot(
       block, // block: ethereum.Block,
       SYNCSWAP_PROTOCOL, // protocol: string,

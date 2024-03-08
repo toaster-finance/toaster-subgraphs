@@ -1,7 +1,7 @@
 import { Bytes, BigInt, Address } from "@graphprotocol/graph-ts";
-import { Holders, Position } from "../../generated/schema";
+import { Position } from "../../generated/schema";
 import { getPositionId } from "./positionId";
-import { hasAddress } from "./arrayHelper";
+import { arrayIncludes } from "./arrayHelper";
 import { getHolders } from "./getHolders";
 
 export function upsertPosition(
@@ -15,7 +15,7 @@ export function upsertPosition(
   rewardAmounts: BigInt[]
 ): Position {
   const positionId = getPositionId(protocol, investmentAddress, owner, tag);
-  const holders = getHolders(protocol);
+  const holders = getHolders(protocol, investmentAddress);
 
   let position = Position.load(positionId);
 
@@ -37,8 +37,8 @@ export function upsertPosition(
 
   position.save();
 
-  if (!hasAddress(holders.holders, owner)) {
-    holders.holders.push(owner);
+  if (!arrayIncludes(holders.holders, owner)) {
+    holders.holders = holders.holders.concat([owner]);
   }
   holders.save();
 
