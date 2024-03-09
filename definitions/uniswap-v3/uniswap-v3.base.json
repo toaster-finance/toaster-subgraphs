@@ -1,6 +1,7 @@
 {
   "network": "base",
   "positionManager": "0x03a520b32C04BF3bEEf7BEb72E919cf822Ed34f1",
-  "polling": 1800,
+  "factory": "0x33128a8fC17869897dcE68Ed026d694621f6FDfD",
+  "polling": 21600,
   "startBlock": 1371714
 }

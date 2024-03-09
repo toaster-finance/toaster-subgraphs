@@ -1,47 +1,45 @@
-import { Bytes, BigInt, Address } from "@graphprotocol/graph-ts";
-import { Position } from "../../generated/schema";
-import { getPositionId } from "./positionId";
-import { arrayIncludes } from "./arrayHelper";
-import { getHolders } from "./getHolders";
+import { ethereum } from "@graphprotocol/graph-ts";
+import { Holder, Position } from "../../generated/schema";
+import { getHolderId } from "./helpers/holderHelper";
+import { getPosType } from "./PositionType.enum";
+import { PositionParams } from "./helpers/positionHelper";
+import { BaseInvestment } from "./helpers/investmentHelper";
 
 export function upsertPosition(
-  protocol: string,
-  investmentAddress: Address,
-  owner: Address,
-  tag: string,
-  inputTokens: Address[],
-  rewardTokens: Address[],
-  inputAmounts: BigInt[],
-  rewardAmounts: BigInt[]
+  block: ethereum.Block,
+  invest: BaseInvestment,
+  p: PositionParams
 ): Position {
-  const positionId = getPositionId(protocol, investmentAddress, owner, tag);
-  const holders = getHolders(protocol, investmentAddress);
+  const investment = invest.getOrCreateInvestment();
+  const positionId = p.positionId(investment.id);
 
   let position = Position.load(positionId);
 
   if (!position) {
     position = new Position(positionId);
-    position.investment = investmentAddress;
-    position.owner = owner;
-    position.tag = tag;
-    position.inputTokens = inputTokens.map<Bytes>((addr) =>
-      Bytes.fromHexString(addr.toHexString())
-    );
-    position.rewardTokens = rewardTokens.map<Bytes>((addr) =>
-      Bytes.fromHexString(addr.toHexString())
-    );
-    position.initAmounts = inputAmounts.concat(rewardAmounts);
+    position.investment = investment.id;
+    position.owner = p.owner;
+    position.tag = p.tag;
+    position.type = getPosType(p.type);
+    position.initAmounts = p.inputAmounts.concat(p.rewardAmounts);
   }
-
-  position.amounts = inputAmounts.concat(rewardAmounts);
-  position.closed = !rewardAmounts.some((amt) => amt.gt(BigInt.zero()));
-
+  
+  position.amounts = p.inputAmounts.concat(p.rewardAmounts);
+  position.liquidity = p.liquidity;
+  position.meta = p.meta;
   position.save();
 
-  if (!arrayIncludes(holders.holders, owner)) {
-    holders.holders = holders.holders.concat([owner]);
+  const holderId = getHolderId(investment.id, p.owner);
+  let holder = Holder.load(holderId);
+  if (!holder) {
+    holder = new Holder(holderId);
+    holder.investment = investment.id;
+    holder.address = p.owner;
+    holder.createdAt = block.timestamp;
+    holder.createdAtBlock = block.number;
   }
-  holders.save();
+
+  holder.save();
 
   return position;
 }

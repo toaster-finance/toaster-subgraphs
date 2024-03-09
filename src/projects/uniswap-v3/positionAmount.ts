@@ -29,14 +29,6 @@ export function computeTokenId(
   tickLower: i32,
   tickUpper: i32
 ): Bytes {
-  // let tupleArray: Array<ethereum.Value> = [
-  //   ethereum.Value.fromAddress(positionManager),
-  //   ethereum.Value.fromI32(tickUpper),
-  //   ethereum.Value.fromI32(tickLower),
-  // ]
-
-  // let tuple = tupleArray as ethereum.Tuple
-
   const tuple = new ethereum.Tuple();
   tuple.push(ethereum.Value.fromAddress(positionManager));
   tuple.push(ethereum.Value.fromI32(tickUpper));

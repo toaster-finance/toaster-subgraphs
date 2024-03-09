@@ -1,6 +1,7 @@
 {
   "network": "matic",
   "positionManager": "0xC36442b4a4522E871399CD717aBDD847Ab11FE88",
-  "polling": 1800,
+  "factory": "0x1F98431c8aD98523631AE4a59f267346ea31F984",
+  "polling": 21600,
   "startBlock": 22760586
 }

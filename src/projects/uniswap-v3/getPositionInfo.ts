@@ -1,55 +1,46 @@
-import { Address, BigInt, ByteArray } from "@graphprotocol/graph-ts";
 import {
-  UniswapV3PositionManager,
-  UniswapV3PositionManager__positionsResult,
-} from "../../../generated/UniswapV3/UniswapV3PositionManager";
-import { UniswapV3Pool } from "../../../generated/UniswapV3/UniswapV3Pool";
-import { UniswapV3Factory } from "../../../generated/UniswapV3/UniswapV3Factory";
-import { computeTokenId, feesOf, principalOf } from "./positionAmount";
+  Address,
+  BigInt,
+  ByteArray,
+  Bytes,
+  ethereum,
+} from "@graphprotocol/graph-ts";
+import { LogData, filterAndDecodeLogs } from "../../common/filterEventLogs";
+import { str2Int } from "../../common/helpers/bigintHelper";
 
-class PositionInfo {
-  pool: UniswapV3Pool;
-  tokens: Address[];
-  principal: BigInt[];
-  fees: BigInt[];
-
+export class PositionInfo {
   constructor(
-    pool: UniswapV3Pool,
-    tokens: Address[],
-    principal: BigInt[],
-    fees: BigInt[]
-  ) {
-    this.pool = pool;
-    this.tokens = tokens;
-    this.principal = principal;
-    this.fees = fees;
-  }
+    readonly owner: Address,
+    readonly tl: i32,
+    readonly tu: i32,
+    readonly pool: Address
+  ) {}
 }
 
-export function getPositionInfo(
-  position: UniswapV3PositionManager__positionsResult,
-  pm: UniswapV3PositionManager,
-  factory: Address
-): PositionInfo {
-  const tl = position.getTickLower();
-  const tu = position.getTickUpper();
-  const liq = position.getLiquidity();
+export function getLog<E extends ethereum.Event>(
+  event: E,
+  topic: string,
+  abi: string,
+  isTargetLog: (log: LogData, event: E) => boolean
+): LogData | null {
+  const logs = filterAndDecodeLogs(event, topic, abi);
 
-  const poolPosId = computeTokenId(pm._address, tl, tu);
+  let targetLogIdx = 0;
+  for (; targetLogIdx < logs.length; targetLogIdx++) {
+    if (isTargetLog(logs[targetLogIdx], event)) break;
+  }
 
-  const tokens = [position.getToken0(), position.getToken1()];
-  const pool = UniswapV3Pool.bind(
-    UniswapV3Factory.bind(factory).getPool(
-      tokens[0],
-      tokens[1],
-      position.getFee()
-    )
+  return targetLogIdx == logs.length ? null : logs[targetLogIdx];
+}
+
+export function getPositionInfo(log: LogData): PositionInfo {
+  const owner = Address.fromBytes(
+    Bytes.fromHexString("0x" + log.topics[1].toHexString().slice(-40))
   );
-  const poolPos = pool.positions(poolPosId);
-  const sqrtPriceX96 = pool.slot0().getSqrtPriceX96();
-  const principal = principalOf(tl, tu, liq, sqrtPriceX96);
-  const fees = feesOf(position, poolPos);
 
-  const p = new PositionInfo(pool, tokens, principal, fees);
-  return p;
+  const tickLower = str2Int(log.topics[2].toHexString()).toI32();
+  const tickUpper = str2Int(log.topics[3].toHexString()).toI32();
+  const pool = log.address;
+
+  return new PositionInfo(owner, tickLower, tickUpper, pool);
 }

@@ -1,28 +1,15 @@
-import { Bytes, BigInt, Address, ethereum } from "@graphprotocol/graph-ts";
+import { Bytes, ethereum } from "@graphprotocol/graph-ts";
 import { upsertPosition } from "./upsertPosition";
-import { PositionSnapshot } from "../../generated/schema";
+import { Position, PositionSnapshot } from "../../generated/schema";
+import { PositionParams } from "./helpers/positionHelper";
+import { BaseInvestment } from "./helpers/investmentHelper";
 
 export function savePositionSnapshot(
   block: ethereum.Block,
-  protocol: string,
-  investmentAddress: Address,
-  owner: Address,
-  tag: string,
-  inputTokens: Address[],
-  rewardTokens: Address[],
-  inputAmounts: BigInt[],
-  rewardAmounts: BigInt[]
-): void {
-  const position = upsertPosition(
-    protocol,
-    investmentAddress,
-    owner,
-    tag,
-    inputTokens,
-    rewardTokens,
-    inputAmounts,
-    rewardAmounts
-  );
+  investment: BaseInvestment,
+  p: PositionParams
+): Position {
+  const position = upsertPosition(block, investment, p);
 
   const snapshot = new PositionSnapshot(
     position.id
@@ -30,9 +17,11 @@ export function savePositionSnapshot(
       .concat(Bytes.fromByteArray(Bytes.fromBigInt(block.number)))
   );
   snapshot.position = position.id;
-  snapshot.amounts = inputAmounts.concat(rewardAmounts);
+  snapshot.amounts = p.inputAmounts.concat(p.rewardAmounts);
   snapshot.blockNumber = block.number;
   snapshot.blockTimestamp = block.timestamp;
 
   snapshot.save();
+
+  return position;
 }

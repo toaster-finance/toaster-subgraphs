@@ -1,15 +1,15 @@
 type Position @entity {
-  id: Bytes! # {chain}:{protocol}:{investmentAddress}:{owner}:{tag}
+  id: Bytes! # {chain}:{investmentId}:{owner}:{tag}
   owner: Bytes! # address
   tag: String! # tag
-  investment: Bytes! # address
-  inputTokens: [Bytes!]!
-  rewardTokens: [Bytes!]!
+  type: PositionType!
   initAmounts: [BigInt!]! # [...inputAmounts, ...rewardAmounts] : initiated when first generated or re-generated
   amounts: [BigInt!]! # [...inputAmounts, ...rewardAmounts] : current amounts
+  meta: [Bytes!]! # [meta1, meta2, ...] : additional information
+  liquidity: BigInt! # UniswapV3 -> liquidity, SyncSwap -> balanceOf, ... if none, 0
   closed: Boolean
-
   # relations
+  investment: Investment!
   snapshots: [PositionSnapshot!]! @derivedFrom(field: "position")
   changes: [PositionChange!]! @derivedFrom(field: "position")
 }
@@ -24,6 +24,50 @@ type PositionSnapshot @entity(immutable: true) {
   position: Position!
 }
 
+type PositionChange @entity(immutable: true) {
+  id: Bytes!
+  action: PositionChangeAction!
+  dAmounts: [BigInt!]!
+  afterAmounts: [BigInt!]!
+
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+  # relationships
+  position: Position!
+}
+
+type Protocol @entity {
+  id: Bytes!
+  chain: String!
+  name: String!
+
+  # relationships
+  investments: [Investment!]! @derivedFrom(field: "protocol")
+}
+
+type Investment @entity {
+  id: Bytes!
+  address: Bytes!
+  inputTokens: [Bytes!]!
+  rewardTokens: [Bytes!]!
+  meta: [Bytes!]!
+
+  # relationships
+  protocol: Protocol!
+  positions: [Position!]! @derivedFrom(field: "investment")
+  holders: [Holder!]! @derivedFrom(field: "investment")
+}
+
+type Holder @entity {
+  id: Bytes!
+  address: Bytes!
+  createdAt: BigInt!
+  createdAtBlock: BigInt!
+  # relationships
+  investment: Investment!
+}
+
 enum PositionChangeAction {
   Deposit
   Withdraw
@@ -35,23 +79,7 @@ enum PositionChangeAction {
   Receive
 }
 
-type PositionChange @entity(immutable: true) {
-  id: Bytes!
-  action: PositionChangeAction
-  dAmounts: [BigInt!]!
-  afterAmounts: [BigInt!]!
-
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
-  # relationships
-  position: Position!
-}
-
-
-# Only one entity 
-# => to track all holder because we cannot use like Position.loadAll()...
-type Holders @entity {
-  id: Bytes!
-  holders: [Bytes!]!
+enum PositionType {
+  Invest
+  Borrow
 }
