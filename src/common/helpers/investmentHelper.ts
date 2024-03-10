@@ -49,6 +49,7 @@ export abstract class BaseInvestment {
   ////// ABSTRACTS //////
   abstract getTokens(investmentAddress: Address): InvestmentTokens;
 
+  // used at : upsertPosition
   getPositionId(owner: Address, tag: string): Bytes {
     return this.id.concat(
       Bytes.fromHexString(owner.toHexString()).concat(Bytes.fromUTF8(tag))

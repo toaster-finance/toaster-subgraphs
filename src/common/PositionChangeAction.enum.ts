@@ -7,6 +7,8 @@ export enum PositionChangeAction {
   Liquidate,
   Send,
   Receive,
+  Stake,
+  Unstake
 }
 
 const actions = [
@@ -18,6 +20,8 @@ const actions = [
   "Liquidate",
   "Send",
   "Receive",
+  "Stake",
+  "Unstake"
 ];
 export function getAction(actionId: PositionChangeAction): string {
   return actions[actionId];

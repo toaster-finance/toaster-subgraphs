@@ -77,6 +77,8 @@ enum PositionChangeAction {
   Liquidate
   Send
   Receive
+  Stake
+  Unstake
 }
 
 enum PositionType {

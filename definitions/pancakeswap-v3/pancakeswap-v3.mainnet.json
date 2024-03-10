@@ -1,0 +1,8 @@
+{
+  "network": "mainnet",
+  "positionManager": "0x46A15B0b27311cedF172AB29E4f4766fbE7F4364",
+  "factory": "0x0BFbCF9fa4f9C56B0F40a671Ad40E0805A091865",
+  "masterChef": "0x556B9306565093C855AEA9AE92A594704c2Cd59e",
+  "polling": 3600,
+  "startBlock": 16944786
+}
