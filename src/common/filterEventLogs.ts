@@ -13,11 +13,11 @@ export function filterLogs(
 ): ethereum.Log[] {
   const logs: ethereum.Log[] = [];
   const receipt = event.receipt;
-  if (receipt == null)
-    throw new Error(event.transaction.hash.toHexString() + ": Receipt is null");
+  if (receipt == null) throw new Error("Receipt is null");
 
   for (let i = 0; i < receipt.logs.length; i++) {
     const log = receipt.logs[i];
+    if (log.topics.length == 0) continue;
     if (log.topics[0].equals(Bytes.fromHexString(topic))) {
       logs.push(log);
     }
@@ -35,19 +35,34 @@ export function filterAndDecodeLogs(
   for (let i = 0; i < logs.length; i++) {
     const log = logs[i];
     const decoded = ethereum.decode(abi, log.data);
-    if (decoded != null) {
-      logData.push(new LogData(log.address, log.topics, decoded.toTuple()));
-    }
+    logData.push(
+      new LogData(
+        log.address,
+        log.topics,
+        decoded == null ? new ethereum.Tuple(0) : decoded.toTuple()
+      )
+    );
   }
 
   return logData;
 }
 
-export function logFrom(logs: ethereum.Log[], address: Address): i32 {
+export function logAt(logs: ethereum.Log[], address: Address): i32 {
   for (let i = 0; i < logs.length; i++) {
     if (logs[i].address.equals(address)) {
       return i;
     }
   }
   return -1;
+}
+
+export function logFindFirst(
+  logs: ethereum.Log[],
+  event: ethereum.Event,
+  condition: (log: ethereum.Log, event: ethereum.Event) => boolean
+): ethereum.Log | null {
+  for (let i = 0; i < logs.length; i++) {
+    if (condition(logs[i], event)) return logs[i];
+  }
+  return null;
 }

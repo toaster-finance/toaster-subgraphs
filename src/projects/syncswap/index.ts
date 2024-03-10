@@ -17,7 +17,13 @@ import { PositionParams } from "../../common/helpers/positionHelper";
 import { PositionType } from "../../common/PositionType.enum";
 import { savePositionChange } from "../../common/savePositionChange";
 import { PositionChangeAction } from "../../common/PositionChangeAction.enum";
-import { filterLogs, logFrom } from "../../common/filterEventLogs";
+import {
+  filterAndDecodeLogs,
+  filterLogs,
+  logAt,
+  logFindFirst,
+} from "../../common/filterEventLogs";
+import { hash2Address } from "../../common/helpers/hashHelper";
 
 const SYNCSWAP_PROTOCOL = "SyncSwap";
 
@@ -87,6 +93,8 @@ const MINT_TOPIC =
 // Burn(address,uint256,uint256,uint256,address)
 const BURN_TOPIC =
   "0xd175a80c109434bb89948928ab2475a6647c94244cb70002197896423c883363";
+const TRANSFER_TOPIC =
+  "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
 
 export function handleMint(event: Mint): void {
   const pool = SyncSwapPool.bind(dataSource.address());
@@ -123,11 +131,22 @@ export function handleBurn(event: Burn): void {
   const investment = new SyncSwapInvestment(pool._address);
   const reserves = pool.getReserves();
   const totalSupply = pool.totalSupply();
-  const dbPosition = investment.findPosition(event.params.to, "");
+
+  const lpTransfers = filterLogs(event, TRANSFER_TOPIC);
+  const lpToPool = logFindFirst(lpTransfers, event, (log, event) => {
+    return (
+      log.address.equals(event.address) &&
+      hash2Address(log.topics[2]).equals(event.address)
+    );
+  });
+  if (!lpToPool) throw new Error("handleBurn: lpToPool not found");
+
+  const owner = hash2Address(lpToPool.topics[1]);
+  let dbPosition = investment.findPosition(owner, "");
 
   if (dbPosition == null) {
     throw new Error(
-      "handleBurn: Position not found, Owner: " + event.params.to.toHexString()
+      "handleBurn: Position not found, Owner: " + owner.toHexString()
     );
   }
   const liquidity = dbPosition.liquidity;
@@ -137,7 +156,7 @@ export function handleBurn(event: Burn): void {
     PositionChangeAction.Withdraw,
     investment,
     new PositionParams(
-      event.params.to,
+      owner,
       "",
       PositionType.Invest,
       lp2Amounts(reserves, ownerBalance, totalSupply),
@@ -166,11 +185,11 @@ export function handleTransfer(event: Transfer): void {
   if (receipt == null) return;
   // Mint -> not in case
   const mintLogs = filterLogs(event, MINT_TOPIC);
-  if (logFrom(mintLogs, event.address) != -1) return;
+  if (logAt(mintLogs, event.address) != -1) return;
 
   // Burn -> not in case
   const burnLogs = filterLogs(event, BURN_TOPIC);
-  if (logFrom(burnLogs, event.address) != -1) return;
+  if (logAt(burnLogs, event.address) != -1) return;
 
   const pool = SyncSwapPool.bind(event.address);
   const reserves = pool.getReserves();
@@ -178,12 +197,13 @@ export function handleTransfer(event: Transfer): void {
 
   const investment = new SyncSwapInvestment(pool._address);
 
+  let senderBalance: BigInt;
   const dbSenderPosition = investment.findPosition(event.params.from, "");
-  if (dbSenderPosition == null) {
-    throw new Error("handleTransfer: Position not found");
+  if (dbSenderPosition) {
+    senderBalance = dbSenderPosition.liquidity.minus(event.params.value);
+  } else {
+    senderBalance = pool.balanceOf(event.params.from);
   }
-
-  const senderBalance = dbSenderPosition.liquidity.minus(event.params.value);
 
   let receiverBalance = event.params.value;
   const dbReceiverPosition = investment.findPosition(event.params.to, "");

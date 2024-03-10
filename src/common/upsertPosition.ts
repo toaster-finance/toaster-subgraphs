@@ -11,7 +11,7 @@ export function upsertPosition(
   p: PositionParams
 ): Position {
   const investment = invest.getOrCreateInvestment();
-  const positionId = p.positionId(investment.id);
+  const positionId = invest.getPositionId(p.owner, p.tag);
 
   let position = Position.load(positionId);
 

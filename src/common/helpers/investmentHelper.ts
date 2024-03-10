@@ -1,6 +1,5 @@
 import { Address, Bytes, dataSource } from "@graphprotocol/graph-ts";
 import { Investment, Position, Protocol } from "../../../generated/schema";
-import { getPositionId } from "./positionHelper";
 
 export class InvestmentTokens {
   constructor(
@@ -50,12 +49,14 @@ export abstract class BaseInvestment {
   ////// ABSTRACTS //////
   abstract getTokens(investmentAddress: Address): InvestmentTokens;
 
-  findPosition(owner: Address, tag: string): Position | null {
-    const investmentId = getInvestmentId(
-      this.protocolName,
-      this.investmentAddress
+  getPositionId(owner: Address, tag: string): Bytes {
+    return this.id.concat(
+      Bytes.fromHexString(owner.toHexString()).concat(Bytes.fromUTF8(tag))
     );
-    const positionId = getPositionId(investmentId, owner, tag);
+  }
+
+  findPosition(owner: Address, tag: string): Position | null {
+    const positionId = this.getPositionId(owner, tag);
     return Position.load(positionId);
   }
 
