@@ -25,8 +25,12 @@ export function getInvestmentId(
   );
 }
 
+export function getProtocolId(protocolName: string): Bytes {
+  return Bytes.fromUTF8(protocolName + ":" + dataSource.network());
+}
+
 export function getProtocol(protocolName: string): Protocol {
-  const protocolId = Bytes.fromUTF8(protocolName + ":" + dataSource.network());
+  const protocolId = getProtocolId(protocolName);
   let protocol = Protocol.load(protocolId);
   if (!protocol) {
     protocol = new Protocol(protocolId);

@@ -1,4 +1,4 @@
-import { ethereum } from "@graphprotocol/graph-ts";
+import { BigInt, ethereum } from "@graphprotocol/graph-ts";
 import { Holder, Position } from "../../generated/schema";
 import { getHolderId } from "./helpers/holderHelper";
 import { getPosType } from "./PositionType.enum";
@@ -23,11 +23,20 @@ export function upsertPosition(
     position.type = getPosType(p.type);
     position.initAmounts = p.inputAmounts.concat(p.rewardAmounts);
   }
-  
+
   position.amounts = p.inputAmounts.concat(p.rewardAmounts);
   position.liquidity = p.liquidity;
   position.meta = p.meta;
   position.save();
+
+  let closed = true;
+  for (let i = 0; i < position.amounts.length; i++) {
+    if (position.amounts[i].gt(BigInt.zero())) {
+      closed = false;
+      break;
+    }
+  }
+  position.closed = closed;
 
   const holderId = getHolderId(investment.id, p.owner);
   let holder = Holder.load(holderId);

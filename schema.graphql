@@ -41,6 +41,7 @@ type Protocol @entity {
   id: Bytes!
   chain: String!
   name: String!
+  meta: [Bytes!]!
 
   # relationships
   investments: [Investment!]! @derivedFrom(field: "protocol")

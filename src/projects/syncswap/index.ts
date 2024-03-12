@@ -17,12 +17,7 @@ import { PositionParams } from "../../common/helpers/positionHelper";
 import { PositionType } from "../../common/PositionType.enum";
 import { savePositionChange } from "../../common/savePositionChange";
 import { PositionChangeAction } from "../../common/PositionChangeAction.enum";
-import {
-  filterAndDecodeLogs,
-  filterLogs,
-  logAt,
-  logFindFirst,
-} from "../../common/filterEventLogs";
+import { filterLogs, logAt, logFindFirst } from "../../common/filterEventLogs";
 import { hash2Address } from "../../common/helpers/hashHelper";
 
 const SYNCSWAP_PROTOCOL = "SyncSwap";
@@ -97,6 +92,8 @@ const TRANSFER_TOPIC =
   "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
 
 export function handleMint(event: Mint): void {
+  if (event.params.liquidity.equals(BigInt.zero())) return;
+
   const pool = SyncSwapPool.bind(dataSource.address());
   const investment = new SyncSwapInvestment(pool._address);
   const reserves = pool.getReserves();
@@ -127,6 +124,8 @@ export function handleMint(event: Mint): void {
 }
 
 export function handleBurn(event: Burn): void {
+  if (event.params.liquidity.equals(BigInt.zero())) return;
+
   const pool = SyncSwapPool.bind(event.address);
   const investment = new SyncSwapInvestment(pool._address);
   const reserves = pool.getReserves();
@@ -170,6 +169,8 @@ export function handleBurn(event: Burn): void {
 }
 
 export function handleTransfer(event: Transfer): void {
+  if (event.params.value.equals(BigInt.zero())) return;
+
   const router = Address.fromHexString(
     dataSource.context().getString("router")
   );

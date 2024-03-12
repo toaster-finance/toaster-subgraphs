@@ -18,6 +18,7 @@ import {
   BaseInvestment,
   InvestmentTokens,
   getProtocol,
+  getProtocolId,
 } from "../../common/helpers/investmentHelper";
 import { UniswapV3Pool } from "../../../generated/UniswapV3/UniswapV3Pool";
 import { PositionParams } from "../../common/helpers/positionHelper";
@@ -28,18 +29,31 @@ import { UniswapV3Factory } from "../../../generated/UniswapV3/UniswapV3Factory"
 import { savePositionSnapshot } from "../../common/savePositionSnapshot";
 import { str2Uint } from "../../common/helpers/bigintHelper";
 import { hash2Address } from "../../common/helpers/hashHelper";
-import { Position } from "../../../generated/schema";
+import { Investment, Position, Protocol } from "../../../generated/schema";
 
-const UNISWAP_V3_PROTOCOL = "UniswapV3";
+export const UNISWAP_V3_PROTOCOL = "UniswapV3";
+
+function getUniV3PosId(tokenId: BigInt): Bytes {
+  return Bytes.fromUTF8(UNISWAP_V3_PROTOCOL)
+    .concat(
+      Bytes.fromHexString(dataSource.context().getString("positionManager"))
+    )
+    .concat(Bytes.fromI32(tokenId.toI32()));
+}
+
+function findNft(tokenId: BigInt): Position | null {
+  const positionId = getUniV3PosId(tokenId);
+  return Position.load(positionId);
+}
 
 class UniswapV3Investment extends BaseInvestment {
   constructor(readonly investmentAddress: Address) {
     super(UNISWAP_V3_PROTOCOL, investmentAddress);
   }
 
-  // how to get the position id is different from other protocols
+  // the way how to get the position id is different from other protocols
   getPositionId(_owner: Address, tag: string): Bytes {
-    return this.id.concat(Bytes.fromUTF8(tag));
+    return getUniV3PosId(BigInt.fromString(tag));
   }
 
   findNftPosition(tokenId: BigInt): Position | null {
@@ -109,6 +123,11 @@ export function handleIncreaseLiquidity(event: IncreaseLiquidity): void {
     principals = [event.params.amount0, event.params.amount1];
     fees = [BigInt.zero(), BigInt.zero()];
     owner = hash2Address(nftTransferLog.topics[2]);
+
+    // Update totalSupply of the protocol
+    const protocol = getProtocol(UNISWAP_V3_PROTOCOL);
+    const totalSupply = protocol.meta[0].toI32();
+    protocol.meta = [Bytes.fromI32(totalSupply + 1)];
   }
   // Added liquidity to an existing position
   else {
@@ -121,19 +140,38 @@ export function handleIncreaseLiquidity(event: IncreaseLiquidity): void {
     }
 
     const poolContract = UniswapV3Pool.bind(info.pool);
-    const position = pm.positions(event.params.tokenId);
+    const position = pm.try_positions(event.params.tokenId);
 
-    liquidity = position.getLiquidity();
-    principals = principalOf(
-      info.tl,
-      info.tu,
-      liquidity,
-      poolContract.slot0().getSqrtPriceX96()
-    );
-    fees = feesOf(
-      position,
-      poolContract.positions(computeTokenId(pm._address, info.tl, info.tu))
-    );
+    // In case of a position that has burned in a same blockNumber
+    // when the position is created
+    // In this case, the position is not found in the contract
+    // [IncreaseLiquidity #11622]
+    // https://polygonscan.com/tx/0xc7c8de36c5a8e32005114d5fa9d456f36ce55ebc499ab1b6374932aa66be1377#eventlog
+    // [Burn #11622]
+    // https://polygonscan.com/tx/0xd5c72036741af3921edaa3e02b41f5add29f13521bf6379e6484dc3552b15f8b#eventlog
+    if (position.reverted) {
+      if (dbPosition) {
+        liquidity = dbPosition.liquidity;
+        principals = dbPosition.amounts.slice(0, 2);
+        fees = dbPosition.amounts.slice(2, 4);
+      } else {
+        liquidity = event.params.liquidity;
+        principals = [event.params.amount0, event.params.amount1];
+        fees = [BigInt.zero(), BigInt.zero()];
+      }
+    } else {
+      liquidity = position.value.getLiquidity();
+      principals = principalOf(
+        info.tl,
+        info.tu,
+        liquidity,
+        poolContract.slot0().getSqrtPriceX96()
+      );
+      fees = feesOf(
+        position.value,
+        poolContract.positions(computeTokenId(pm._address, info.tl, info.tu))
+      );
+    }
   }
 
   savePositionChange(
@@ -375,60 +413,79 @@ export function handleTransfer(event: Transfer): void {
 ///////////////////////////////////////////
 ////////// Position Snapshots /////////////
 ///////////////////////////////////////////
-
 export function handleBlock(block: ethereum.Block): void {
   const protocol = getProtocol(UNISWAP_V3_PROTOCOL);
-  const investments = protocol.investments.load();
-  const pm = UniswapV3PositionManager.bind(dataSource.address());
+  const totalSupply = protocol.meta[0].toI32();
+  const snapshotBatch = dataSource.context().getI32("snapshotBatch");
 
-  for (let i = 0; i < investments.length; i++) {
-    const investment = investments[i];
+  const init =
+    totalSupply > 0
+      ? block.number.mod(BigInt.fromI32(totalSupply)).toI32() + 1
+      : 1;
+  const pm = UniswapV3PositionManager.bind(dataSource.address());
+  for (let tokenId = init; tokenId < totalSupply; tokenId += snapshotBatch) {
+    const position = findNft(BigInt.fromI32(tokenId));
+    if (position == null || position.closed) continue;
+
+    const investment = Investment.load(position.investment);
+    if (investment == null) continue;
+
+    const onChainP = pm.try_positions(BigInt.fromString(position.tag));
+    if (onChainP.reverted) continue;
+
     const pool = UniswapV3Pool.bind(Address.fromBytes(investment.address));
     const sqrtPriceX96 = pool.slot0().getSqrtPriceX96();
-    const positions = investment.positions.load();
 
-    for (let j = 0; j < positions.length; j++) {
-      const position = positions[j];
-      const onChainP = pm.try_positions(BigInt.fromString(position.tag));
-      if (onChainP.reverted) continue;
-
-      let principals: BigInt[];
-      let fees: BigInt[];
-      if (onChainP.value.getLiquidity().equals(BigInt.zero())) {
-        principals = [BigInt.zero(), BigInt.zero()];
-        fees = [BigInt.zero(), BigInt.zero()];
-      } else {
-        principals = principalOf(
-          onChainP.value.getTickLower(),
-          onChainP.value.getTickUpper(),
-          onChainP.value.getLiquidity(),
-          sqrtPriceX96
-        );
-        fees = feesOf(
-          onChainP.value,
-          pool.positions(
-            computeTokenId(
-              pm._address,
-              onChainP.value.getTickLower(),
-              onChainP.value.getTickUpper()
-            )
+    let principals: BigInt[];
+    let fees: BigInt[];
+    if (onChainP.value.getLiquidity().equals(BigInt.zero())) {
+      principals = [BigInt.zero(), BigInt.zero()];
+      fees = [BigInt.zero(), BigInt.zero()];
+    } else {
+      principals = principalOf(
+        onChainP.value.getTickLower(),
+        onChainP.value.getTickUpper(),
+        onChainP.value.getLiquidity(),
+        sqrtPriceX96
+      );
+      fees = feesOf(
+        onChainP.value,
+        pool.positions(
+          computeTokenId(
+            pm._address,
+            onChainP.value.getTickLower(),
+            onChainP.value.getTickUpper()
           )
-        );
-      }
-
-      savePositionSnapshot(
-        block,
-        new UniswapV3Investment(Address.fromBytes(investment.address)),
-        new PositionParams(
-          Address.fromBytes(position.owner),
-          position.tag,
-          PositionType.Invest,
-          principals,
-          fees,
-          onChainP.value.getLiquidity(),
-          position.meta
         )
       );
     }
+
+    savePositionSnapshot(
+      block,
+      new UniswapV3Investment(pool._address),
+      new PositionParams(
+        Address.fromBytes(position.owner),
+        position.tag,
+        PositionType.Invest,
+        principals,
+        fees,
+        onChainP.value.getLiquidity(),
+        position.meta
+      )
+    );
   }
+}
+
+export function handleOnce(block: ethereum.Block): void {
+  const protocolId = getProtocolId(UNISWAP_V3_PROTOCOL);
+  const protocol = new Protocol(protocolId);
+  protocol.name = UNISWAP_V3_PROTOCOL;
+  protocol.chain = dataSource.network();
+
+  const totalSupply = UniswapV3PositionManager.bind(
+    dataSource.address()
+  ).totalSupply();
+
+  protocol.meta = [Bytes.fromI32(totalSupply.toI32())];
+  protocol.save();
 }

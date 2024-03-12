@@ -1,4 +1,4 @@
-import { Bytes, ethereum } from "@graphprotocol/graph-ts";
+import { Bytes, ethereum, BigInt } from "@graphprotocol/graph-ts";
 import { upsertPosition } from "./upsertPosition";
 import { Position, PositionSnapshot } from "../../generated/schema";
 import { PositionParams } from "./helpers/positionHelper";
@@ -10,7 +10,6 @@ export function savePositionSnapshot(
   p: PositionParams
 ): Position {
   const position = upsertPosition(block, investment, p);
-
   const snapshot = new PositionSnapshot(
     position.id
       .concat(Bytes.fromUTF8(":"))

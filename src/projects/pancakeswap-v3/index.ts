@@ -42,11 +42,13 @@ import { PositionChangeAction } from "../../common/PositionChangeAction.enum";
 import { UniswapV3Factory } from "../../../generated/UniswapV3/UniswapV3Factory";
 import { savePositionSnapshot } from "../../common/savePositionSnapshot";
 
-const PANCAKESWAP_V3_PROTOCOL = "PancakeSwapV3";
+export const PANCAKESWAP_V3_PROTOCOL = "PancakeSwapV3";
 
 function getPcsV3PosId(tokenId: BigInt): Bytes {
   return Bytes.fromUTF8(PANCAKESWAP_V3_PROTOCOL)
-    .concat(dataSource.address())
+    .concat(
+      Bytes.fromHexString(dataSource.context().getString("positionManager"))
+    )
     .concat(Bytes.fromI32(tokenId.toI32()));
 }
 
@@ -75,9 +77,12 @@ class PancakeSwapV3Investment extends BaseInvestment {
     const pool = UniswapV3Pool.bind(investmentAddress);
     const token0 = pool.token0();
     const token1 = pool.token1();
+    const CAKE = Address.fromBytes(
+      Bytes.fromHexString(dataSource.context().getString("CAKE"))
+    );
     return new InvestmentTokens(
       [token0, token1],
-      [token0, token1],
+      [token0, token1, CAKE],
       [Bytes.fromI32(pool.fee())]
     );
   }
@@ -484,19 +489,19 @@ export function handleTransfer(event: Transfer): void {
       event.params.tokenId.toString(), // tag
       PositionType.Invest, // type
       principals,
-      fees,
+      [fees[0], fees[1], BigInt.zero()], // dRewards
       position.value.getLiquidity(), // liquidity
       meta
     ),
     principals,
-    fees.concat([BigInt.zero()]) // dRewards
+    [fees[0], fees[1], BigInt.zero()] // dRewards
   );
 }
 
 function stakeOrUnstake(
   event: ethereum.Event,
   tokenId: BigInt,
-  staked: boolean
+  isStake: boolean
 ): void {
   const position = findNft(tokenId);
   if (!position) throw new Error("stakeOrUnstake: Position not found");
@@ -507,16 +512,16 @@ function stakeOrUnstake(
   const investment = new PancakeSwapV3Investment(pool);
   savePositionChange(
     event,
-    staked ? PositionChangeAction.Stake : PositionChangeAction.Unstake,
+    isStake ? PositionChangeAction.Stake : PositionChangeAction.Unstake,
     investment,
     new PositionParams(
       Address.fromBytes(position.owner), // owner
       position.tag, // tag
       PositionType.Invest, // type
       [position.amounts[0], position.amounts[1]], // principals
-      [position.amounts[2], position.amounts[3], position.amounts[4]], // fees
+      [position.amounts[2], position.amounts[3], position.amounts[4]], // rewards
       position.liquidity, // liquidity
-      [position.meta[0], position.meta[1], Bytes.fromI32(staked ? 1 : 0)] // meta
+      [position.meta[0], position.meta[1], Bytes.fromI32(isStake ? 1 : 0)] // meta
     ),
     [BigInt.zero(), BigInt.zero()], // dInputs
     [BigInt.zero(), BigInt.zero(), BigInt.zero()] // dRewards
@@ -540,6 +545,8 @@ export function handleBlock(block: ethereum.Block): void {
 
     for (let j = 0; j < positions.length; j++) {
       const position = positions[j];
+      if (position.closed) continue;
+
       const onChainP = pm.try_positions(BigInt.fromString(position.tag));
       if (onChainP.reverted) continue;
 
