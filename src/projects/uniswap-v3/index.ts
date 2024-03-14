@@ -30,6 +30,7 @@ import { savePositionSnapshot } from "../../common/savePositionSnapshot";
 import { str2Uint } from "../../common/helpers/bigintHelper";
 import { hash2Address } from "../../common/helpers/hashHelper";
 import { Investment, Position, Protocol } from "../../../generated/schema";
+import { getContextAddress } from "../../common/helpers/contextHelper";
 
 export const UNISWAP_V3_PROTOCOL = "UniswapV3";
 
@@ -126,6 +127,8 @@ export function handleIncreaseLiquidity(event: IncreaseLiquidity): void {
 
     // Update totalSupply of the protocol
     const protocol = getProtocol(UNISWAP_V3_PROTOCOL);
+    if (!protocol) throw new Error("Protocol not found");
+
     const totalSupply = protocol.meta[0].toI32();
     protocol.meta = [Bytes.fromI32(totalSupply + 1)];
   }
@@ -339,11 +342,7 @@ export function handleTransfer(event: Transfer): void {
     return;
 
   const pm = UniswapV3PositionManager.bind(dataSource.address());
-  const factory = UniswapV3Factory.bind(
-    Address.fromBytes(
-      Bytes.fromHexString(dataSource.context().getString("factory"))
-    )
-  );
+  const factory = UniswapV3Factory.bind(getContextAddress("factory"));
 
   const position = pm.try_positions(event.params.tokenId);
   if (position.reverted) return;
@@ -415,6 +414,8 @@ export function handleTransfer(event: Transfer): void {
 ///////////////////////////////////////////
 export function handleBlock(block: ethereum.Block): void {
   const protocol = getProtocol(UNISWAP_V3_PROTOCOL);
+  if (!protocol) return; // before ˆ
+
   const totalSupply = protocol.meta[0].toI32();
   const snapshotBatch = dataSource.context().getI32("snapshotBatch");
 
@@ -477,15 +478,24 @@ export function handleBlock(block: ethereum.Block): void {
 }
 
 export function handleOnce(block: ethereum.Block): void {
+  getOrCreateProtocol();
+}
+
+export function getOrCreateProtocol(): Protocol {
+  let protocol = getProtocol(UNISWAP_V3_PROTOCOL);
+  if (protocol) return protocol;
+
   const protocolId = getProtocolId(UNISWAP_V3_PROTOCOL);
-  const protocol = new Protocol(protocolId);
+  protocol = new Protocol(protocolId);
   protocol.name = UNISWAP_V3_PROTOCOL;
   protocol.chain = dataSource.network();
 
   const totalSupply = UniswapV3PositionManager.bind(
-    dataSource.address()
+    getContextAddress("positionManager")
   ).totalSupply();
 
   protocol.meta = [Bytes.fromI32(totalSupply.toI32())];
   protocol.save();
+
+  return protocol;
 }

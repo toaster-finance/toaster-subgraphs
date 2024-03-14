@@ -48,7 +48,8 @@ dataSources:
       blockHandlers:
         - handler: handleBlock
           filter:
-            kind: call
+            kind: polling
+            every: {{polling}}
         - handler: handleOnce
           filter:
             kind: once

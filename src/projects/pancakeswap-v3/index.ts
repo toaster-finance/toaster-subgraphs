@@ -9,8 +9,9 @@ import {
   BaseInvestment,
   InvestmentTokens,
   getProtocol,
+  getProtocolId,
 } from "../../common/helpers/investmentHelper";
-import { Investment, Position } from "../../../generated/schema";
+import { Investment, Position, Protocol } from "../../../generated/schema";
 import { UniswapV3Pool } from "../../../generated/UniswapV3/UniswapV3Pool";
 import {
   Harvest,
@@ -41,6 +42,7 @@ import { savePositionChange } from "../../common/savePositionChange";
 import { PositionChangeAction } from "../../common/PositionChangeAction.enum";
 import { UniswapV3Factory } from "../../../generated/UniswapV3/UniswapV3Factory";
 import { savePositionSnapshot } from "../../common/savePositionSnapshot";
+import { getContextAddress } from "../../common/helpers/contextHelper";
 
 export const PANCAKESWAP_V3_PROTOCOL = "PancakeSwapV3";
 
@@ -532,8 +534,10 @@ function stakeOrUnstake(
 ////////// Position Snapshots /////////////
 ///////////////////////////////////////////
 
-export function handleBlock(block: ethereum.Block): void {
+export function handleBlock___(block: ethereum.Block): void {
   const protocol = getProtocol(PANCAKESWAP_V3_PROTOCOL);
+  if (!protocol) return; // before initialization
+
   const investments = protocol.investments.load();
   const pm = UniswapV3PositionManager.bind(dataSource.address());
 
@@ -594,4 +598,100 @@ export function handleBlock(block: ethereum.Block): void {
       );
     }
   }
+}
+
+///////////////////////////////////////////
+////////// Position Snapshots /////////////
+///////////////////////////////////////////
+export function handleBlock(block: ethereum.Block): void {
+  const protocol = getProtocol(PANCAKESWAP_V3_PROTOCOL);
+  if (!protocol) return; // before initialization
+
+  const totalSupply = protocol.meta[0].toI32();
+  const snapshotBatch = dataSource.context().getI32("snapshotBatch");
+
+  const init =
+    totalSupply > 0
+      ? block.number.mod(BigInt.fromI32(totalSupply)).toI32() + 1
+      : 1;
+  const pm = UniswapV3PositionManager.bind(dataSource.address());
+  for (let tokenId = init; tokenId < totalSupply; tokenId += snapshotBatch) {
+    const position = findNft(BigInt.fromI32(tokenId));
+    if (position == null || position.closed) continue;
+
+    const investment = Investment.load(position.investment);
+    if (investment == null) continue;
+
+    const onChainP = pm.try_positions(BigInt.fromString(position.tag));
+    if (onChainP.reverted) continue;
+
+    const pool = UniswapV3Pool.bind(Address.fromBytes(investment.address));
+    const sqrtPriceX96 = pool.slot0().getSqrtPriceX96();
+
+    let principals: BigInt[];
+    let rewards: BigInt[];
+    if (onChainP.value.getLiquidity().equals(BigInt.zero())) {
+      principals = [BigInt.zero(), BigInt.zero()];
+      rewards = [BigInt.zero(), BigInt.zero()];
+    } else {
+      principals = principalOf(
+        onChainP.value.getTickLower(),
+        onChainP.value.getTickUpper(),
+        onChainP.value.getLiquidity(),
+        sqrtPriceX96
+      );
+      rewards = feesOf(
+        onChainP.value,
+        pool.positions(
+          computeTokenId(
+            pm._address,
+            onChainP.value.getTickLower(),
+            onChainP.value.getTickUpper()
+          )
+        )
+      );
+    }
+
+    const pendingCake = isStaked(position)
+      ? masterChef().pendingCake(BigInt.fromString(position.tag))
+      : BigInt.zero();
+    rewards.push(pendingCake);
+
+    savePositionSnapshot(
+      block,
+      new PancakeSwapV3Investment(Address.fromBytes(investment.address)),
+      new PositionParams(
+        Address.fromBytes(position.owner),
+        position.tag,
+        PositionType.Invest,
+        principals,
+        rewards,
+        onChainP.value.getLiquidity(),
+        position.meta
+      )
+    );
+  }
+}
+
+export function handleOnce(block: ethereum.Block): void {
+  getOrCreateProtocol();
+}
+
+export function getOrCreateProtocol(): Protocol {
+  let protocol = getProtocol(PANCAKESWAP_V3_PROTOCOL);
+  if (protocol) return protocol;
+
+  const protocolId = getProtocolId(PANCAKESWAP_V3_PROTOCOL);
+  protocol = new Protocol(protocolId);
+  protocol.name = PANCAKESWAP_V3_PROTOCOL;
+  protocol.chain = dataSource.network();
+
+  const totalSupply = UniswapV3PositionManager.bind(
+    getContextAddress("positionManager")
+  ).totalSupply();
+
+  protocol.meta = [Bytes.fromI32(totalSupply.toI32())];
+  protocol.save();
+
+  return protocol;
 }

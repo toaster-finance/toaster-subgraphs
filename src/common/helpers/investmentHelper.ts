@@ -29,16 +29,9 @@ export function getProtocolId(protocolName: string): Bytes {
   return Bytes.fromUTF8(protocolName + ":" + dataSource.network());
 }
 
-export function getProtocol(protocolName: string): Protocol {
+export function getProtocol(protocolName: string): Protocol | null {
   const protocolId = getProtocolId(protocolName);
-  let protocol = Protocol.load(protocolId);
-  if (!protocol) {
-    protocol = new Protocol(protocolId);
-    protocol.name = protocolName;
-    protocol.chain = dataSource.network();
-    protocol.save();
-  }
-  return protocol as Protocol;
+  return Protocol.load(protocolId);
 }
 
 export abstract class BaseInvestment {
@@ -69,6 +62,8 @@ export abstract class BaseInvestment {
     let investment = Investment.load(this.id);
     if (!investment) {
       const protocol = getProtocol(this.protocolName);
+      if(!protocol) throw new Error("Protocol not found");
+
       const tokens = this.getTokens(this.investmentAddress);
       investment = new Investment(this.id);
       investment.protocol = protocol.id;

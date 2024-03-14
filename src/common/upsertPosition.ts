@@ -27,7 +27,6 @@ export function upsertPosition(
   position.amounts = p.inputAmounts.concat(p.rewardAmounts);
   position.liquidity = p.liquidity;
   position.meta = p.meta;
-  position.save();
 
   let closed = true;
   for (let i = 0; i < position.amounts.length; i++) {
@@ -37,6 +36,7 @@ export function upsertPosition(
     }
   }
   position.closed = closed;
+  position.save();
 
   const holderId = getHolderId(investment.id, p.owner);
   let holder = Holder.load(holderId);

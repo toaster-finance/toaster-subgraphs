@@ -54,6 +54,10 @@ dataSources:
       eventHandlers:
         - event: PoolCreated(indexed address,indexed address,address)
           handler: handlePoolCreated
+      blockHandlers:      
+        - handler: handleOnce
+          filter:
+            kind: once
 templates:
   - kind: ethereum/contract
     name: SyncSwapPool

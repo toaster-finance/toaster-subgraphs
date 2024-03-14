@@ -20,7 +20,7 @@ import { PositionChangeAction } from "../../common/PositionChangeAction.enum";
 import { filterLogs, logAt, logFindFirst } from "../../common/filterEventLogs";
 import { hash2Address } from "../../common/helpers/hashHelper";
 
-const SYNCSWAP_PROTOCOL = "SyncSwap";
+export const SYNCSWAP_PROTOCOL = "SyncSwap";
 
 export class SyncSwapInvestment extends BaseInvestment {
   constructor(investmentAddress: Address) {
