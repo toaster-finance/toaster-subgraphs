@@ -1,4 +1,4 @@
-import { Address, Bytes, dataSource } from "@graphprotocol/graph-ts";
+import { Address, Bytes, dataSource, ethereum } from "@graphprotocol/graph-ts";
 import { Investment, Position, Protocol } from "../../../generated/schema";
 
 export class InvestmentTokens {
@@ -58,11 +58,11 @@ export abstract class BaseInvestment {
     return Position.load(positionId);
   }
 
-  getOrCreateInvestment(): Investment {
+  getOrCreateInvestment(block: ethereum.Block): Investment {
     let investment = Investment.load(this.id);
     if (!investment) {
       const protocol = getProtocol(this.protocolName);
-      if(!protocol) throw new Error("Protocol not found");
+      if (!protocol) throw new Error("Protocol not found");
 
       const tokens = this.getTokens(this.investmentAddress);
       investment = new Investment(this.id);
@@ -75,6 +75,8 @@ export abstract class BaseInvestment {
         Bytes.fromHexString(addr.toHexString())
       );
       investment.meta = tokens.meta;
+      investment.blockNumber = block.number;
+      investment.blockTimestamp = block.timestamp;
       investment.save();
     }
 

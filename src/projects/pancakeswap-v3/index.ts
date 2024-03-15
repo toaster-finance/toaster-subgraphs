@@ -32,7 +32,7 @@ import { LogData, filterAndDecodeLogs } from "../../common/filterEventLogs";
 import { str2Uint } from "../../common/helpers/bigintHelper";
 import { hash2Address } from "../../common/helpers/hashHelper";
 import {
-  computeTokenId,
+  GlobalFeeGrowth,
   feesOf,
   principalOf,
 } from "../uniswap-v3/positionAmount";
@@ -150,6 +150,13 @@ export function handleIncreaseLiquidity(event: IncreaseLiquidity): void {
     rewards = [BigInt.zero(), BigInt.zero(), BigInt.zero()];
     owner = hash2Address(nftTransferLog.topics[2]);
     staked = false;
+
+    // Update totalSupply of the protocol
+    const protocol = getProtocol(PANCAKESWAP_V3_PROTOCOL);
+    if (!protocol) throw new Error("Protocol not found");
+    const totalSupply = protocol.meta[0].toI32();
+    protocol.meta = [Bytes.fromI32(totalSupply + 1), protocol.meta[1]];
+    protocol.save();
   }
   // Added liquidity to an existing position
   else {
@@ -172,17 +179,23 @@ export function handleIncreaseLiquidity(event: IncreaseLiquidity): void {
 
     const poolContract = UniswapV3Pool.bind(info.pool);
     const position = pm.positions(event.params.tokenId);
+    const slot0 = poolContract.slot0();
 
     liquidity = position.getLiquidity();
     principals = principalOf(
       info.tl,
       info.tu,
       liquidity,
-      poolContract.slot0().getSqrtPriceX96()
+      slot0.getSqrtPriceX96()
     );
+
     rewards = feesOf(
       position,
-      poolContract.positions(computeTokenId(pm._address, info.tl, info.tu))
+      poolContract,
+      slot0.getTick(),
+      info.tl,
+      info.tu,
+      new GlobalFeeGrowth()
     );
 
     const pendingCake = masterChef().pendingCake(event.params.tokenId);
@@ -439,22 +452,22 @@ export function handleTransfer(event: Transfer): void {
     position.value.getFee()
   );
   const investment = new PancakeSwapV3Investment(pool);
+  const poolContract = UniswapV3Pool.bind(pool);
+  const slot0 = poolContract.slot0();
 
   const principals = principalOf(
     position.value.getTickLower(),
     position.value.getTickUpper(),
     position.value.getLiquidity(),
-    UniswapV3Pool.bind(pool).slot0().getSqrtPriceX96()
+    slot0.getSqrtPriceX96()
   );
   const fees = feesOf(
     position.value,
-    UniswapV3Pool.bind(pool).positions(
-      computeTokenId(
-        pm._address,
-        position.value.getTickLower(),
-        position.value.getTickUpper()
-      )
-    )
+    poolContract,
+    slot0.getTick(),
+    position.value.getTickLower(),
+    position.value.getTickUpper(),
+    new GlobalFeeGrowth()
   );
 
   const meta = [
@@ -533,88 +546,17 @@ function stakeOrUnstake(
 ///////////////////////////////////////////
 ////////// Position Snapshots /////////////
 ///////////////////////////////////////////
-
-export function handleBlock___(block: ethereum.Block): void {
-  const protocol = getProtocol(PANCAKESWAP_V3_PROTOCOL);
-  if (!protocol) return; // before initialization
-
-  const investments = protocol.investments.load();
-  const pm = UniswapV3PositionManager.bind(dataSource.address());
-
-  for (let i = 0; i < investments.length; i++) {
-    const investment = investments[i];
-    const pool = UniswapV3Pool.bind(Address.fromBytes(investment.address));
-    const sqrtPriceX96 = pool.slot0().getSqrtPriceX96();
-    const positions = investment.positions.load();
-
-    for (let j = 0; j < positions.length; j++) {
-      const position = positions[j];
-      if (position.closed) continue;
-
-      const onChainP = pm.try_positions(BigInt.fromString(position.tag));
-      if (onChainP.reverted) continue;
-
-      let principals: BigInt[];
-      let rewards: BigInt[];
-      if (onChainP.value.getLiquidity().equals(BigInt.zero())) {
-        principals = [BigInt.zero(), BigInt.zero()];
-        rewards = [BigInt.zero(), BigInt.zero()];
-      } else {
-        principals = principalOf(
-          onChainP.value.getTickLower(),
-          onChainP.value.getTickUpper(),
-          onChainP.value.getLiquidity(),
-          sqrtPriceX96
-        );
-        rewards = feesOf(
-          onChainP.value,
-          pool.positions(
-            computeTokenId(
-              pm._address,
-              onChainP.value.getTickLower(),
-              onChainP.value.getTickUpper()
-            )
-          )
-        );
-      }
-
-      const pendingCake = isStaked(position)
-        ? masterChef().pendingCake(BigInt.fromString(position.tag))
-        : BigInt.zero();
-      rewards.push(pendingCake);
-
-      savePositionSnapshot(
-        block,
-        new PancakeSwapV3Investment(Address.fromBytes(investment.address)),
-        new PositionParams(
-          Address.fromBytes(position.owner),
-          position.tag,
-          PositionType.Invest,
-          principals,
-          rewards,
-          onChainP.value.getLiquidity(),
-          position.meta
-        )
-      );
-    }
-  }
-}
-
-///////////////////////////////////////////
-////////// Position Snapshots /////////////
-///////////////////////////////////////////
 export function handleBlock(block: ethereum.Block): void {
   const protocol = getProtocol(PANCAKESWAP_V3_PROTOCOL);
   if (!protocol) return; // before initialization
 
   const totalSupply = protocol.meta[0].toI32();
+  const init = protocol.meta[1].toI32();
   const snapshotBatch = dataSource.context().getI32("snapshotBatch");
 
-  const init =
-    totalSupply > 0
-      ? block.number.mod(BigInt.fromI32(totalSupply)).toI32() + 1
-      : 1;
   const pm = UniswapV3PositionManager.bind(dataSource.address());
+  const feeGrowthMaps = new GlobalFeeGrowth();
+
   for (let tokenId = init; tokenId < totalSupply; tokenId += snapshotBatch) {
     const position = findNft(BigInt.fromI32(tokenId));
     if (position == null || position.closed) continue;
@@ -625,8 +567,10 @@ export function handleBlock(block: ethereum.Block): void {
     const onChainP = pm.try_positions(BigInt.fromString(position.tag));
     if (onChainP.reverted) continue;
 
-    const pool = UniswapV3Pool.bind(Address.fromBytes(investment.address));
-    const sqrtPriceX96 = pool.slot0().getSqrtPriceX96();
+    const poolContract = UniswapV3Pool.bind(
+      Address.fromBytes(investment.address)
+    );
+    const slot0 = poolContract.slot0();
 
     let principals: BigInt[];
     let rewards: BigInt[];
@@ -638,17 +582,15 @@ export function handleBlock(block: ethereum.Block): void {
         onChainP.value.getTickLower(),
         onChainP.value.getTickUpper(),
         onChainP.value.getLiquidity(),
-        sqrtPriceX96
+        slot0.getSqrtPriceX96()
       );
       rewards = feesOf(
         onChainP.value,
-        pool.positions(
-          computeTokenId(
-            pm._address,
-            onChainP.value.getTickLower(),
-            onChainP.value.getTickUpper()
-          )
-        )
+        poolContract,
+        slot0.getTick(),
+        onChainP.value.getTickLower(),
+        onChainP.value.getTickUpper(),
+        feeGrowthMaps
       );
     }
 
@@ -671,6 +613,9 @@ export function handleBlock(block: ethereum.Block): void {
       )
     );
   }
+
+  protocol.meta = [protocol.meta[0], Bytes.fromI32((init + 1) % snapshotBatch)];
+  protocol.save();
 }
 
 export function handleOnce(block: ethereum.Block): void {
@@ -690,7 +635,7 @@ export function getOrCreateProtocol(): Protocol {
     getContextAddress("positionManager")
   ).totalSupply();
 
-  protocol.meta = [Bytes.fromI32(totalSupply.toI32())];
+  protocol.meta = [Bytes.fromI32(totalSupply.toI32()), Bytes.fromI32(1)];
   protocol.save();
 
   return protocol;

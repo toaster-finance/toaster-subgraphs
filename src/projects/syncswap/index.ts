@@ -1,4 +1,10 @@
-import { Address, BigInt, dataSource, ethereum } from "@graphprotocol/graph-ts";
+import {
+  Address,
+  BigInt,
+  Bytes,
+  dataSource,
+  ethereum,
+} from "@graphprotocol/graph-ts";
 import {
   BaseInvestment,
   InvestmentTokens,
@@ -37,9 +43,10 @@ function lp2Amounts(
   lpAmount: BigInt,
   totalSupply: BigInt
 ): BigInt[] {
+  if (totalSupply.equals(BigInt.zero())) return [BigInt.zero(), BigInt.zero()];
   return [
-    reserves.value0.times(lpAmount).div(totalSupply),
-    reserves.value1.times(lpAmount).div(totalSupply),
+    reserves.get_reserve0().times(lpAmount).div(totalSupply),
+    reserves.get_reserve1().times(lpAmount).div(totalSupply),
   ];
 }
 
@@ -60,7 +67,7 @@ export function handleBlock(block: ethereum.Block): void {
   const positions = investment.positions.load();
   for (let i = 0; i < positions.length; i++) {
     const position = positions[i];
-    const amounts = lp2Amounts(reserves, position.liquidity, totalSupply);
+    if (position.closed) continue;
     savePositionSnapshot(
       block,
       new SyncSwapInvestment(pool._address),
@@ -68,7 +75,7 @@ export function handleBlock(block: ethereum.Block): void {
         Address.fromBytes(position.owner),
         "",
         PositionType.Invest,
-        amounts,
+        lp2Amounts(reserves, position.liquidity, totalSupply),
         [],
         position.liquidity,
         []

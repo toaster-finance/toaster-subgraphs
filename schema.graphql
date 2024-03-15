@@ -53,6 +53,8 @@ type Investment @entity {
   inputTokens: [Bytes!]!
   rewardTokens: [Bytes!]!
   meta: [Bytes!]!
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
 
   # relationships
   protocol: Protocol!

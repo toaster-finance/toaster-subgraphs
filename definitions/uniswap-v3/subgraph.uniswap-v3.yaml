@@ -77,6 +77,8 @@ dataSources:
       abis:
         - name: UniswapV3Factory
           file: ./abis/UniswapV3/UniswapV3Factory.json
+        - name: UniswapV3PositionManager
+          file: ./abis/UniswapV3/UniswapV3PositionManager.json
       eventHandlers:
         - event: PoolCreated(indexed address,indexed address,indexed uint24,int24,address)
           handler: handlePoolCreated

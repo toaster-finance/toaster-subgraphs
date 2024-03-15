@@ -33,7 +33,8 @@ function getAmount0ForLiquidity(
   return liquidity
     .leftShift(96)
     .times(priceU.minus(priceC))
-    .div(priceC.times(priceU));
+    .div(priceC)
+    .div(priceU);
 }
 
 const getAmount1ForLiquidity = (

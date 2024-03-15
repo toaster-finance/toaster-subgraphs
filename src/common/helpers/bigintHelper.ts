@@ -11,3 +11,7 @@ export const str2Int = (str: string): BigInt => {
     ByteArray.fromHexString(str).reverse() as Bytes
   );
 };
+
+export const bytes2Int = (b: Bytes): BigInt => {
+  return str2Int(b.toHexString());
+};

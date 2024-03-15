@@ -22,6 +22,8 @@ export function handlePoolCreated(event: PoolCreated): void {
     getContextAddress("CAKE"),
   ];
   i.meta = [Bytes.fromI32(event.params.fee)];
+  i.blockNumber = event.block.number;
+  i.blockTimestamp = event.block.timestamp;
 
   i.save();
 }

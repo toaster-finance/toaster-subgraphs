@@ -1,6 +1,6 @@
 import { Address, ethereum } from "@graphprotocol/graph-ts";
 import { LogData, filterAndDecodeLogs } from "../../common/filterEventLogs";
-import { str2Int } from "../../common/helpers/bigintHelper";
+import { bytes2Int, str2Int } from "../../common/helpers/bigintHelper";
 
 export class PositionInfo {
   constructor(readonly tl: i32, readonly tu: i32, readonly pool: Address) {}
@@ -22,8 +22,8 @@ export function getLog<E extends ethereum.Event>(
 }
 
 export function getPositionInfo(log: LogData): PositionInfo {
-  const tickLower = str2Int(log.topics[2].toHexString()).toI32();
-  const tickUpper = str2Int(log.topics[3].toHexString()).toI32();
+  const tickLower = bytes2Int(log.topics[2]).toI32();
+  const tickUpper = bytes2Int(log.topics[3]).toI32();
   const pool = log.address;
 
   return new PositionInfo(tickLower, tickUpper, pool);

@@ -12,7 +12,7 @@ import { Protocol } from "../../../generated/schema";
 export function handlePoolCreated(event: PoolCreated): void {
   const context = new DataSourceContext();
   context.setString("router", dataSource.context().getString("router"));
-  new SyncSwapInvestment(event.params.pool).getOrCreateInvestment();
+  new SyncSwapInvestment(event.params.pool).getOrCreateInvestment(event.block);
   SyncSwapPool.createWithContext(event.params.pool, context);
 }
 

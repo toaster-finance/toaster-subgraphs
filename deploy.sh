@@ -55,14 +55,17 @@ else
     exit 1
 fi
 
+# Deploy할 그래프 이름 생성 (최대 30자)
+graph_name="test-$protocol-$network"
+graph_name="${graph_name:0:30}" # 그래프 이름이 30자를 초과하면 초과하는 부분을 잘라냄
 
-graph deploy --node https://api.studio.thegraph.com/deploy/ --studio test-"$protocol"-"$network"
+graph deploy --node https://api.studio.thegraph.com/deploy/ --studio "$graph_name"
 
 # Check for error message
 if [ $? -eq 0 ]; then
     # last_output=$(history | tail -n 1)
     # if [[ "$last_output" == *"UNCAUGHT EXCEPTION: Error: EEXIT: 1"* ]]; then
     echo "\033[0;33mIf Subgraph does not exist, please create it at: https://thegraph.com/studio/?show=Create\033[0m"
-    echo "\033[0;32mPlease create a subgraph named \033[0;92mtest-$protocol-$network\033[0;32m\033[0m"
+    echo "\033[0;32mPlease create a subgraph named \033[0;92m$graph_name\033[0;32m\033[0m"
     # fi
 fi

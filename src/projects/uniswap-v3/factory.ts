@@ -14,6 +14,8 @@ export function handlePoolCreated(event: PoolCreated): void {
   i.inputTokens = [event.params.token0, event.params.token1];
   i.rewardTokens = [event.params.token0, event.params.token1];
   i.meta = [Bytes.fromI32(event.params.fee)];
+  i.blockNumber = event.block.number;
+  i.blockTimestamp = event.block.timestamp;
 
   i.save();
 }
