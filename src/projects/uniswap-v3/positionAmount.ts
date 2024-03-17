@@ -18,42 +18,35 @@ export function principalOf(
   );
 }
 
-const Q128 = BigInt.fromI32(1).leftShift(128);
+const MAX_UINT256 = BigInt.fromI32(1)
+  .leftShift(u8(255))
+  .minus(BigInt.fromI32(1))
+  .times(BigInt.fromI32(2))
+  .plus(BigInt.fromI32(1));
 
 export function feesOf(
   position: UniswapV3PositionManager__positionsResult,
   poolContract: UniswapV3Pool,
   currentTick: i32,
-  tl: i32,
-  tu: i32,
   feeGrowthGlobalMap: GlobalFeeGrowth
 ): BigInt[] {
   const liq = position.getLiquidity();
   const poolFeeInsides = getFeeGrowthInside(
     poolContract,
     currentTick,
-    tl,
-    tu,
+    position.getTickLower(),
+    position.getTickUpper(),
     feeGrowthGlobalMap
   );
-  const fee0 = position
-    .getTokensOwed0()
-    .plus(
-      position
-        .getFeeGrowthInside0LastX128()
-        .minus(poolFeeInsides[0])
-        .times(liq)
-        .div(Q128)
-    );
-  const fee1 = position
-    .getTokensOwed1()
-    .plus(
-      position
-        .getFeeGrowthInside1LastX128()
-        .minus(poolFeeInsides[1])
-        .times(liq)
-        .div(Q128)
-    );
+
+  let sub0 = poolFeeInsides[0].minus(position.getFeeGrowthInside0LastX128());
+  if (sub0.lt(BigInt.fromI32(0))) sub0 = sub0.plus(MAX_UINT256);
+
+  const fee0 = position.getTokensOwed0().plus(sub0.times(liq).rightShift(128));
+
+  let sub1 = poolFeeInsides[1].minus(position.getFeeGrowthInside1LastX128());
+  if (sub1.lt(BigInt.fromI32(0))) sub1 = sub1.plus(MAX_UINT256);
+  const fee1 = position.getTokensOwed1().plus(sub1.times(liq).rightShift(128));
 
   return [fee0, fee1];
 }

@@ -41,8 +41,10 @@ type Protocol @entity {
   id: Bytes!
   chain: String!
   name: String!
+  blockNumber: BigInt!
   meta: [Bytes!]!
 
+  _batchIterator: BigInt!
   # relationships
   investments: [Investment!]! @derivedFrom(field: "protocol")
 }

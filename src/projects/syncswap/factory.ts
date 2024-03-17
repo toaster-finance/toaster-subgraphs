@@ -1,4 +1,5 @@
 import {
+  BigInt,
   DataSourceContext,
   dataSource,
   ethereum,
@@ -12,6 +13,8 @@ import { Protocol } from "../../../generated/schema";
 export function handlePoolCreated(event: PoolCreated): void {
   const context = new DataSourceContext();
   context.setString("router", dataSource.context().getString("router"));
+  context.setI32("snapshotBatch", dataSource.context().getI32("snapshotBatch"));
+
   new SyncSwapInvestment(event.params.pool).getOrCreateInvestment(event.block);
   SyncSwapPool.createWithContext(event.params.pool, context);
 }
@@ -22,5 +25,7 @@ export function handleOnce(block: ethereum.Block): void {
   protocol.name = SYNCSWAP_PROTOCOL;
   protocol.chain = dataSource.network();
   protocol.meta = [];
+  protocol.blockNumber = block.number;
+  protocol._batchIterator = BigInt.fromI32(1);
   protocol.save();
 }

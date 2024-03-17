@@ -7,7 +7,7 @@ import { getInvestmentId } from "../../common/helpers/investmentHelper";
 export function handlePoolCreated(event: PoolCreated): void {
   const investmentId = getInvestmentId(UNISWAP_V3_PROTOCOL, event.params.pool);
   const i = new Investment(investmentId);
-  const protocol = getOrCreateProtocol();
+  const protocol = getOrCreateProtocol(event.block);
 
   i.protocol = protocol.id;
   i.address = event.params.pool;

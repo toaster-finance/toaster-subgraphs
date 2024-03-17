@@ -1,7 +1,7 @@
 import { Address, Bytes, dataSource, ethereum } from "@graphprotocol/graph-ts";
 import { Investment, Position, Protocol } from "../../../generated/schema";
 
-export class InvestmentTokens {
+export class InvestmentInfo {
   constructor(
     readonly inputTokens: Address[],
     readonly rewardTokens: Address[],
@@ -20,9 +20,7 @@ export function getInvestmentId(
   protocol: string,
   investmentAddress: Address
 ): Bytes {
-  return Bytes.fromUTF8(protocol).concat(
-    Bytes.fromHexString(investmentAddress.toHexString())
-  );
+  return Bytes.fromUTF8(protocol).concat(investmentAddress);
 }
 
 export function getProtocolId(protocolName: string): Bytes {
@@ -44,7 +42,7 @@ export abstract class BaseInvestment {
   }
 
   ////// ABSTRACTS //////
-  abstract getTokens(investmentAddress: Address): InvestmentTokens;
+  abstract getInfo(investmentAddress: Address): InvestmentInfo;
 
   // used at : upsertPosition
   getPositionId(owner: Address, tag: string): Bytes {
@@ -64,7 +62,7 @@ export abstract class BaseInvestment {
       const protocol = getProtocol(this.protocolName);
       if (!protocol) throw new Error("Protocol not found");
 
-      const tokens = this.getTokens(this.investmentAddress);
+      const tokens = this.getInfo(this.investmentAddress);
       investment = new Investment(this.id);
       investment.protocol = protocol.id;
       investment.address = this.investmentAddress;

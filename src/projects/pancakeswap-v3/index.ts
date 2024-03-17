@@ -7,7 +7,7 @@ import {
 } from "@graphprotocol/graph-ts";
 import {
   BaseInvestment,
-  InvestmentTokens,
+  InvestmentInfo,
   getProtocol,
   getProtocolId,
 } from "../../common/helpers/investmentHelper";
@@ -75,14 +75,14 @@ class PancakeSwapV3Investment extends BaseInvestment {
     return this.findPosition(Address.zero(), tokenId.toString());
   }
 
-  getTokens(investmentAddress: Address): InvestmentTokens {
+  getInfo(investmentAddress: Address): InvestmentInfo {
     const pool = UniswapV3Pool.bind(investmentAddress);
     const token0 = pool.token0();
     const token1 = pool.token1();
     const CAKE = Address.fromBytes(
       Bytes.fromHexString(dataSource.context().getString("CAKE"))
     );
-    return new InvestmentTokens(
+    return new InvestmentInfo(
       [token0, token1],
       [token0, token1, CAKE],
       [Bytes.fromI32(pool.fee())]
@@ -155,7 +155,7 @@ export function handleIncreaseLiquidity(event: IncreaseLiquidity): void {
     const protocol = getProtocol(PANCAKESWAP_V3_PROTOCOL);
     if (!protocol) throw new Error("Protocol not found");
     const totalSupply = protocol.meta[0].toI32();
-    protocol.meta = [Bytes.fromI32(totalSupply + 1), protocol.meta[1]];
+    protocol.meta = [Bytes.fromI32(totalSupply + 1)];
     protocol.save();
   }
   // Added liquidity to an existing position
@@ -193,8 +193,6 @@ export function handleIncreaseLiquidity(event: IncreaseLiquidity): void {
       position,
       poolContract,
       slot0.getTick(),
-      info.tl,
-      info.tu,
       new GlobalFeeGrowth()
     );
 
@@ -465,8 +463,6 @@ export function handleTransfer(event: Transfer): void {
     position.value,
     poolContract,
     slot0.getTick(),
-    position.value.getTickLower(),
-    position.value.getTickUpper(),
     new GlobalFeeGrowth()
   );
 
@@ -551,7 +547,7 @@ export function handleBlock(block: ethereum.Block): void {
   if (!protocol) return; // before initialization
 
   const totalSupply = protocol.meta[0].toI32();
-  const init = protocol.meta[1].toI32();
+  const init = protocol._batchIterator.toI32();
   const snapshotBatch = dataSource.context().getI32("snapshotBatch");
 
   const pm = UniswapV3PositionManager.bind(dataSource.address());
@@ -588,8 +584,6 @@ export function handleBlock(block: ethereum.Block): void {
         onChainP.value,
         poolContract,
         slot0.getTick(),
-        onChainP.value.getTickLower(),
-        onChainP.value.getTickUpper(),
         feeGrowthMaps
       );
     }
@@ -614,15 +608,15 @@ export function handleBlock(block: ethereum.Block): void {
     );
   }
 
-  protocol.meta = [protocol.meta[0], Bytes.fromI32((init + 1) % snapshotBatch)];
+  protocol._batchIterator = BigInt.fromI32((init + 1) % snapshotBatch);
   protocol.save();
 }
 
 export function handleOnce(block: ethereum.Block): void {
-  getOrCreateProtocol();
+  getOrCreateProtocol(block);
 }
 
-export function getOrCreateProtocol(): Protocol {
+export function getOrCreateProtocol(block: ethereum.Block): Protocol {
   let protocol = getProtocol(PANCAKESWAP_V3_PROTOCOL);
   if (protocol) return protocol;
 
@@ -630,12 +624,14 @@ export function getOrCreateProtocol(): Protocol {
   protocol = new Protocol(protocolId);
   protocol.name = PANCAKESWAP_V3_PROTOCOL;
   protocol.chain = dataSource.network();
+  protocol.blockNumber = block.number;
+  protocol._batchIterator = BigInt.fromI32(1);
 
   const totalSupply = UniswapV3PositionManager.bind(
     getContextAddress("positionManager")
   ).totalSupply();
 
-  protocol.meta = [Bytes.fromI32(totalSupply.toI32()), Bytes.fromI32(1)];
+  protocol.meta = [Bytes.fromI32(totalSupply.toI32())];
   protocol.save();
 
   return protocol;

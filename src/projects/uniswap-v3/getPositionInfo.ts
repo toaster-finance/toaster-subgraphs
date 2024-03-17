@@ -1,6 +1,6 @@
 import { Address, ethereum } from "@graphprotocol/graph-ts";
 import { LogData, filterAndDecodeLogs } from "../../common/filterEventLogs";
-import { bytes2Int, str2Int } from "../../common/helpers/bigintHelper";
+import { bytes2Int } from "../../common/helpers/bigintHelper";
 
 export class PositionInfo {
   constructor(readonly tl: i32, readonly tu: i32, readonly pool: Address) {}
