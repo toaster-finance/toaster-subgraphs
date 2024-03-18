@@ -32,7 +32,7 @@ export function getProtocol(protocolName: string): Protocol | null {
   return Protocol.load(protocolId);
 }
 
-export abstract class BaseInvestment {
+export abstract class InvestmentHelper {
   id: Bytes;
   constructor(
     readonly protocolName: string,

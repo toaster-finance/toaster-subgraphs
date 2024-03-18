@@ -6,7 +6,7 @@ import {
   ethereum,
 } from "@graphprotocol/graph-ts";
 import {
-  BaseInvestment,
+  InvestmentHelper,
   InvestmentInfo,
   getInvestmentId,
 } from "../../common/helpers/investmentHelper";
@@ -28,7 +28,7 @@ import { hash2Address } from "../../common/helpers/hashHelper";
 
 export const SYNCSWAP_PROTOCOL = "SyncSwap";
 
-export class SyncSwapInvestment extends BaseInvestment {
+export class SyncSwapInvestment extends InvestmentHelper {
   constructor(investmentAddress: Address) {
     super(SYNCSWAP_PROTOCOL, investmentAddress);
   }

@@ -3,12 +3,12 @@ import { PositionChange } from "../../generated/schema";
 import { PositionChangeAction, getAction } from "./PositionChangeAction.enum";
 import { savePositionSnapshot } from "./savePositionSnapshot";
 import { PositionParams } from "./helpers/positionHelper";
-import { BaseInvestment } from "./helpers/investmentHelper";
+import { InvestmentHelper } from "./helpers/investmentHelper";
 
 export function savePositionChange(
   event: ethereum.Event,
   action: PositionChangeAction,
-  investment: BaseInvestment,
+  investment: InvestmentHelper,
   p: PositionParams,
   dInputs: BigInt[],
   dRewards: BigInt[]

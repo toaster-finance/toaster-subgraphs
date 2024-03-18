@@ -1,5 +1,5 @@
 import { BigInt } from "@graphprotocol/graph-ts";
-import { str2Uint } from "../../common/helpers/bigintHelper";
+import { str2Uint } from "../../../common/helpers/bigintHelper";
 
 const MaxUint256 = str2Uint(
   "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"

@@ -1,12 +1,13 @@
 import {
   Address,
   BigInt,
+  ByteArray,
   Bytes,
   dataSource,
   ethereum,
 } from "@graphprotocol/graph-ts";
 import {
-  BaseInvestment,
+  InvestmentHelper,
   InvestmentInfo,
   getProtocol,
   getProtocolId,
@@ -27,7 +28,7 @@ import {
   PositionInfo,
   getLog,
   getPositionInfo,
-} from "../uniswap-v3/getPositionInfo";
+} from "../uniswap-v3/utils/getPositionInfo";
 import { LogData, filterAndDecodeLogs } from "../../common/filterEventLogs";
 import { str2Uint } from "../../common/helpers/bigintHelper";
 import { hash2Address } from "../../common/helpers/hashHelper";
@@ -35,7 +36,7 @@ import {
   GlobalFeeGrowth,
   feesOf,
   principalOf,
-} from "../uniswap-v3/positionAmount";
+} from "../uniswap-v3/utils/positionAmount";
 import { PositionType } from "../../common/PositionType.enum";
 import { PositionParams } from "../../common/helpers/positionHelper";
 import { savePositionChange } from "../../common/savePositionChange";
@@ -59,7 +60,7 @@ function findNft(tokenId: BigInt): Position | null {
   return Position.load(positionId);
 }
 
-class PancakeSwapV3Investment extends BaseInvestment {
+class PancakeSwapV3Investment extends InvestmentHelper {
   constructor(readonly investmentAddress: Address) {
     super(PANCAKESWAP_V3_PROTOCOL, investmentAddress);
   }
@@ -82,10 +83,15 @@ class PancakeSwapV3Investment extends BaseInvestment {
     const CAKE = Address.fromBytes(
       Bytes.fromHexString(dataSource.context().getString("CAKE"))
     );
+    const slot0 = pool.slot0();
     return new InvestmentInfo(
       [token0, token1],
       [token0, token1, CAKE],
-      [Bytes.fromI32(pool.fee())]
+      [
+        Bytes.fromI32(pool.fee()),
+        Bytes.fromI32(slot0.getTick()),
+        Bytes.fromByteArray(ByteArray.fromBigInt(slot0.getSqrtPriceX96())),
+      ]
     );
   }
 }
@@ -135,7 +141,7 @@ export function handleIncreaseLiquidity(event: IncreaseLiquidity): void {
   );
 
   const info = getPositionInfo(mintLog);
-  const investment = new PancakeSwapV3Investment(info.pool);
+  const helper = new PancakeSwapV3Investment(info.pool);
 
   let liquidity: BigInt;
   let principals: BigInt[];
@@ -160,7 +166,7 @@ export function handleIncreaseLiquidity(event: IncreaseLiquidity): void {
   }
   // Added liquidity to an existing position
   else {
-    const dbPosition = investment.findNftPosition(event.params.tokenId);
+    const dbPosition = helper.findNftPosition(event.params.tokenId);
     const pm = UniswapV3PositionManager.bind(dataSource.address());
 
     if (dbPosition) {
@@ -179,22 +185,16 @@ export function handleIncreaseLiquidity(event: IncreaseLiquidity): void {
 
     const poolContract = UniswapV3Pool.bind(info.pool);
     const position = pm.positions(event.params.tokenId);
-    const slot0 = poolContract.slot0();
+
+    const investment = Investment.load(helper.id);
+    if (investment == null) throw new Error("Investment not found");
+    const tick = investment.meta[1].toI32();
+    const sqrtPriceX96 = str2Uint(investment.meta[2].toHexString());
 
     liquidity = position.getLiquidity();
-    principals = principalOf(
-      info.tl,
-      info.tu,
-      liquidity,
-      slot0.getSqrtPriceX96()
-    );
+    principals = principalOf(info.tl, info.tu, liquidity, sqrtPriceX96);
 
-    rewards = feesOf(
-      position,
-      poolContract,
-      slot0.getTick(),
-      new GlobalFeeGrowth()
-    );
+    rewards = feesOf(position, poolContract, tick, new GlobalFeeGrowth());
 
     const pendingCake = masterChef().pendingCake(event.params.tokenId);
     rewards.push(pendingCake);
@@ -203,7 +203,7 @@ export function handleIncreaseLiquidity(event: IncreaseLiquidity): void {
   savePositionChange(
     event,
     PositionChangeAction.Deposit,
-    investment,
+    helper,
     new PositionParams(
       owner, // owner
       tag, // tag
@@ -229,12 +229,12 @@ export function handleHarvest(event: Harvest): void {
   if (!i) throw new Error("handleHarvest: Investment not found");
 
   const pool = Address.fromBytes(i.address);
-  const investment = new PancakeSwapV3Investment(pool);
+  const helper = new PancakeSwapV3Investment(pool);
   const reward = event.params.reward;
   savePositionChange(
     event,
     PositionChangeAction.Harvest,
-    investment,
+    helper,
     new PositionParams(
       Address.fromBytes(dbPosition.owner),
       dbPosition.tag,
@@ -272,7 +272,7 @@ export function handleCollect(event: Collect): void {
     }
   );
 
-  let investment: PancakeSwapV3Investment;
+  let helper: PancakeSwapV3Investment;
   let owner: Address;
   let liquidity: BigInt;
   let info: PositionInfo;
@@ -298,8 +298,8 @@ export function handleCollect(event: Collect): void {
     if (!collectLog) throw new Error("Collect log not found");
 
     info = getPositionInfo(collectLog);
-    investment = new PancakeSwapV3Investment(info.pool);
-    const dbPosition = investment.findNftPosition(event.params.tokenId);
+    helper = new PancakeSwapV3Investment(info.pool);
+    const dbPosition = helper.findNftPosition(event.params.tokenId);
 
     if (dbPosition) {
       liquidity = dbPosition.liquidity;
@@ -317,12 +317,11 @@ export function handleCollect(event: Collect): void {
       }
     }
 
-    currPrincipals = principalOf(
-      info.tl,
-      info.tu,
-      liquidity,
-      UniswapV3Pool.bind(info.pool).slot0().getSqrtPriceX96()
-    );
+    const investment = Investment.load(helper.id);
+    if (investment == null) throw new Error("Investment not found");
+    const sqrtPriceX96 = str2Uint(investment.meta[2].toHexString());
+
+    currPrincipals = principalOf(info.tl, info.tu, liquidity, sqrtPriceX96);
     currRewards = [BigInt.zero(), BigInt.zero(), BigInt.zero()];
     dInputs = [BigInt.zero(), BigInt.zero()];
     dRewards = [
@@ -350,8 +349,8 @@ export function handleCollect(event: Collect): void {
 
     action = PositionChangeAction.Withdraw;
     info = getPositionInfo(burnLog);
-    investment = new PancakeSwapV3Investment(info.pool);
-    const dbPosition = investment.findNftPosition(event.params.tokenId);
+    helper = new PancakeSwapV3Investment(info.pool);
+    const dbPosition = helper.findNftPosition(event.params.tokenId);
 
     let pendingCake = BigInt.zero();
     if (dbPosition) {
@@ -374,13 +373,12 @@ export function handleCollect(event: Collect): void {
       pendingCake = masterChef().pendingCake(event.params.tokenId);
     }
 
+    const investment = Investment.load(helper.id);
+    if (investment == null) throw new Error("Investment not found");
+    const sqrtPriceX96 = str2Uint(investment.meta[2].toHexString());
+
     currPrincipals = liquidity.gt(BigInt.zero())
-      ? principalOf(
-          info.tl,
-          info.tu,
-          liquidity,
-          UniswapV3Pool.bind(info.pool).slot0().getSqrtPriceX96()
-        )
+      ? principalOf(info.tl, info.tu, liquidity, sqrtPriceX96)
       : [BigInt.zero(), BigInt.zero()];
     currRewards = [BigInt.zero(), BigInt.zero(), pendingCake];
 
@@ -398,7 +396,7 @@ export function handleCollect(event: Collect): void {
   savePositionChange(
     event,
     action,
-    investment,
+    helper,
     new PositionParams(
       owner, // owner
       tag, // tag
@@ -449,20 +447,24 @@ export function handleTransfer(event: Transfer): void {
     position.value.getToken1(),
     position.value.getFee()
   );
-  const investment = new PancakeSwapV3Investment(pool);
+  const helper = new PancakeSwapV3Investment(pool);
   const poolContract = UniswapV3Pool.bind(pool);
-  const slot0 = poolContract.slot0();
+
+  const investment = Investment.load(helper.id);
+  if (investment == null) throw new Error("Investment not found");
+  const tick = investment.meta[1].toI32();
+  const sqrtPriceX96 = str2Uint(investment.meta[2].toHexString());
 
   const principals = principalOf(
     position.value.getTickLower(),
     position.value.getTickUpper(),
     position.value.getLiquidity(),
-    slot0.getSqrtPriceX96()
+    sqrtPriceX96
   );
   const fees = feesOf(
     position.value,
     poolContract,
-    slot0.getTick(),
+    tick,
     new GlobalFeeGrowth()
   );
 
@@ -478,7 +480,7 @@ export function handleTransfer(event: Transfer): void {
   savePositionChange(
     event,
     PositionChangeAction.Send,
-    investment,
+    helper,
     new PositionParams(
       event.params.from, // owner
       event.params.tokenId.toString(), // tag
@@ -494,7 +496,7 @@ export function handleTransfer(event: Transfer): void {
   savePositionChange(
     event,
     PositionChangeAction.Receive,
-    investment,
+    helper,
     new PositionParams(
       event.params.to, // owner
       event.params.tokenId.toString(), // tag
@@ -520,11 +522,11 @@ function stakeOrUnstake(
   if (!i) throw new Error("stakeOrUnstake: Investment not found");
 
   const pool = Address.fromBytes(i.address);
-  const investment = new PancakeSwapV3Investment(pool);
+  const helper = new PancakeSwapV3Investment(pool);
   savePositionChange(
     event,
     isStake ? PositionChangeAction.Stake : PositionChangeAction.Unstake,
-    investment,
+    helper,
     new PositionParams(
       Address.fromBytes(position.owner), // owner
       position.tag, // tag
@@ -563,10 +565,13 @@ export function handleBlock(block: ethereum.Block): void {
     const onChainP = pm.try_positions(BigInt.fromString(position.tag));
     if (onChainP.reverted) continue;
 
+    if (investment == null) throw new Error("Investment not found");
+    const tick = investment.meta[1].toI32();
+    const sqrtPriceX96 = str2Uint(investment.meta[2].toHexString());
+
     const poolContract = UniswapV3Pool.bind(
       Address.fromBytes(investment.address)
     );
-    const slot0 = poolContract.slot0();
 
     let principals: BigInt[];
     let rewards: BigInt[];
@@ -578,14 +583,9 @@ export function handleBlock(block: ethereum.Block): void {
         onChainP.value.getTickLower(),
         onChainP.value.getTickUpper(),
         onChainP.value.getLiquidity(),
-        slot0.getSqrtPriceX96()
+        sqrtPriceX96
       );
-      rewards = feesOf(
-        onChainP.value,
-        poolContract,
-        slot0.getTick(),
-        feeGrowthMaps
-      );
+      rewards = feesOf(onChainP.value, poolContract, tick, feeGrowthMaps);
     }
 
     const pendingCake = isStaked(position)

@@ -1,7 +1,7 @@
 import { Address, BigInt } from "@graphprotocol/graph-ts";
 import { getAmountsForLiquidity } from "./liquidityAmount";
-import { UniswapV3Pool } from "../../../generated/UniswapV3/UniswapV3Pool";
-import { UniswapV3PositionManager__positionsResult } from "../../../generated/UniswapV3/UniswapV3PositionManager";
+import { UniswapV3Pool } from "../../../../generated/UniswapV3/UniswapV3Pool";
+import { UniswapV3PositionManager__positionsResult } from "../../../../generated/UniswapV3/UniswapV3PositionManager";
 import { getSqrtRatioAtTick } from "./tickMath";
 
 export function principalOf(

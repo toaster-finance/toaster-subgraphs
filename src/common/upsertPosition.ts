@@ -3,11 +3,11 @@ import { Holder, Position } from "../../generated/schema";
 import { getHolderId } from "./helpers/holderHelper";
 import { getPosType } from "./PositionType.enum";
 import { PositionParams } from "./helpers/positionHelper";
-import { BaseInvestment } from "./helpers/investmentHelper";
+import { InvestmentHelper } from "./helpers/investmentHelper";
 
 export function upsertPosition(
   block: ethereum.Block,
-  invest: BaseInvestment,
+  invest: InvestmentHelper,
   p: PositionParams
 ): Position {
   const investment = invest.getOrCreateInvestment(block);
