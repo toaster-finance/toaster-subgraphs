@@ -3,11 +3,6 @@ indexerHints:
   prune: auto
 schema:
   file: ./schema.graphql
-# features:
-#   - grafting
-# graft:
-#   base: QmX7FKjTzbpnmf8fm8DawpSxWMJqdWECUszWtxk18bMchU
-#   block: 425000
 dataSources:
   - kind: ethereum
     name: UniswapV3
@@ -90,23 +85,3 @@ dataSources:
         - event: PoolCreated(indexed address,indexed address,indexed uint24,int24,address)
           handler: handlePoolCreated
       file: ./src/projects/uniswap-v3/factory.ts
-
-templates:
-  - kind: ethereum/contract
-    name: UniswapV3Pool
-    network: {{network}}
-    source:
-      abi: UniswapV3Pool
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.7
-      language: wasm/assemblyscript
-      file: ./src/projects/uniswap-v3/pool.ts
-      entities:
-        - Swap
-      abis:
-        - name: UniswapV3Pool
-          file: ./abis/UniswapV3/UniswapV3Pool.json
-      eventHandlers:
-        - event: Swap(indexed address,indexed address,int256,int256,uint160,uint128,int24)
-          handler: handleSwap

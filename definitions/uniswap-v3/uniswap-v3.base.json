@@ -2,7 +2,7 @@
   "network": "base",
   "positionManager": "0x03a520b32C04BF3bEEf7BEb72E919cf822Ed34f1",
   "factory": "0x33128a8fC17869897dcE68Ed026d694621f6FDfD",
-  "snapshotBatch": 3600,
-  "polling": 6,
+  "snapshotBatch": 6,
+  "polling": 3600,
   "startBlock": 2284118
 }

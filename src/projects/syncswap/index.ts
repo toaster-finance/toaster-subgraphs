@@ -1,10 +1,4 @@
-import {
-  Address,
-  BigInt,
-  Bytes,
-  dataSource,
-  ethereum,
-} from "@graphprotocol/graph-ts";
+import { Address, BigInt, dataSource, ethereum } from "@graphprotocol/graph-ts";
 import {
   InvestmentHelper,
   InvestmentInfo,
@@ -34,11 +28,7 @@ export class SyncSwapInvestment extends InvestmentHelper {
   }
   getInfo(investmentAddress: Address): InvestmentInfo {
     const pool = SyncSwapPool.bind(investmentAddress);
-    return new InvestmentInfo(
-      [pool.token0(), pool.token1()],
-      [],
-      [Bytes.fromI32(1)]
-    );
+    return new InvestmentInfo([pool.token0(), pool.token1()], [], ["1"]);
   }
 }
 
@@ -67,7 +57,7 @@ export function handleBlock(block: ethereum.Block): void {
   if (!investment) throw new Error("handleBlock: Investment not found");
   const reserves = pool.getReserves();
   const totalSupply = pool.totalSupply();
-  const init = investment.meta[0].toI32();
+  const init = i32(parseInt(investment.meta[0]));
   const batch = dataSource.context().getI32("snapshotBatch");
 
   const positions = investment.positions.load();
@@ -90,7 +80,7 @@ export function handleBlock(block: ethereum.Block): void {
     );
   }
 
-  investment.meta[0] = Bytes.fromI32((init + 1) % batch);
+  investment.meta[0] = ((init + 1) % batch).toString();
   investment.save();
 }
 

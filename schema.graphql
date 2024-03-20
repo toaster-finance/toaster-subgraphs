@@ -54,7 +54,7 @@ type Investment @entity {
   address: Bytes!
   inputTokens: [Bytes!]!
   rewardTokens: [Bytes!]!
-  meta: [Bytes!]!
+  meta: [String!]!
   blockNumber: BigInt!
   blockTimestamp: BigInt!
 

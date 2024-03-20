@@ -4,8 +4,6 @@ import {
   Address,
   Bytes,
   ethereum,
-  ByteArray,
-  log,
 } from "@graphprotocol/graph-ts";
 import {
   UniswapV3PositionManager,
@@ -25,11 +23,11 @@ import {
 import { UniswapV3Pool } from "../../../generated/UniswapV3/UniswapV3Pool";
 import { PositionParams } from "../../common/helpers/positionHelper";
 import { LogData, filterAndDecodeLogs } from "../../common/filterEventLogs";
-import { GlobalFeeGrowth, feesOf, principalOf } from "./utils/positionAmount";
+import { feesOf, principalOf } from "./utils/positionAmount";
 import { PositionInfo, getLog, getPositionInfo } from "./utils/getPositionInfo";
 import { UniswapV3Factory } from "../../../generated/UniswapV3/UniswapV3Factory";
 import { savePositionSnapshot } from "../../common/savePositionSnapshot";
-import { str2Uint } from "../../common/helpers/bigintHelper";
+import { hex2Uint } from "../../common/helpers/bigintHelper";
 import { hash2Address } from "../../common/helpers/hashHelper";
 import { Investment, Position, Protocol } from "../../../generated/schema";
 import { getContextAddress } from "../../common/helpers/contextHelper";
@@ -69,16 +67,11 @@ class UniswapV3Helper extends InvestmentHelper {
     const pool = UniswapV3Pool.bind(investmentAddress);
     const token0 = pool.token0();
     const token1 = pool.token1();
-    const slot0 = pool.slot0();
+
     return new InvestmentInfo(
       [token0, token1],
       [token0, token1],
-      // fee, tick, getSqrtPriceX96
-      [
-        Bytes.fromI32(pool.fee()),
-        Bytes.fromI32(slot0.getTick()),
-        Bytes.fromByteArray(ByteArray.fromBigInt(slot0.getSqrtPriceX96())),
-      ]
+      [pool.fee().toString()]
     );
   }
 }
@@ -113,7 +106,7 @@ export function handleIncreaseLiquidity(event: IncreaseLiquidity): void {
     function (log: LogData, event: IncreaseLiquidity): boolean {
       return (
         log.address.equals(dataSource.address()) &&
-        str2Uint(log.topics[3].toHexString()).equals(event.params.tokenId) &&
+        hex2Uint(log.topics[3].toHexString()).equals(event.params.tokenId) &&
         hash2Address(log.topics[1]).equals(Address.zero())
       );
     }
@@ -172,19 +165,15 @@ export function handleIncreaseLiquidity(event: IncreaseLiquidity): void {
       }
     } else {
       liquidity = position.value.getLiquidity();
-
-      const investment = Investment.load(helper.id);
-      if (investment == null) throw new Error("Investment not found");
-      const tick = investment.meta[1].toI32();
-      const sqrtPriceX96 = str2Uint(investment.meta[2].toHexString());
+      const slot0 = poolContract.slot0();
 
       principals = principalOf(
         position.value.getTickLower(),
         position.value.getTickUpper(),
         liquidity,
-        sqrtPriceX96
+        slot0.getSqrtPriceX96()
       );
-      fees = feesOf(position.value, poolContract, tick, new GlobalFeeGrowth());
+      fees = feesOf(position.value, poolContract, slot0.getTick());
     }
   }
 
@@ -222,7 +211,7 @@ export function handleCollect(event: Collect): void {
     DECREASE_LIQUIDITY_TOPIC,
     "(uint128,uint256,uint256)",
     function (log: LogData, event: Collect): boolean {
-      return str2Uint(log.topics[1].toHexString()).equals(event.params.tokenId);
+      return hex2Uint(log.topics[1].toHexString()).equals(event.params.tokenId);
     }
   );
 
@@ -263,12 +252,13 @@ export function handleCollect(event: Collect): void {
       owner = pm.ownerOf(event.params.tokenId);
     }
 
-    const investment = Investment.load(helper.id);
-    if (investment == null) throw new Error("Investment not found");
-    log.info("investment meta length: {}", [investment.meta.length.toString()]);
-    const sqrtPriceX96 = str2Uint(investment.meta[2].toHexString());
-
-    currPrincipals = principalOf(info.tl, info.tu, liquidity, sqrtPriceX96);
+    const poolContract = UniswapV3Pool.bind(info.pool);
+    currPrincipals = principalOf(
+      info.tl,
+      info.tu,
+      liquidity,
+      poolContract.slot0().getSqrtPriceX96()
+    );
     currFees = [BigInt.zero(), BigInt.zero()];
     dInputs = [BigInt.zero(), BigInt.zero()];
     dRewards = [event.params.amount0.neg(), event.params.amount1.neg()];
@@ -293,10 +283,7 @@ export function handleCollect(event: Collect): void {
     action = PositionChangeAction.Withdraw;
     info = getPositionInfo(burnLog);
     helper = new UniswapV3Helper(info.pool);
-
-    const investment = Investment.load(helper.id);
-    if (investment == null) throw new Error("Investment not found");
-    const sqrtPriceX96 = str2Uint(investment.meta[2].toHexString());
+    const poolContract = UniswapV3Pool.bind(info.pool);
 
     const dbPosition = helper.findNftPosition(event.params.tokenId);
 
@@ -310,7 +297,12 @@ export function handleCollect(event: Collect): void {
     }
 
     currPrincipals = liquidity.gt(BigInt.zero())
-      ? principalOf(info.tl, info.tu, liquidity, sqrtPriceX96)
+      ? principalOf(
+          info.tl,
+          info.tu,
+          liquidity,
+          poolContract.slot0().getSqrtPriceX96()
+        )
       : [BigInt.zero(), BigInt.zero()];
     currFees = [BigInt.zero(), BigInt.zero()];
 
@@ -364,24 +356,15 @@ export function handleTransfer(event: Transfer): void {
   );
 
   const helper = new UniswapV3Helper(pool);
-  const investment = Investment.load(helper.id);
-  if (investment == null) throw new Error("Investment not found");
-  const tick = investment.meta[1].toI32();
-  const sqrtPriceX96 = str2Uint(investment.meta[2].toHexString());
-
   const poolContract = UniswapV3Pool.bind(pool);
+  const slot0 = poolContract.slot0();
   const principals = principalOf(
     position.value.getTickLower(),
     position.value.getTickUpper(),
     position.value.getLiquidity(),
-    sqrtPriceX96
+    slot0.getSqrtPriceX96()
   );
-  const fees = feesOf(
-    position.value,
-    poolContract,
-    tick,
-    new GlobalFeeGrowth()
-  );
+  const fees = feesOf(position.value, poolContract, slot0.getTick());
 
   const positionMeta = [
     Bytes.fromI32(position.value.getTickLower()),
@@ -426,6 +409,9 @@ export function handleTransfer(event: Transfer): void {
 ////////// Position Snapshots /////////////
 ///////////////////////////////////////////
 export function handleBlock(block: ethereum.Block): void {
+  const Sep012023 = BigInt.fromString("1693526400");
+  if (block.timestamp.lt(Sep012023)) return;
+
   const protocol = getProtocol(UNISWAP_V3_PROTOCOL);
   if (!protocol) return; // before initialized
 
@@ -434,52 +420,49 @@ export function handleBlock(block: ethereum.Block): void {
   const snapshotBatch = dataSource.context().getI32("snapshotBatch");
 
   const pm = UniswapV3PositionManager.bind(dataSource.address());
-  const feeGrowthMaps = new GlobalFeeGrowth();
+  // const feeGrowthMaps = new GlobalFeeGrowth();
 
   for (let tokenId = init; tokenId < totalSupply; tokenId += snapshotBatch) {
-    const position = findNft(BigInt.fromI32(tokenId));
-    if (position == null || position.closed) continue;
+    const dbPosition = findNft(BigInt.fromI32(tokenId));
+    if (dbPosition == null || dbPosition.closed) continue;
 
-    const investment = Investment.load(position.investment);
+    const investment = Investment.load(dbPosition.investment);
     if (investment == null) continue;
 
-    const onChainP = pm.try_positions(BigInt.fromString(position.tag));
-    if (onChainP.reverted) continue;
+    const position = pm.try_positions(BigInt.fromString(dbPosition.tag));
+    if (position.reverted) continue;
 
     const poolContract = UniswapV3Pool.bind(
       Address.fromBytes(investment.address)
     );
 
-    const tick = investment.meta[1].toI32();
-    const sqrtPriceX96 = str2Uint(investment.meta[2].toHexString());
-
     let principals: BigInt[];
     let fees: BigInt[];
-    if (onChainP.value.getLiquidity().equals(BigInt.zero())) {
+    if (position.value.getLiquidity().equals(BigInt.zero())) {
       principals = [BigInt.zero(), BigInt.zero()];
       fees = [BigInt.zero(), BigInt.zero()];
     } else {
+      const slot0 = poolContract.slot0();
       principals = principalOf(
-        onChainP.value.getTickLower(),
-        onChainP.value.getTickUpper(),
-        onChainP.value.getLiquidity(),
-        sqrtPriceX96
+        position.value.getTickLower(),
+        position.value.getTickUpper(),
+        position.value.getLiquidity(),
+        slot0.getSqrtPriceX96()
       );
-
-      fees = feesOf(onChainP.value, poolContract, tick, feeGrowthMaps);
+      fees = feesOf(position.value, poolContract, slot0.getTick());
     }
 
     savePositionSnapshot(
       block,
       new UniswapV3Helper(poolContract._address),
       new PositionParams(
-        Address.fromBytes(position.owner),
-        position.tag,
+        Address.fromBytes(dbPosition.owner),
+        dbPosition.tag,
         PositionType.Invest,
         principals,
         fees,
-        onChainP.value.getLiquidity(),
-        position.meta
+        position.value.getLiquidity(),
+        dbPosition.meta
       )
     );
   }

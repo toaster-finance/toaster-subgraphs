@@ -1,12 +1,12 @@
 import { BigInt } from "@graphprotocol/graph-ts";
-import { str2Uint } from "../../../common/helpers/bigintHelper";
+import { hex2Uint } from "../../../common/helpers/bigintHelper";
 
-const MaxUint256 = str2Uint(
+const MaxUint256 = hex2Uint(
   "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
 );
 
 function mulDivQ128(x: BigInt, y: string): BigInt {
-  return x.times(str2Uint(y)).rightShift(128);
+  return x.times(hex2Uint(y)).rightShift(128);
 }
 function checkBit(tick: BigInt, bit: i32): boolean {
   return tick.bitAnd(BigInt.fromI32(bit)).notEqual(BigInt.zero());
@@ -16,7 +16,7 @@ export function getSqrtRatioAtTick(tick: i32): BigInt {
   const absTick = tick < 0 ? BigInt.fromI32(tick).neg() : BigInt.fromI32(tick);
 
   let ratio = checkBit(absTick, 0x1)
-    ? str2Uint("0xfffcb933bd6fad37aa2d162d1a594001")
+    ? hex2Uint("0xfffcb933bd6fad37aa2d162d1a594001")
     : BigInt.fromI32(1).leftShift(128);
 
   if (checkBit(absTick, 0x2))

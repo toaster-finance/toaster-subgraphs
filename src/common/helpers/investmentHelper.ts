@@ -5,7 +5,7 @@ export class InvestmentInfo {
   constructor(
     readonly inputTokens: Address[],
     readonly rewardTokens: Address[],
-    readonly meta: Bytes[] = []
+    readonly meta: string[] = []
   ) {}
 }
 
