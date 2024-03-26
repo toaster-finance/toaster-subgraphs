@@ -26,6 +26,9 @@ export class SyncSwapInvestment extends InvestmentHelper {
   constructor(investmentAddress: Address) {
     super(SYNCSWAP_PROTOCOL, investmentAddress);
   }
+  getProtocolMeta(): string[] {
+    return [];
+  }
   getInfo(investmentAddress: Address): InvestmentInfo {
     const pool = SyncSwapPool.bind(investmentAddress);
     return new InvestmentInfo([pool.token0(), pool.token1()], [], ["1"]);
@@ -49,6 +52,9 @@ function lp2Amounts(
 ///////////////////////////////////////////
 
 export function handleBlock(block: ethereum.Block): void {
+  const Sep012023 = BigInt.fromString("1693526400");
+  if (block.timestamp.lt(Sep012023)) return;
+
   const pool = SyncSwapPool.bind(dataSource.address());
   const investment = Investment.load(
     getInvestmentId(SYNCSWAP_PROTOCOL, pool._address)

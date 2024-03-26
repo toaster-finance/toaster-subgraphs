@@ -5,7 +5,7 @@ type Position @entity {
   type: PositionType!
   initAmounts: [BigInt!]! # [...inputAmounts, ...rewardAmounts] : initiated when first generated or re-generated
   amounts: [BigInt!]! # [...inputAmounts, ...rewardAmounts] : current amounts
-  meta: [Bytes!]! # [meta1, meta2, ...] : additional information
+  meta: [String!]! # [meta1, meta2, ...] : additional information
   liquidity: BigInt! # UniswapV3 -> liquidity, SyncSwap -> balanceOf, ... if none, 0
   closed: Boolean
   # relations
@@ -42,8 +42,7 @@ type Protocol @entity {
   chain: String!
   name: String!
   blockNumber: BigInt!
-  meta: [Bytes!]!
-
+  meta: [String!]!
   _batchIterator: BigInt!
   # relationships
   investments: [Investment!]! @derivedFrom(field: "protocol")

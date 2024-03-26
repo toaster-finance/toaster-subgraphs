@@ -1,0 +1,27 @@
+specVersion: 1.0.0
+indexerHints:
+  prune: auto
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: Ambient
+    network: {{network}}
+    source:
+      address: "{{Dex}}"
+      abi: AmbientDex
+      startBlock: {{startBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - CrocWarmCmd
+      abis:
+        - name: AmbientDex
+          file: ./abis/Ambient/AmbientDex.json
+      eventHandlers:
+        - event: CrocWarmCmd(bytes,int128,int128)
+          handler: handleUserCmd
+      file: ./src/projects/ambient/index.ts
+  

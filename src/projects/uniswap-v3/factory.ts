@@ -1,13 +1,16 @@
-import { UNISWAP_V3_PROTOCOL, getOrCreateProtocol } from ".";
+import { UNISWAP_V3_PROTOCOL } from ".";
 import { PoolCreated } from "../../../generated/UniswapV3/UniswapV3Factory";
 import { Investment } from "../../../generated/schema";
 import { getInvestmentId } from "../../common/helpers/investmentHelper";
 import { UniswapV3Pool as UniswapV3PoolContract } from "../../../generated/UniswapV3/UniswapV3Pool";
+import { UniswapV3Helper } from "./helper";
 
 export function handlePoolCreated(event: PoolCreated): void {
+  const helper = new UniswapV3Helper(event.params.pool);
+  const protocol = helper.getProtocol(event.block);
+
   const investmentId = getInvestmentId(UNISWAP_V3_PROTOCOL, event.params.pool);
   const i = new Investment(investmentId);
-  const protocol = getOrCreateProtocol(event.block);
 
   i.protocol = protocol.id;
   i.address = event.params.pool;

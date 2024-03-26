@@ -1,6 +1,7 @@
-import { Address, Bytes, ethereum } from "@graphprotocol/graph-ts";
+import { Address, BigInt, Bytes, ethereum } from "@graphprotocol/graph-ts";
 export class LogData {
   constructor(
+    readonly index: BigInt,
     readonly address: Address,
     readonly topics: Bytes[],
     readonly data: ethereum.Tuple
@@ -37,6 +38,7 @@ export function filterAndDecodeLogs(
     const decoded = ethereum.decode(abi, log.data);
     logData.push(
       new LogData(
+        log.logIndex,
         log.address,
         log.topics,
         decoded == null ? new ethereum.Tuple(0) : decoded.toTuple()

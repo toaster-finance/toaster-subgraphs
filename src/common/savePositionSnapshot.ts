@@ -13,7 +13,7 @@ export function savePositionSnapshot(
   const snapshot = new PositionSnapshot(
     position.id
       .concat(Bytes.fromUTF8(":"))
-      .concat(Bytes.fromByteArray(Bytes.fromBigInt(block.number)))
+      .concat(Bytes.fromHexString(block.number.toHexString()))
   );
   snapshot.position = position.id;
   snapshot.amounts = p.inputAmounts.concat(p.rewardAmounts);

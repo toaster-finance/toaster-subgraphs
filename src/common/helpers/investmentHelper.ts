@@ -1,4 +1,4 @@
-import { Address, Bytes, dataSource, ethereum } from "@graphprotocol/graph-ts";
+import { Address, BigInt, Bytes, dataSource, ethereum } from "@graphprotocol/graph-ts";
 import { Investment, Position, Protocol } from "../../../generated/schema";
 
 export class InvestmentInfo {
@@ -27,11 +27,6 @@ export function getProtocolId(protocolName: string): Bytes {
   return Bytes.fromUTF8(protocolName + ":" + dataSource.network());
 }
 
-export function getProtocol(protocolName: string): Protocol | null {
-  const protocolId = getProtocolId(protocolName);
-  return Protocol.load(protocolId);
-}
-
 export abstract class InvestmentHelper {
   id: Bytes;
   constructor(
@@ -56,12 +51,26 @@ export abstract class InvestmentHelper {
     return Position.load(positionId);
   }
 
+  abstract getProtocolMeta(): string[]
+
+  getProtocol(block: ethereum.Block): Protocol {
+    const protocolId = getProtocolId(this.protocolName);
+    let protocol = Protocol.load(protocolId);
+    if (!protocol) {
+      protocol = new Protocol(protocolId);
+      protocol.name = this.protocolName;
+      protocol.blockNumber = block.number;
+      protocol.chain = dataSource.network();
+      protocol._batchIterator = BigInt.fromI32(0);
+      protocol.meta = this.getProtocolMeta();
+    }
+    return protocol;
+  }
+
   getOrCreateInvestment(block: ethereum.Block): Investment {
     let investment = Investment.load(this.id);
     if (!investment) {
-      const protocol = getProtocol(this.protocolName);
-      if (!protocol) throw new Error("Protocol not found");
-
+      const protocol = this.getProtocol(block);
       const tokens = this.getInfo(this.investmentAddress);
       investment = new Investment(this.id);
       investment.protocol = protocol.id;

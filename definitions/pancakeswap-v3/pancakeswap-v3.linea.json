@@ -4,7 +4,7 @@
   "factory": "0x0BFbCF9fa4f9C56B0F40a671Ad40E0805A091865",
   "masterChef": "0x22E2f236065B780FA33EC8C4E58b99ebc8B55c57",
   "CAKE": "0x0D1E753a25eBda689453309112904807625bEFBe",
-  "snapshotBatch": 3,
-  "polling": 3600,
-  "startBlock": 199983
+  "snapshotBatch": 30,
+  "polling": 360,
+  "startBlock": 2987107
 }

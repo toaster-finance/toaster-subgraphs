@@ -1,4 +1,4 @@
-import { Address, BigInt, Bytes } from "@graphprotocol/graph-ts";
+import { Address, BigInt } from "@graphprotocol/graph-ts";
 import { PositionType } from "../PositionType.enum";
 
 export class PositionParams {
@@ -9,6 +9,6 @@ export class PositionParams {
     readonly inputAmounts: BigInt[],
     readonly rewardAmounts: BigInt[],
     readonly liquidity: BigInt,
-    readonly meta: Bytes[]
+    readonly meta: string[]
   ) {}
 }

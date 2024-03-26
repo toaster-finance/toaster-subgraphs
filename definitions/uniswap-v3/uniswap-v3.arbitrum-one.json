@@ -2,7 +2,7 @@
   "network": "arbitrum-one",
   "positionManager": "0xC36442b4a4522E871399CD717aBDD847Ab11FE88",
   "factory": "0x1F98431c8aD98523631AE4a59f267346ea31F984",
-  "snapshotBatch": 8,
-  "polling": 18000,
-  "startBlock": 173
+  "snapshotBatch": 120,
+  "polling": 1280,
+  "startBlock": 194222336
 }
