@@ -1,22 +1,11 @@
-import {
-  BigInt,
-  DataSourceContext,
-  dataSource,
-  ethereum,
-} from "@graphprotocol/graph-ts";
+import { BigInt, dataSource, ethereum } from "@graphprotocol/graph-ts";
 import { PoolCreated } from "../../../generated/SyncSwapStable/SyncSwapFactory";
-import { SyncSwapPool } from "../../../generated/templates";
-import { SYNCSWAP_PROTOCOL, SyncSwapInvestment } from ".";
 import { getProtocolId } from "../../common/helpers/investmentHelper";
 import { Protocol } from "../../../generated/schema";
+import { SYNCSWAP_PROTOCOL, SyncSwapHelper } from "./helper";
 
 export function handlePoolCreated(event: PoolCreated): void {
-  const context = new DataSourceContext();
-  context.setString("router", dataSource.context().getString("router"));
-  context.setI32("snapshotBatch", dataSource.context().getI32("snapshotBatch"));
-
-  new SyncSwapInvestment(event.params.pool).getOrCreateInvestment(event.block);
-  SyncSwapPool.createWithContext(event.params.pool, context);
+  new SyncSwapHelper(event.params.pool).getOrCreateInvestment(event.block);
 }
 
 export function handleOnce(block: ethereum.Block): void {

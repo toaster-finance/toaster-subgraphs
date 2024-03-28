@@ -1,9 +1,4 @@
-import {
-  dataSource,
-  BigInt,
-  Address,
-  ethereum,
-} from "@graphprotocol/graph-ts";
+import { dataSource, BigInt, Address, ethereum } from "@graphprotocol/graph-ts";
 import {
   UniswapV3PositionManager,
   IncreaseLiquidity,
@@ -15,8 +10,6 @@ import { savePositionChange } from "../../common/savePositionChange";
 import { PositionChangeAction } from "../../common/PositionChangeAction.enum";
 import { PositionType } from "../../common/PositionType.enum";
 import {
-  InvestmentHelper,
-  InvestmentInfo,
   getInvestmentId,
   getProtocolId,
 } from "../../common/helpers/investmentHelper";
@@ -29,7 +22,7 @@ import { UniswapV3Factory } from "../../../generated/UniswapV3/UniswapV3Factory"
 import { savePositionSnapshot } from "../../common/savePositionSnapshot";
 import { hex2Uint } from "../../common/helpers/bigintHelper";
 import { hash2Address } from "../../common/helpers/hashHelper";
-import { Investment, Position, Protocol } from "../../../generated/schema";
+import { Investment, Protocol } from "../../../generated/schema";
 import { getContextAddress } from "../../common/helpers/contextHelper";
 import { UniswapV3Helper } from "./helper";
 
@@ -376,11 +369,9 @@ export function handleTransfer(event: Transfer): void {
 ////////// Position Snapshots /////////////
 ///////////////////////////////////////////
 export function handleBlock(block: ethereum.Block): void {
-  const Sep012023 = BigInt.fromString("1693526400");
-  if (block.timestamp.lt(Sep012023)) return;
-
   const protocol = Protocol.load(getProtocolId(UNISWAP_V3_PROTOCOL));
-  if (!protocol) return; // before initialized
+  // before initialized
+  if (!protocol) return;
 
   const totalSupply = i32(parseInt(protocol.meta[0]));
   const init = protocol._batchIterator.toI32();
@@ -388,7 +379,7 @@ export function handleBlock(block: ethereum.Block): void {
 
   const pm = UniswapV3PositionManager.bind(dataSource.address());
 
-  for (let tokenId = init; tokenId < totalSupply; tokenId += snapshotBatch) {
+  for (let tokenId = init; tokenId <= totalSupply; tokenId += snapshotBatch) {
     const tId = BigInt.fromI32(tokenId);
     let owner: Address;
     let investment: Investment | null;

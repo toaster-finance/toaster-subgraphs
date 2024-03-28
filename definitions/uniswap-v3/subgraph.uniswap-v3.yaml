@@ -49,10 +49,7 @@ dataSources:
         - handler: handleBlock
           filter:
             kind: polling
-            every: {{polling}}
-        - handler: handleOnce
-          filter:
-            kind: once
+            every: {{polling}} # 12 hours
       file: ./src/projects/uniswap-v3/index.ts
   - kind: ethereum
     name: UniswapV3Factory

@@ -79,6 +79,7 @@ templates:
         - Transfer
         - Mint
         - Burn
+        - Sync
       abis:
         - name: SyncSwapPool
           file: ./abis/SyncSwap/SyncSwapPool.json
@@ -90,6 +91,8 @@ templates:
           handler: handleMint
         - event: Burn(indexed address,uint256,uint256,uint256,indexed address)
           handler: handleBurn
+        - event: Sync(uint256,uint256)
+          handler: handleSync
       blockHandlers:
         - handler: handleBlock
           filter:

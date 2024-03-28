@@ -1,17 +1,11 @@
 import { Address, BigInt, dataSource, ethereum } from "@graphprotocol/graph-ts";
 import {
-  InvestmentHelper,
-  InvestmentInfo,
-  getInvestmentId,
-} from "../../common/helpers/investmentHelper";
-import {
   Burn,
   Mint,
+  Sync,
   SyncSwapPool,
-  SyncSwapPool__getReservesResult,
   Transfer,
 } from "../../../generated/templates/SyncSwapPool/SyncSwapPool";
-import { Investment } from "../../../generated/schema";
 import { savePositionSnapshot } from "../../common/savePositionSnapshot";
 import { PositionParams } from "../../common/helpers/positionHelper";
 import { PositionType } from "../../common/PositionType.enum";
@@ -19,31 +13,18 @@ import { savePositionChange } from "../../common/savePositionChange";
 import { PositionChangeAction } from "../../common/PositionChangeAction.enum";
 import { filterLogs, logAt, logFindFirst } from "../../common/filterEventLogs";
 import { hash2Address } from "../../common/helpers/hashHelper";
-
-export const SYNCSWAP_PROTOCOL = "SyncSwap";
-
-export class SyncSwapInvestment extends InvestmentHelper {
-  constructor(investmentAddress: Address) {
-    super(SYNCSWAP_PROTOCOL, investmentAddress);
-  }
-  getProtocolMeta(): string[] {
-    return [];
-  }
-  getInfo(investmentAddress: Address): InvestmentInfo {
-    const pool = SyncSwapPool.bind(investmentAddress);
-    return new InvestmentInfo([pool.token0(), pool.token1()], [], ["1"]);
-  }
-}
+import { SyncSwapHelper } from "./helper";
 
 function lp2Amounts(
-  reserves: SyncSwapPool__getReservesResult,
+  reserve0: BigInt,
+  reserve1: BigInt,
   lpAmount: BigInt,
   totalSupply: BigInt
 ): BigInt[] {
   if (totalSupply.equals(BigInt.zero())) return [BigInt.zero(), BigInt.zero()];
   return [
-    reserves.get_reserve0().times(lpAmount).div(totalSupply),
-    reserves.get_reserve1().times(lpAmount).div(totalSupply),
+    reserve0.times(lpAmount).div(totalSupply),
+    reserve1.times(lpAmount).div(totalSupply),
   ];
 }
 
@@ -52,33 +33,24 @@ function lp2Amounts(
 ///////////////////////////////////////////
 
 export function handleBlock(block: ethereum.Block): void {
-  const Sep012023 = BigInt.fromString("1693526400");
-  if (block.timestamp.lt(Sep012023)) return;
-
   const pool = SyncSwapPool.bind(dataSource.address());
-  const investment = Investment.load(
-    getInvestmentId(SYNCSWAP_PROTOCOL, pool._address)
-  );
+  const l = new SyncSwapHelper(pool._address).getLiquidityInfo(block);
 
-  if (!investment) throw new Error("handleBlock: Investment not found");
-  const reserves = pool.getReserves();
-  const totalSupply = pool.totalSupply();
-  const init = i32(parseInt(investment.meta[0]));
+  const init = i32(parseInt(l.investment.meta[0]));
   const batch = dataSource.context().getI32("snapshotBatch");
-
-  const positions = investment.positions.load();
+  const positions = l.investment.positions.load();
 
   for (let i = init; i < positions.length; i += batch) {
     const position = positions[i];
     if (position.closed) continue;
     savePositionSnapshot(
       block,
-      new SyncSwapInvestment(pool._address),
+      new SyncSwapHelper(pool._address),
       new PositionParams(
         Address.fromBytes(position.owner),
         "",
         PositionType.Invest,
-        lp2Amounts(reserves, position.liquidity, totalSupply),
+        lp2Amounts(l.reserve0, l.reserve1, position.liquidity, l.totalSupply),
         [],
         position.liquidity,
         []
@@ -86,8 +58,8 @@ export function handleBlock(block: ethereum.Block): void {
     );
   }
 
-  investment.meta[0] = ((init + 1) % batch).toString();
-  investment.save();
+  l.investment.meta[0] = ((init + 1) % batch).toString();
+  l.investment.save();
 }
 
 ///////////////////////////////////////////
@@ -108,41 +80,60 @@ export function handleMint(event: Mint): void {
   if (event.params.liquidity.equals(BigInt.zero())) return;
 
   const pool = SyncSwapPool.bind(dataSource.address());
-  const investment = new SyncSwapInvestment(pool._address);
-  const reserves = pool.getReserves();
-  const totalSupply = pool.totalSupply();
+  const helper = new SyncSwapHelper(pool._address);
+  const l = helper.getLiquidityInfo(event.block);
 
-  const dbPosition = investment.findPosition(event.params.to, "");
-  let receiverBalance = event.params.liquidity;
+  const owner = event.params.to;
+  // 최초블록부터 트래킹한 경우, dbPosition이 없으면 처음 투자하는 것
+  const dbPosition = helper.findPosition(owner, "");
+  let ownerBalance = event.params.liquidity;
   if (dbPosition != null) {
-    receiverBalance = dbPosition.liquidity.plus(event.params.liquidity);
+    ownerBalance = dbPosition.liquidity.plus(event.params.liquidity);
   }
 
+  // 그러나 최초블록부터 트래킹하지 않는 경우, dbPosition이 없어도
+  // 그것이 처음 투자인 건지 기존에 투자했었는지 알 수 없음
+  // let ownerBalance: BigInt;
+  // let dbPosition = helper.findPosition(owner, "");
+  // if (dbPosition) {
+  //   const liquidity = dbPosition.liquidity;
+  //   ownerBalance = liquidity.minus(event.params.liquidity);
+  // } else {
+  //   ownerBalance = pool.balanceOf(owner);
+  // }
+
+  const totalSupply = l.totalSupply.plus(event.params.liquidity);
   savePositionChange(
     event,
     PositionChangeAction.Deposit,
-    investment,
+    helper,
     new PositionParams(
-      event.params.to,
+      owner,
       "",
       PositionType.Invest,
-      lp2Amounts(reserves, receiverBalance, totalSupply),
+      lp2Amounts(
+        l.reserve0.plus(event.params.amount0),
+        l.reserve1.plus(event.params.amount1),
+        ownerBalance,
+        totalSupply
+      ),
       [],
-      receiverBalance,
+      ownerBalance,
       []
     ),
     [event.params.amount0, event.params.amount1],
     []
   );
+
+  l.saveTotalSupply(totalSupply);
 }
 
 export function handleBurn(event: Burn): void {
   if (event.params.liquidity.equals(BigInt.zero())) return;
 
   const pool = SyncSwapPool.bind(event.address);
-  const investment = new SyncSwapInvestment(pool._address);
-  const reserves = pool.getReserves();
-  const totalSupply = pool.totalSupply();
+  const helper = new SyncSwapHelper(pool._address);
+  const l = helper.getLiquidityInfo(event.block);
 
   const lpTransfers = filterLogs(event, TRANSFER_TOPIC);
   const lpToPool = logFindFirst(lpTransfers, event, (log, event) => {
@@ -154,24 +145,31 @@ export function handleBurn(event: Burn): void {
   if (!lpToPool) throw new Error("handleBurn: lpToPool not found");
 
   const owner = hash2Address(lpToPool.topics[1]);
-  let dbPosition = investment.findPosition(owner, "");
 
-  if (dbPosition == null) {
-    throw new Error(
-      "handleBurn: Position not found, Owner: " + owner.toHexString()
-    );
+  let ownerBalance: BigInt;
+  let dbPosition = helper.findPosition(owner, "");
+  if (dbPosition) {
+    const liquidity = dbPosition.liquidity;
+    ownerBalance = liquidity.minus(event.params.liquidity);
+  } else {
+    ownerBalance = pool.balanceOf(owner);
   }
-  const liquidity = dbPosition.liquidity;
-  const ownerBalance = liquidity.minus(event.params.liquidity);
+
+  const totalSupply = l.totalSupply.minus(event.params.liquidity);
   savePositionChange(
     event,
     PositionChangeAction.Withdraw,
-    investment,
+    helper,
     new PositionParams(
       owner,
       "",
       PositionType.Invest,
-      lp2Amounts(reserves, ownerBalance, totalSupply),
+      lp2Amounts(
+        l.reserve0.minus(event.params.amount0),
+        l.reserve1.minus(event.params.amount1),
+        ownerBalance,
+        totalSupply
+      ),
       [],
       ownerBalance,
       []
@@ -179,6 +177,8 @@ export function handleBurn(event: Burn): void {
     [event.params.amount0.neg(), event.params.amount1.neg()],
     []
   );
+
+  l.saveTotalSupply(totalSupply);
 }
 
 export function handleTransfer(event: Transfer): void {
@@ -205,14 +205,12 @@ export function handleTransfer(event: Transfer): void {
   const burnLogs = filterLogs(event, BURN_TOPIC);
   if (logAt(burnLogs, event.address) != -1) return;
 
-  const pool = SyncSwapPool.bind(event.address);
-  const reserves = pool.getReserves();
-  const totalSupply = pool.totalSupply();
-
-  const investment = new SyncSwapInvestment(pool._address);
+  const pool = SyncSwapPool.bind(dataSource.address());
+  const helper = new SyncSwapHelper(pool._address);
+  const l = helper.getLiquidityInfo(event.block);
 
   let senderBalance: BigInt;
-  const dbSenderPosition = investment.findPosition(event.params.from, "");
+  const dbSenderPosition = helper.findPosition(event.params.from, "");
   if (dbSenderPosition) {
     senderBalance = dbSenderPosition.liquidity.minus(event.params.value);
   } else {
@@ -220,23 +218,28 @@ export function handleTransfer(event: Transfer): void {
   }
 
   let receiverBalance = event.params.value;
-  const dbReceiverPosition = investment.findPosition(event.params.to, "");
+  const dbReceiverPosition = helper.findPosition(event.params.to, "");
   if (dbReceiverPosition != null) {
     receiverBalance = dbReceiverPosition.liquidity.plus(event.params.value);
   }
 
   // Just Transfer
-  const dInput = lp2Amounts(reserves, event.params.value, totalSupply);
+  const dInput = lp2Amounts(
+    l.reserve0,
+    l.reserve1,
+    event.params.value,
+    l.totalSupply
+  );
 
   savePositionChange(
     event,
     PositionChangeAction.Send,
-    investment,
+    helper,
     new PositionParams(
       event.params.from,
       "",
       PositionType.Invest,
-      lp2Amounts(reserves, senderBalance, totalSupply),
+      lp2Amounts(l.reserve0, l.reserve1, senderBalance, l.totalSupply),
       [],
       senderBalance,
       []
@@ -248,12 +251,12 @@ export function handleTransfer(event: Transfer): void {
   savePositionChange(
     event,
     PositionChangeAction.Receive,
-    investment,
+    helper,
     new PositionParams(
       event.params.to,
       "",
       PositionType.Invest,
-      lp2Amounts(reserves, receiverBalance, totalSupply),
+      lp2Amounts(l.reserve0, l.reserve1, receiverBalance, l.totalSupply),
       [],
       receiverBalance,
       []
@@ -261,4 +264,13 @@ export function handleTransfer(event: Transfer): void {
     dInput,
     []
   );
+}
+
+export function handleSync(event: Sync): void {
+  const i = new SyncSwapHelper(event.address).getOrCreateInvestment(
+    event.block
+  );
+  i.meta[1] = event.params.reserve0.toString();
+  i.meta[2] = event.params.reserve1.toString();
+  i.save();
 }

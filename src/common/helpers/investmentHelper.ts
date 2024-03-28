@@ -71,17 +71,17 @@ export abstract class InvestmentHelper {
     let investment = Investment.load(this.id);
     if (!investment) {
       const protocol = this.getProtocol(block);
-      const tokens = this.getInfo(this.investmentAddress);
+      const info = this.getInfo(this.investmentAddress);
       investment = new Investment(this.id);
       investment.protocol = protocol.id;
       investment.address = this.investmentAddress;
-      investment.inputTokens = tokens.inputTokens.map<Bytes>((addr) =>
+      investment.inputTokens = info.inputTokens.map<Bytes>((addr) =>
         Bytes.fromHexString(addr.toHexString())
       );
-      investment.rewardTokens = tokens.rewardTokens.map<Bytes>((addr) =>
+      investment.rewardTokens = info.rewardTokens.map<Bytes>((addr) =>
         Bytes.fromHexString(addr.toHexString())
       );
-      investment.meta = tokens.meta;
+      investment.meta = info.meta;
       investment.blockNumber = block.number;
       investment.blockTimestamp = block.timestamp;
       investment.save();
