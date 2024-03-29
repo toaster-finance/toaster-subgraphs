@@ -1,4 +1,10 @@
-import { Address, BigInt, Bytes, dataSource, ethereum } from "@graphprotocol/graph-ts";
+import {
+  Address,
+  BigInt,
+  Bytes,
+  dataSource,
+  ethereum,
+} from "@graphprotocol/graph-ts";
 import { Investment, Position, Protocol } from "../../../generated/schema";
 
 export class InvestmentInfo {
@@ -39,11 +45,10 @@ export abstract class InvestmentHelper {
   ////// ABSTRACTS //////
   abstract getInfo(investmentAddress: Address): InvestmentInfo;
 
-  // used at : upsertPosition
+  // used at : upsertPosition, positionSnapshot
+  // this.id = investmentId
   getPositionId(owner: Address, tag: string): Bytes {
-    return this.id.concat(
-      Bytes.fromHexString(owner.toHexString()).concat(Bytes.fromUTF8(tag))
-    );
+    return this.id.concat(owner).concat(Bytes.fromUTF8(tag));
   }
 
   findPosition(owner: Address, tag: string): Position | null {
@@ -51,7 +56,7 @@ export abstract class InvestmentHelper {
     return Position.load(positionId);
   }
 
-  abstract getProtocolMeta(): string[]
+  abstract getProtocolMeta(): string[];
 
   getProtocol(block: ethereum.Block): Protocol {
     const protocolId = getProtocolId(this.protocolName);

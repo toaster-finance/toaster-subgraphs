@@ -5,6 +5,6 @@
   "masterChef": "0x556B9306565093C855AEA9AE92A594704c2Cd59e",
   "CAKE": "0x0E09FaBB73Bd3Ade0a17ECC321fD13a19e81cE82",
   "snapshotBatch": 144,
-  "polling": 100,
+  "polling": 200,
   "startBlock": 37320192
 }

@@ -1,4 +1,4 @@
-import { dataSource, BigInt, Address, ethereum } from "@graphprotocol/graph-ts";
+import { dataSource, BigInt, Address, ethereum, log } from "@graphprotocol/graph-ts";
 import {
   UniswapV3PositionManager,
   IncreaseLiquidity,
@@ -72,6 +72,8 @@ export function handleIncreaseLiquidity(event: IncreaseLiquidity): void {
   let principals: BigInt[];
   let fees: BigInt[];
   let owner: Address;
+
+  // new position
   if (nftTransferLog) {
     liquidity = event.params.liquidity;
     principals = [event.params.amount0, event.params.amount1];
@@ -81,7 +83,7 @@ export function handleIncreaseLiquidity(event: IncreaseLiquidity): void {
     // Update totalSupply of the protocol
     const protocol = helper.getProtocol(event.block);
     if (!protocol) throw new Error("Protocol not found");
-    protocol.meta = [event.params.tokenId.toString()];
+    protocol.meta = [event.params.tokenId.toString()]; // totalSupplied
     protocol.save();
   }
   // Added liquidity to an existing position
@@ -376,7 +378,6 @@ export function handleBlock(block: ethereum.Block): void {
   const totalSupply = i32(parseInt(protocol.meta[0]));
   const init = protocol._batchIterator.toI32();
   const snapshotBatch = dataSource.context().getI32("snapshotBatch");
-
   const pm = UniswapV3PositionManager.bind(dataSource.address());
 
   for (let tokenId = init; tokenId <= totalSupply; tokenId += snapshotBatch) {
