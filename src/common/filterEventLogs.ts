@@ -29,13 +29,13 @@ export function filterLogs(
 export function filterAndDecodeLogs(
   event: ethereum.Event,
   topic: string,
-  abi: string // abi of event.receipt.log.data (except indexed parameters)
+  dataAbi: string // abi of event.receipt.log.data (except indexed parameters)
 ): LogData[] {
   const logs = filterLogs(event, topic);
   const logData: LogData[] = [];
   for (let i = 0; i < logs.length; i++) {
     const log = logs[i];
-    const decoded = ethereum.decode(abi, log.data);
+    const decoded = ethereum.decode(dataAbi, log.data);
     logData.push(
       new LogData(
         log.logIndex,

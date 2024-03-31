@@ -8,7 +8,8 @@ export enum PositionChangeAction {
   Send,
   Receive,
   Stake,
-  Unstake
+  Unstake,
+  Compound
 }
 
 const actions = [

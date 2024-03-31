@@ -9,10 +9,10 @@ export class PositionInfo {
 export function getLog<E extends ethereum.Event>(
   event: E,
   topic: string,
-  abi: string,
+  dataAbi: string,
   isTargetLog: (log: LogData, event: E) => boolean
 ): LogData | null {
-  const logs = filterAndDecodeLogs(event, topic, abi);
+  const logs = filterAndDecodeLogs(event, topic, dataAbi);
   let targetLogIdx = 0;
   for (; targetLogIdx < logs.length; targetLogIdx++) {
     if (isTargetLog(logs[targetLogIdx], event)) break;

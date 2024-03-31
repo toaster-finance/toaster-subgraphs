@@ -68,6 +68,7 @@ export abstract class InvestmentHelper {
       protocol.chain = dataSource.network();
       protocol._batchIterator = BigInt.fromI32(0);
       protocol.meta = this.getProtocolMeta();
+      protocol.save();
     }
     return protocol;
   }

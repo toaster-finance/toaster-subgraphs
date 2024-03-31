@@ -8,12 +8,12 @@ import { InvestmentHelper } from "./helpers/investmentHelper";
 export function savePositionChange(
   event: ethereum.Event,
   action: PositionChangeAction,
-  investment: InvestmentHelper,
+  helper: InvestmentHelper,
   p: PositionParams,
   dInputs: BigInt[],
   dRewards: BigInt[]
 ): void {
-  const position = savePositionSnapshot(event.block, investment, p);
+  const position = savePositionSnapshot(event.block, helper, p);
 
   const pc = new PositionChange(
     event.transaction.hash.concatI32(event.logIndex.toI32())
