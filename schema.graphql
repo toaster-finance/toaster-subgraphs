@@ -83,6 +83,7 @@ enum PositionChangeAction {
   Receive
   Stake
   Unstake
+  Compound
 }
 
 enum PositionType {

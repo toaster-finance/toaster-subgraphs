@@ -22,7 +22,8 @@ const actions = [
   "Send",
   "Receive",
   "Stake",
-  "Unstake"
+  "Unstake",
+  "Compound"
 ];
 export function getAction(actionId: PositionChangeAction): string {
   return actions[actionId];
