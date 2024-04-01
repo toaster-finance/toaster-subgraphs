@@ -7,11 +7,11 @@ import { InvestmentHelper } from "./helpers/investmentHelper";
 
 export function upsertPosition(
   block: ethereum.Block,
-  invest: InvestmentHelper,
+  helper: InvestmentHelper,
   p: PositionParams
 ): Position {
-  const investment = invest.getOrCreateInvestment(block);
-  const positionId = invest.getPositionId(p.owner, p.tag);
+  const investment = helper.getOrCreateInvestment(block);
+  const positionId = helper.getPositionId(p.owner, p.tag);
 
   let position = Position.load(positionId);
 

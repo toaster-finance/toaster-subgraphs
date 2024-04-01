@@ -6,10 +6,10 @@ import { InvestmentHelper } from "./helpers/investmentHelper";
 
 export function savePositionSnapshot(
   block: ethereum.Block,
-  investment: InvestmentHelper,
+  helper: InvestmentHelper,
   p: PositionParams
 ): Position {
-  const position = upsertPosition(block, investment, p);
+  const position = upsertPosition(block, helper, p);
 
   const snapshotId = position.id.concat(
     Bytes.fromHexString("0x"+block.number.toHexString().slice(2).padStart(16, "0"))
