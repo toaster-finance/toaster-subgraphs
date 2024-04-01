@@ -43,21 +43,33 @@ export abstract class InvestmentHelper {
   }
 
   ////// ABSTRACTS //////
-  abstract getInfo(investmentAddress: Address): InvestmentInfo;
+  /**
+   * 
+   * @param investmentAddress : investment address. 
+   * ex. uniswap v3 usdc-usdt pool address , ambient finance pool address(it's only one, so it needs extra poolInfo parameter to get the investment info)
+   * @param details: extra pool info. ex. ambient finance pool info, aave pool info
+   */
+  abstract getInfo(investmentAddress: Address, details?: Map<string,string>): InvestmentInfo;
 
   // used at : upsertPosition, positionSnapshot
   // this.id = investmentId
   getPositionId(owner: Address, tag: string): Bytes {
     return this.id.concat(owner).concat(Bytes.fromUTF8(tag));
   }
-
+  
+  /**
+   * 
+   * @param owner owner address of the position
+   * @param tag 
+   * @returns 
+   */
   findPosition(owner: Address, tag: string): Position | null {
     const positionId = this.getPositionId(owner, tag);
     return Position.load(positionId);
   }
-
+  // 저장하고 싶은 프로토콜 메타. ex. syncswap: ethcall 줄이기 위해서 totalSupply 저장
   abstract getProtocolMeta(): string[];
-
+  // 
   getProtocol(block: ethereum.Block): Protocol {
     const protocolId = getProtocolId(this.protocolName);
     let protocol = Protocol.load(protocolId);
