@@ -23,5 +23,18 @@
     ],
     "name": "CrocWarmCmd",
     "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bytes",
+        "name": "input",
+        "type": "bytes"
+      }
+    ],
+    "name": "CrocColdCmd",
+    "type": "event"
   }
 ]

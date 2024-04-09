@@ -24,6 +24,7 @@ dataSources:
       language: wasm/assemblyscript
       entities:
         - CrocWarmCmd
+        - CrocColdCmd
       abis:
         - name: AmbientDex
           file: ./abis/Ambient/AmbientDex.json
@@ -31,7 +32,14 @@ dataSources:
           file: ./abis/Ambient/AmbientQuery.json
       eventHandlers:
         - event: CrocWarmCmd(bytes,int128,int128)
-          handler: handleUserCmd
+          handler: handleWarmCmd
+        - event: CrocColdCmd(bytes)
+          handler: handleColdCmd
       file: ./src/projects/ambient/index.ts
+      blockHandlers:
+        - handler: handleBlock
+          filter:
+            kind: polling
+            every: {{polling}} # 12 hours
     
   
