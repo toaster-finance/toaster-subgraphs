@@ -29,8 +29,8 @@ export function handleWarmCmd(event: CrocWarmCmd): void {
       inputs
     )!
     .toTuple();
-
   const extract = new UserCmdData(event, params);
+  extract.helper.getOrCreateInvestment(event.block);
   const principals = extract.helper.getPrincipalInfo(event.transaction.from, extract.helper.tickToPositionTag(extract.tl, extract.tu));
   const rewards = extract.helper.getRewardInfo(event.transaction.from, extract.helper.tickToPositionTag(extract.tl, extract.tu));
   let changeAction: PositionChangeAction = PositionChangeAction.Deposit;
@@ -55,13 +55,13 @@ export function handleWarmCmd(event: CrocWarmCmd): void {
       changeAction = PositionChangeAction.Deposit;
       inputAmountDelta = [extract.amount0Delta, extract.amount1Delta];
       rewardAmountDelta = [BigInt.zero(), BigInt.zero()];
-      tag = "ambient";
+      tag = "0_0";//ambient
       break;
     case AmbientCode.BurnAmbient:
       changeAction = PositionChangeAction.Withdraw;
       inputAmountDelta = [extract.amount0Delta, extract.amount1Delta];
       rewardAmountDelta = [BigInt.zero(), BigInt.zero()];
-      tag = "ambient";
+      tag = "0_0";//ambient
       break;
     case AmbientCode.Harvest:
       changeAction = PositionChangeAction.Harvest;
@@ -70,11 +70,12 @@ export function handleWarmCmd(event: CrocWarmCmd): void {
       tag =
         extract.tl === 0 && extract.tu === 0
           ? extract.helper.tickToPositionTag(extract.tl, extract.tu)
-          : "ambient";
+          : "0_0";//ambient
       break;
     default:
       break;
   }
+  if(inputAmountDelta[0] === BigInt.zero() && inputAmountDelta[1] === BigInt.zero() && rewardAmountDelta[0] === BigInt.zero() && rewardAmountDelta[1] === BigInt.zero()) return;
   if (tag) {
     savePositionChange(
       event,
@@ -84,9 +85,9 @@ export function handleWarmCmd(event: CrocWarmCmd): void {
         event.transaction.from,
         extract.helper.tickToPositionTag(extract.tl, extract.tu), // tag
         PositionType.Invest, // type
-        [principals[0], principals[1]], // inputAmounts
-        [rewards[0], rewards[1]], // rewardAmounts
-        principals[2], // liquidity
+        [principals.amount0, principals.amount1], // inputAmounts
+        [rewards.amount0, rewards.amount1], // rewardAmounts
+        principals.liquidity, // liquidity
         []
       ),
       inputAmountDelta, // inputAmountsDelta
@@ -113,23 +114,6 @@ export function handleColdCmd(
     );
     // create investment for the new pool
     helper.getOrCreateInvestment(event.block);
-
-    savePositionChange(
-      event,
-      PositionChangeAction.Deposit,
-      helper,
-      new PositionParams(
-        event.transaction.from,
-        "",
-        PositionType.Invest,
-        [BigInt.zero(), BigInt.zero()],
-        [BigInt.zero(), BigInt.zero()],
-        BigInt.zero(),
-        []
-      ),
-      [BigInt.zero(), BigInt.zero()],
-      [BigInt.zero(), BigInt.zero()]
-    );
   }
 }
 export function handleBlock(block: ethereum.Block): void {
@@ -153,10 +137,11 @@ export function handleBlock(block: ethereum.Block): void {
         investment.meta[0]
       )
     );
-    // ?? 만약 포지션 하나도 20분을 넘으면 어카지??
+    // ?? 만약 투자처 하나도 20분을 넘으면 어카지??
     const positions = investment.positions.load();
     for (let i = 0; i < positions.length; i += 1) {
       const position = positions[i];
+      if (position.closed) continue;
       // const ticks = helper.tagToTicks(position.tag);
       const principals = helper.getPrincipalInfo(
         Address.fromBytes(position.owner),
@@ -166,7 +151,6 @@ export function handleBlock(block: ethereum.Block): void {
         Address.fromBytes(position.owner),
         position.tag
       );
-      if (position.closed) continue;
       savePositionSnapshot(
         block,
         helper,
@@ -174,9 +158,9 @@ export function handleBlock(block: ethereum.Block): void {
           Address.fromBytes(position.owner),
           position.tag,
           PositionType.Invest,
-          [principals[0], principals[1]],
-          [rewards[0], rewards[1]],
-          principals[2],
+          [principals.amount0, principals.amount1],
+          [rewards.amount0, rewards.amount1],
+          principals.liquidity,
           []
         )
       );

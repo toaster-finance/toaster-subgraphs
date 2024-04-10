@@ -323,5 +323,49 @@
     ],
     "stateMutability": "view",
     "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "base",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "quote",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "poolIdx",
+        "type": "uint256"
+      }
+    ],
+    "name": "queryAmbientTokens",
+    "outputs": [
+      {
+        "internalType": "uint128",
+        "name": "liq",
+        "type": "uint128"
+      },
+      {
+        "internalType": "uint128",
+        "name": "baseQty",
+        "type": "uint128"
+      },
+      {
+        "internalType": "uint128",
+        "name": "quoteQty",
+        "type": "uint128"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
   }
 ]

@@ -12,7 +12,7 @@ dataSources:
       abi: AmbientDex
       startBlock: {{startBlock}}
     context:
-      query:
+      ambientQuery:
         type: String
         data: "{{Query}}"
       snapshotBatch:

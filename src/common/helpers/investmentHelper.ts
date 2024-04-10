@@ -100,6 +100,7 @@ export abstract class InvestmentHelper {
       investment.rewardTokens = info.rewardTokens.map<Bytes>((addr) =>
         Bytes.fromHexString(addr.toHexString())
       );
+      investment.tag = this.tag;
       investment.meta = info.meta;
       investment.blockNumber = block.number;
       investment.blockTimestamp = block.timestamp;
