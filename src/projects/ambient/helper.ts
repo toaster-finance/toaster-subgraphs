@@ -37,7 +37,7 @@ export class AmbientHelper extends InvestmentHelper {
   constructor(investmentAddress: Address, readonly details: AmbientDetails) {
     super(AMBIENT_FINANCE, investmentAddress, details.toTag());
   }
-  static readonly AMBIENT = "0_0"; 
+  static readonly AMBIENT:string = "0_0"; 
   getProtocolMeta(): string[] {
     return [];
   }
