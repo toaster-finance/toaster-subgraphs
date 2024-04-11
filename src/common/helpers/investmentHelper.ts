@@ -6,6 +6,7 @@ import {
   ethereum,
 } from "@graphprotocol/graph-ts";
 import { Investment, Position, Protocol } from "../../../generated/schema";
+// detail of the investment, for differentiating the positions of the investment that has same pool address
 
 export class InvestmentInfo {
   constructor(
@@ -24,9 +25,10 @@ export class InvestmentAmounts {
 
 export function getInvestmentId(
   protocol: string,
-  investmentAddress: Address
+  investmentAddress: Address,
+  tag: string = ""
 ): Bytes {
-  return Bytes.fromUTF8(protocol).concat(investmentAddress);
+  return Bytes.fromUTF8(protocol).concat(investmentAddress).concat(Bytes.fromUTF8(tag));
 }
 
 export function getProtocolId(protocolName: string): Bytes {
@@ -37,12 +39,19 @@ export abstract class InvestmentHelper {
   id: Bytes;
   constructor(
     readonly protocolName: string,
-    readonly investmentAddress: Address
+    readonly investmentAddress: Address,
+    readonly tag: string
   ) {
-    this.id = getInvestmentId(protocolName, investmentAddress);
+    // create investment base id with protocol name and investment address, base id: {protocolName}{investmentAddress}:{tag}
+    this.id = getInvestmentId(protocolName, investmentAddress, tag);
   }
 
   ////// ABSTRACTS //////
+  /**
+   * @param investmentAddress : investment address.
+   * ex. uniswap v3 usdc-usdt pool address
+   * ambient finance pool address(it's only one, so it needs extra poolInfo parameter to get the investment info)
+   */
   abstract getInfo(investmentAddress: Address): InvestmentInfo;
 
   // used at : upsertPosition, positionSnapshot
@@ -51,13 +60,17 @@ export abstract class InvestmentHelper {
     return this.id.concat(owner).concat(Bytes.fromUTF8(tag));
   }
 
+  /**
+   * @param owner owner address of the position
+   * @param tag : tag of the position, for differentiating the positions of the investment that has same pool address
+   * @returns
+   */
   findPosition(owner: Address, tag: string): Position | null {
     const positionId = this.getPositionId(owner, tag);
     return Position.load(positionId);
   }
-
+  // ethcall 줄이기 위해서 저장하고 싶은 프로토콜 메타. ex. syncswap: ethcall 줄이기 위해서 totalSupply 저장
   abstract getProtocolMeta(): string[];
-
   getProtocol(block: ethereum.Block): Protocol {
     const protocolId = getProtocolId(this.protocolName);
     let protocol = Protocol.load(protocolId);
@@ -87,6 +100,7 @@ export abstract class InvestmentHelper {
       investment.rewardTokens = info.rewardTokens.map<Bytes>((addr) =>
         Bytes.fromHexString(addr.toHexString())
       );
+      investment.tag = this.tag;
       investment.meta = info.meta;
       investment.blockNumber = block.number;
       investment.blockTimestamp = block.timestamp;
