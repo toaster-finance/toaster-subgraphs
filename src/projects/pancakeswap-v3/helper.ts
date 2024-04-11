@@ -25,7 +25,7 @@ export class PancakeSwapV3Helper extends InvestmentHelper {
   }
 
   constructor(readonly investmentAddress: Address) {
-    super(PANCAKESWAP_V3_PROTOCOL, investmentAddress);
+    super(PANCAKESWAP_V3_PROTOCOL, investmentAddress, "");
   }
 
   getProtocolMeta(): string[] {

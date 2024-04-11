@@ -18,7 +18,7 @@ export const SYNCSWAP_PROTOCOL = "SyncSwap";
 
 export class SyncSwapHelper extends InvestmentHelper {
   constructor(investmentAddress: Address) {
-    super(SYNCSWAP_PROTOCOL, investmentAddress);
+    super(SYNCSWAP_PROTOCOL, investmentAddress, "");
   }
   getProtocolMeta(): string[] {
     return [];
