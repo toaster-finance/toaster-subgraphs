@@ -4,15 +4,7 @@ import { PositionChangeAction, getAction } from "./PositionChangeAction.enum";
 import { savePositionSnapshot } from "./savePositionSnapshot";
 import { PositionParams } from "./helpers/positionHelper";
 import { InvestmentHelper } from "./helpers/investmentHelper";
-/**
- * snapshot position every event for saving position change
- * @param event : event info
- * @param action : position change action
- * @param helper : investment helper for using util functions on investment
- * @param p : position params
- * @param dInputs : delta input amounts
- * @param dRewards : delta reward amounts (fees, rewards(etc. STG, CAKE))
- */
+
 export function savePositionChange(
   event: ethereum.Event,
   action: PositionChangeAction,
