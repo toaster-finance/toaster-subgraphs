@@ -43,7 +43,7 @@ export class UniswapV3Helper extends InvestmentHelper {
   findNftPosition(tokenId: BigInt): Position | null {
     // since `getPositionId` don't use owner
     // pass just Address.zero() as owner
-    return this.findPosition(Address.zero(), tokenId.toString()); // id: {ZeroAddress}{tokenId}
+    return this.findPosition(Address.zero(), tokenId.toString());
   }
 
   getInfo(investmentAddress: Address): InvestmentInfo {

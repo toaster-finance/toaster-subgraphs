@@ -1,5 +1,6 @@
 import { Address, BigInt } from "@graphprotocol/graph-ts";
 import { PositionType } from "../PositionType.enum";
+
 export class PositionParams {
   constructor(
     readonly owner: Address,

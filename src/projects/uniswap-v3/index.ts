@@ -386,7 +386,7 @@ export function handleBlock(block: ethereum.Block): void {
     let investment: Investment | null;
     const dbPosition = UniswapV3Helper.findNft(tId);
     let position: UniswapV3PositionManager__positionsResult;
-    
+
     if (dbPosition == null) {
       const _position = pm.try_positions(tId);
       if (_position.reverted) continue;
