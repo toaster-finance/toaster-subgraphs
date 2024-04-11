@@ -30,7 +30,6 @@ export function handleWarmCmd(event: CrocWarmCmd): void {
     )!
     .toTuple();
   const extract = new UserCmdData(event, params);
-  extract.helper.getOrCreateInvestment(event.block);
   const principals = extract.helper.getPrincipalInfo(event.transaction.from, extract.helper.tickToPositionTag(extract.tl, extract.tu));
   const rewards = extract.helper.getRewardInfo(event.transaction.from, extract.helper.tickToPositionTag(extract.tl, extract.tu));
   let changeAction: PositionChangeAction = PositionChangeAction.Deposit;
@@ -55,13 +54,13 @@ export function handleWarmCmd(event: CrocWarmCmd): void {
       changeAction = PositionChangeAction.Deposit;
       inputAmountDelta = [extract.amount0Delta, extract.amount1Delta];
       rewardAmountDelta = [BigInt.zero(), BigInt.zero()];
-      tag = "0_0";//ambient
+      tag = AmbientHelper.AMBIENT;//ambient
       break;
     case AmbientCode.BurnAmbient:
       changeAction = PositionChangeAction.Withdraw;
       inputAmountDelta = [extract.amount0Delta, extract.amount1Delta];
       rewardAmountDelta = [BigInt.zero(), BigInt.zero()];
-      tag = "0_0";//ambient
+      tag = AmbientHelper.AMBIENT;//ambient
       break;
     case AmbientCode.Harvest:
       changeAction = PositionChangeAction.Harvest;
@@ -70,30 +69,28 @@ export function handleWarmCmd(event: CrocWarmCmd): void {
       tag =
         extract.tl === 0 && extract.tu === 0
           ? extract.helper.tickToPositionTag(extract.tl, extract.tu)
-          : "0_0";//ambient
+          : AmbientHelper.AMBIENT;//ambient
       break;
     default:
-      break;
+      return;
   }
-  if(inputAmountDelta[0] === BigInt.zero() && inputAmountDelta[1] === BigInt.zero() && rewardAmountDelta[0] === BigInt.zero() && rewardAmountDelta[1] === BigInt.zero()) return;
-  if (tag) {
-    savePositionChange(
-      event,
-      changeAction,
-      extract.helper,
-      new PositionParams(
-        event.transaction.from,
-        extract.helper.tickToPositionTag(extract.tl, extract.tu), // tag
-        PositionType.Invest, // type
-        [principals.amount0, principals.amount1], // inputAmounts
-        [rewards.amount0, rewards.amount1], // rewardAmounts
-        principals.liquidity, // liquidity
-        []
-      ),
-      inputAmountDelta, // inputAmountsDelta
-      rewardAmountDelta // rewardAmountsDelta
-    );
-  }
+  savePositionChange(
+    event,
+    changeAction,
+    extract.helper,
+    new PositionParams(
+      event.transaction.from,
+      extract.helper.tickToPositionTag(extract.tl, extract.tu), // tag
+      PositionType.Invest, // type
+      [principals.amount0, principals.amount1], // inputAmounts
+      [rewards.amount0, rewards.amount1], // rewardAmounts
+      principals.liquidity, // liquidity
+      []
+    ),
+    inputAmountDelta, // inputAmountsDelta
+    rewardAmountDelta // rewardAmountsDelta
+  );
+  
 }
 export function handleColdCmd(
   event: CrocColdCmd

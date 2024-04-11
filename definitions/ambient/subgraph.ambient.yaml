@@ -40,6 +40,6 @@ dataSources:
         - handler: handleBlock
           filter:
             kind: polling
-            every: {{polling}} # 12 hours
+            every: {{polling}}
     
   

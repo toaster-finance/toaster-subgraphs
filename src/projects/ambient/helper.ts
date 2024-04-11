@@ -6,6 +6,7 @@ import {
   InvestmentInfo,
 } from "../../common/helpers/investmentHelper";
 import { getContextAddress } from '../../common/helpers/contextHelper';
+import { Investment } from '../../../generated/schema';
 
 export const AMBIENT_FINANCE = "ambient";
 
@@ -36,6 +37,7 @@ export class AmbientHelper extends InvestmentHelper {
   constructor(investmentAddress: Address, readonly details: AmbientDetails) {
     super(AMBIENT_FINANCE, investmentAddress, details.toTag());
   }
+  static readonly AMBIENT = "0_0"; 
   getProtocolMeta(): string[] {
     return [];
   }
@@ -48,10 +50,34 @@ export class AmbientHelper extends InvestmentHelper {
       [this.details.poolIdx]
     );
   }
+
+  getOrCreateInvestment(block: ethereum.Block): Investment {
+    let investment = Investment.load(this.id);
+    if (!investment) {
+      const protocol = this.getProtocol(block);
+      const info = this.getInfo(this.investmentAddress);
+      investment = new Investment(this.id);
+      investment.protocol = protocol.id;
+      investment.address = this.investmentAddress;
+      investment.inputTokens = info.inputTokens.map<Bytes>((addr) =>
+        Bytes.fromHexString(addr.toHexString())
+      );
+      investment.rewardTokens = info.rewardTokens.map<Bytes>((addr) =>
+        Bytes.fromHexString(addr.toHexString())
+      );
+      investment.tag = this.tag;
+      investment.meta = info.meta;
+      investment.blockNumber = block.number;
+      investment.blockTimestamp = block.timestamp;
+      investment.save();
+    }
+
+    return investment as Investment;
+  }
   getPrincipalInfo(owner: Address, tag: string): AmbientPrincipal {
     const query = AmbientQuery.bind(getContextAddress("ambientQuery"));
     const ticks = this.tagToTicks(tag);
-    if(tag === "0_0"){
+    if (tag === AmbientHelper.AMBIENT) {
       const principals = query.queryAmbientTokens(
         owner,
         this.details.token0,
@@ -78,13 +104,12 @@ export class AmbientHelper extends InvestmentHelper {
         principals.getLiq()
       ); //amount0,amount1,liquidity,
     }
-    
   }
   getRewardInfo(owner: Address, tag: string): AmbientReward {
     const query = AmbientQuery.bind(getContextAddress("ambientQuery"));
 
-    if(tag === "0_0"){
-      return new AmbientReward(BigInt.zero(),BigInt.zero()); //amount0,amount1
+    if (tag === AmbientHelper.AMBIENT) {
+      return new AmbientReward(BigInt.zero(), BigInt.zero()); //amount0,amount1
     } else {
       const ticks = this.tagToTicks(tag);
       const rewards = query.queryConcRewards(
@@ -95,23 +120,38 @@ export class AmbientHelper extends InvestmentHelper {
         ticks[0],
         ticks[1]
       );
-      return new AmbientReward(rewards.getBaseRewards(),rewards.getQuoteRewards()); //amount0,amount1
-    };
-
+      return new AmbientReward(
+        rewards.getBaseRewards(),
+        rewards.getQuoteRewards()
+      ); //amount0,amount1
+    }
   }
-
 
   getPositionFromSnapshot(block: ethereum.Block, tag: string): AmbientSnapshot {
     const investment = this.getOrCreateInvestment(block);
     const positions = investment.positions.load();
-    for (let i = 0; i <  positions.length; i++) {
+    for (let i = 0; i < positions.length; i++) {
       if (positions[i].tag == tag) {
-        return new AmbientSnapshot(new AmbientPrincipal(positions[i].amounts[0], positions[i].amounts[1],positions[i].liquidity),new AmbientReward(positions[i].amounts[2], positions[i].amounts[3])); 
+        return new AmbientSnapshot(
+          new AmbientPrincipal(
+            positions[i].amounts[0],
+            positions[i].amounts[1],
+            positions[i].liquidity
+          ),
+          new AmbientReward(positions[i].amounts[2], positions[i].amounts[3])
+        );
       }
     }
-    return new AmbientSnapshot(new AmbientPrincipal(BigInt.fromI32(0), BigInt.fromI32(0),BigInt.fromI32(0)),new AmbientReward(BigInt.fromI32(0), BigInt.fromI32(0)));
+    return new AmbientSnapshot(
+      new AmbientPrincipal(
+        BigInt.fromI32(0),
+        BigInt.fromI32(0),
+        BigInt.fromI32(0)
+      ),
+      new AmbientReward(BigInt.fromI32(0), BigInt.fromI32(0))
+    );
   }
-  tickToPositionTag(tickLower: i32, tickUpper: i32) : string {
+  tickToPositionTag(tickLower: i32, tickUpper: i32): string {
     return tickLower.toString() + "_" + tickUpper.toString();
   }
   tagToTicks(tag: string): i32[] {

@@ -42,7 +42,7 @@ export abstract class InvestmentHelper {
     readonly investmentAddress: Address,
     readonly tag: string
   ) {
-    // create investment base id with protocol name and investment address, base id: "{protocolName}{investmentAddress}"
+    // create investment base id with protocol name and investment address, base id: {protocolName}{investmentAddress}:{tag}
     this.id = getInvestmentId(protocolName, investmentAddress, tag);
   }
 
