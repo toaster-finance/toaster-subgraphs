@@ -3,7 +3,13 @@ import { upsertPosition } from "./upsertPosition";
 import { Position, PositionSnapshot } from "../../generated/schema";
 import { PositionParams } from "./helpers/positionHelper";
 import { InvestmentHelper } from "./helpers/investmentHelper";
-
+/**
+ * @dev snapshot position every block 
+ * @param block : block info
+ * @param helper : investment helper for using util functions on investment
+ * @param p : position params
+ * @returns position entity (entity at ../schema.graphql)
+ */
 export function savePositionSnapshot(
   block: ethereum.Block,
   helper: InvestmentHelper,

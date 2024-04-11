@@ -51,6 +51,7 @@ type Protocol @entity {
 type Investment @entity {
   id: Bytes!
   address: Bytes!
+  tag: String!
   inputTokens: [Bytes!]!
   rewardTokens: [Bytes!]!
   meta: [String!]!
