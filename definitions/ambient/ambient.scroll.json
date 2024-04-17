@@ -4,5 +4,7 @@
   "Query": "0x62223e90605845Cf5CC6DAE6E0de4CDA130d6DDf",
   "polling": 72,
   "snapshotBatch": 100,
-  "startBlock": 267408
+  "startBlock": 267408,
+  "weeklyBlock": 4861919,
+  "weeklySnapshotBatch": 5040
 }

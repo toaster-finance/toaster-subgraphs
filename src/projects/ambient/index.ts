@@ -116,12 +116,13 @@ export function handleColdCmd(
 export function handleBlock(block: ethereum.Block): void {
   const protocol = Protocol.load(getProtocolId(AMBIENT_FINANCE));
   if (!protocol) return;
-
   const investments = protocol.investments.load();
   const batch = dataSource.context().getI32("snapshotBatch");
+  const weeklyBlockEnd = dataSource.context().getI32("weeklyBlockEnd");
+  const weeklyBatch = dataSource.context().getI32("weeklySnapshotBatch");
+  if( block.number < BigInt.fromI32(weeklyBlockEnd) && weeklyBatch > batch) return;
   const pool = AmbientDex.bind(dataSource.address());
   const protocolInit = protocol._batchIterator.toI32();
-  
   for (let i = protocolInit; i < investments.length; i+= batch) {
     const investment = investments[i];
     const token0 = investment.inputTokens[0].toHexString();

@@ -4,5 +4,7 @@
   "Query": "0xA3BD3bE19012De72190c885FB270beb93e36a8A7",
   "polling": 108,
   "snapshotBatch": 200,
-  "startBlock": 182357
+  "startBlock": 182357,
+  "weeklyBlock": 0,
+  "weeklySnapshotBatch": 0
 }
