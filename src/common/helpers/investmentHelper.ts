@@ -40,12 +40,17 @@ export abstract class InvestmentHelper {
   constructor(
     readonly protocolName: string,
     readonly investmentAddress: Address,
-    readonly tag: string
+    readonly tag: string,
+    readonly _id: Bytes = Bytes.fromHexString("")
   ) {
-    // create investment base id with protocol name and investment address, base id: {protocolName}{investmentAddress}:{tag}
-    this.id = getInvestmentId(protocolName, investmentAddress, tag);
+    if(_id === Bytes.fromHexString("")){
+      // create investment id for the specific investment, ex. ambient) id: {protocolName}{investmentAddress}:{poolHash}
+      this.id = _id;
+    } else {
+      // create investment base id with protocol name and investment address, base id: {protocolName}{investmentAddress}:{tag}
+      this.id = getInvestmentId(protocolName, investmentAddress, tag);
+    }
   }
-
   ////// ABSTRACTS //////
   /**
    * @param investmentAddress : investment address.

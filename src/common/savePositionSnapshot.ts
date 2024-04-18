@@ -28,13 +28,7 @@ export function savePositionSnapshot(
   snapshot.position = position.id;
   snapshot.amounts = p.inputAmounts.concat(p.rewardAmounts);
 
-  position.closed = true;
-  for(let i = 0; i < snapshot.amounts.length; i++) {
-    if (snapshot.amounts[i] !== BigInt.zero()) {
-      position.closed = false;
-      break;
-    }
-  }
+  
   snapshot.blockNumber = block.number;
   snapshot.blockTimestamp = block.timestamp;
   snapshot.save();

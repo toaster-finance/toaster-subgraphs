@@ -1,43 +1,46 @@
-
-import { AmbientQuery } from './../../../generated/Ambient/AmbientQuery';
-import { Address, BigInt, Bytes, dataSource, ethereum } from "@graphprotocol/graph-ts";
+import { AmbientQuery } from "./../../../generated/Ambient/AmbientQuery";
+import {
+  Address,
+  BigInt,
+  Bytes,
+  ethereum,
+} from "@graphprotocol/graph-ts";
 import {
   InvestmentHelper,
   InvestmentInfo,
 } from "../../common/helpers/investmentHelper";
-import { getContextAddress } from '../../common/helpers/contextHelper';
-import { Investment } from '../../../generated/schema';
+import { getContextAddress } from "../../common/helpers/contextHelper";
+import { Investment } from "../../../generated/schema";
+import { AmbientDetails, AmbientPrincipal, AmbientReward, AmbientSnapshot } from "./type";
 
 export const AMBIENT_FINANCE = "ambient";
 
-export class AmbientDetails {
-  constructor(
-    readonly token0: Address,
-    readonly token1: Address,
-    readonly poolIdx: string
-  ) {
-    if (token0.toHexString() > token1.toHexString()) throw new Error("token0 should be less than token1");
-  }
-
-  toTag(): string {
-    return [this.token0.toHexString(), this.token1.toHexString(), this.poolIdx].join("_");
-  }
-}
-export class AmbientSnapshot {
-  constructor(readonly principal: AmbientPrincipal, readonly reward: AmbientReward) {}
-
-}
-export class AmbientPrincipal {
-  constructor(readonly amount0: BigInt, readonly amount1: BigInt,readonly liquidity: BigInt) {}
-}
-export class AmbientReward {
-  constructor(readonly amount0: BigInt, readonly amount1: BigInt) {}
+export function getAmbientInvestmentId(
+  poolHash: Bytes,
+  investmentAddress: Address
+): Bytes {
+  return Bytes.fromUTF8(AMBIENT_FINANCE)
+    .concat(investmentAddress)
+    .concat(poolHash);
 }
 export class AmbientHelper extends InvestmentHelper {
   constructor(investmentAddress: Address, readonly details: AmbientDetails) {
-    super(AMBIENT_FINANCE, investmentAddress, details.toTag());
+    super(AMBIENT_FINANCE, investmentAddress, details.toTag(),details.getPoolHash());
   }
-  static readonly AMBIENT:string = "0_0"; 
+  static readonly AMBIENT_POSITION: string = "0_0";
+  // tag: {token0}_{token1}_{poolIdx}
+  static getHelperFromInvestmentTag(tag: string,investmentAddress: Address): AmbientHelper {
+
+    const tagSplit = tag.split("_");
+    const token0 = Address.fromString(tagSplit[0]);
+    const token1 = Address.fromString(tagSplit[1]);
+    const poolIdx = tagSplit[2];
+    return new AmbientHelper(investmentAddress,new AmbientDetails(
+      token0,
+      token1,
+      poolIdx
+    ))
+  }
   getProtocolMeta(): string[] {
     return [];
   }
@@ -47,12 +50,12 @@ export class AmbientHelper extends InvestmentHelper {
     return new InvestmentInfo(
       [token0, token1],
       [token0, token1],
-      [this.details.poolIdx]
+      [this.details.poolIdx, this.details.getPoolHash().toHexString()]
     );
   }
 
   getOrCreateInvestment(block: ethereum.Block): Investment {
-    let investment = Investment.load(this.id);
+    let investment = Investment.load(this.id); // Q.poolHash로 investment를 찾기를 원함.
     if (!investment) {
       const protocol = this.getProtocol(block);
       const info = this.getInfo(this.investmentAddress);
@@ -77,7 +80,7 @@ export class AmbientHelper extends InvestmentHelper {
   getPrincipalInfo(owner: Address, tag: string): AmbientPrincipal {
     const query = AmbientQuery.bind(getContextAddress("ambientQuery"));
     const ticks = this.tagToTicks(tag);
-    if (tag === AmbientHelper.AMBIENT) {
+    if (tag === AmbientHelper.AMBIENT_POSITION) {
       const principals = query.queryAmbientTokens(
         owner,
         this.details.token0,
@@ -108,7 +111,7 @@ export class AmbientHelper extends InvestmentHelper {
   getRewardInfo(owner: Address, tag: string): AmbientReward {
     const query = AmbientQuery.bind(getContextAddress("ambientQuery"));
 
-    if (tag === AmbientHelper.AMBIENT) {
+    if (tag === AmbientHelper.AMBIENT_POSITION) {
       return new AmbientReward(BigInt.zero(), BigInt.zero()); //amount0,amount1
     } else {
       const ticks = this.tagToTicks(tag);
@@ -158,4 +161,3 @@ export class AmbientHelper extends InvestmentHelper {
     return tag.split("_").map<i32>((x) => BigInt.fromString(x).toI32());
   }
 }
-

@@ -1,22 +1,27 @@
 import { Protocol } from "./../../../generated/schema";
-import {
-  Address,
-  BigInt,
-  dataSource,
-  ethereum,
-} from "@graphprotocol/graph-ts";
+import { Address, BigInt, dataSource, ethereum } from "@graphprotocol/graph-ts";
 import {
   AmbientDex,
   CrocColdCmd,
+  CrocMicroBurnAmbient,
+  CrocMicroBurnRange,
+  CrocMicroMintAmbient,
+  CrocMicroMintRange,
   CrocWarmCmd,
 } from "../../../generated/Ambient/AmbientDex";
 import { savePositionChange } from "../../common/savePositionChange";
 import { PositionChangeAction } from "../../common/PositionChangeAction.enum";
-import { AMBIENT_FINANCE, AmbientDetails, AmbientHelper } from "./helper";
+import { AMBIENT_FINANCE, AmbientHelper } from "./helper";
 import { PositionParams } from "../../common/helpers/positionHelper";
 import { PositionType } from "../../common/PositionType.enum";
 import { savePositionSnapshot } from "../../common/savePositionSnapshot";
 import { getProtocolId } from "../../common/helpers/investmentHelper";
+import {
+  AmbientDetails,
+  CrocMicroAmbientData,
+  CrocMicroRangeData,
+  CrocWarmCmdData,
+} from "./type";
 
 export function handleWarmCmd(event: CrocWarmCmd): void {
   const inputs = event.params.input;
@@ -29,47 +34,54 @@ export function handleWarmCmd(event: CrocWarmCmd): void {
       inputs
     )!
     .toTuple();
-  const extract = new UserCmdData(event, params);
-  const principals = extract.helper.getPrincipalInfo(event.transaction.from, extract.helper.tickToPositionTag(extract.tl, extract.tu));
-  const rewards = extract.helper.getRewardInfo(event.transaction.from, extract.helper.tickToPositionTag(extract.tl, extract.tu));
+  const data = new CrocWarmCmdData(event, params);
+  const principals = data.helper.getPrincipalInfo(
+    event.transaction.from,
+    data.helper.tickToPositionTag(data.tl, data.tu)
+  );
+  const rewards = data.helper.getRewardInfo(
+    event.transaction.from,
+    data.helper.tickToPositionTag(data.tl, data.tu)
+  );
   let changeAction: PositionChangeAction = PositionChangeAction.Deposit;
   let inputAmountDelta: BigInt[] = [];
   let rewardAmountDelta: BigInt[] = [];
   let tag: string = "";
+
   // (uint8 code, address base, address quote, uint256 poolIdx,int24 bidTick, int24 askTick, uint128 liq,uint128 limitLower, uint128 limitHigher,uint8 reserveFlags, address lpConduit)
   switch (ambientCode) {
     case AmbientCode.MintRange:
       changeAction = PositionChangeAction.Deposit;
-      inputAmountDelta = [extract.amount0Delta, extract.amount1Delta];
+      inputAmountDelta = [data.amount0Delta, data.amount1Delta];
       rewardAmountDelta = [BigInt.zero(), BigInt.zero()];
-      tag = extract.helper.tickToPositionTag(extract.tl, extract.tu);
+      tag = data.helper.tickToPositionTag(data.tl, data.tu);
       break;
     case AmbientCode.BurnRange:
       changeAction = PositionChangeAction.Withdraw;
-      inputAmountDelta = [extract.amount0Delta, extract.amount1Delta];
+      inputAmountDelta = [data.amount0Delta, data.amount1Delta];
       rewardAmountDelta = [BigInt.zero(), BigInt.zero()];
-      tag = extract.helper.tickToPositionTag(extract.tl, extract.tu);
+      tag = data.helper.tickToPositionTag(data.tl, data.tu);
       break;
     case AmbientCode.MintAmbient:
       changeAction = PositionChangeAction.Deposit;
-      inputAmountDelta = [extract.amount0Delta, extract.amount1Delta];
+      inputAmountDelta = [data.amount0Delta, data.amount1Delta];
       rewardAmountDelta = [BigInt.zero(), BigInt.zero()];
-      tag = AmbientHelper.AMBIENT;//ambient
+      tag = AmbientHelper.AMBIENT_POSITION; //ambient
       break;
     case AmbientCode.BurnAmbient:
       changeAction = PositionChangeAction.Withdraw;
-      inputAmountDelta = [extract.amount0Delta, extract.amount1Delta];
+      inputAmountDelta = [data.amount0Delta, data.amount1Delta];
       rewardAmountDelta = [BigInt.zero(), BigInt.zero()];
-      tag = AmbientHelper.AMBIENT;//ambient
+      tag = AmbientHelper.AMBIENT_POSITION; //ambient
       break;
     case AmbientCode.Harvest:
       changeAction = PositionChangeAction.Harvest;
       inputAmountDelta = [BigInt.zero(), BigInt.zero()];
-      rewardAmountDelta = [extract.amount0Delta, extract.amount1Delta];
+      rewardAmountDelta = [data.amount0Delta, data.amount1Delta];
       tag =
-        extract.tl === 0 && extract.tu === 0
-          ? extract.helper.tickToPositionTag(extract.tl, extract.tu)
-          : AmbientHelper.AMBIENT;//ambient
+        data.tl === 0 && data.tu === 0
+          ? data.helper.tickToPositionTag(data.tl, data.tu)
+          : AmbientHelper.AMBIENT_POSITION; //ambient
       break;
     default:
       return;
@@ -77,10 +89,10 @@ export function handleWarmCmd(event: CrocWarmCmd): void {
   savePositionChange(
     event,
     changeAction,
-    extract.helper,
+    data.helper,
     new PositionParams(
       event.transaction.from,
-      extract.helper.tickToPositionTag(extract.tl, extract.tu), // tag
+      data.helper.tickToPositionTag(data.tl, data.tu), // tag
       PositionType.Invest, // type
       [principals.amount0, principals.amount1], // inputAmounts
       [rewards.amount0, rewards.amount1], // rewardAmounts
@@ -90,13 +102,94 @@ export function handleWarmCmd(event: CrocWarmCmd): void {
     inputAmountDelta, // inputAmountsDelta
     rewardAmountDelta // rewardAmountsDelta
   );
-  
 }
-export function handleColdCmd(
-  event: CrocColdCmd
-): void {
+
+// emit CrocEvents.CrocMicroMintRange(abi.encode(price, priceTick, seed, conc, seedGrowth, concGrowth,tl, tu, liq, poolHash), abi.encode(baseFlow, quoteFlow, concOut, seedOut));
+export function handleMicroMintRange(event: CrocMicroMintRange): void {
+  const invetmentAddress = dataSource.address();
+  const data = new CrocMicroRangeData(event, invetmentAddress);
+  savePositionChange(
+    event,
+    PositionChangeAction.Deposit,
+    data.helper,
+    new PositionParams(
+      event.transaction.from,
+      data.helper.tickToPositionTag(data.tl, data.tu), // tag
+      PositionType.Invest, // type
+      [data.principals.amount0, data.principals.amount1], // inputAmounts
+      [data.rewards.amount0, data.rewards.amount1], // rewardAmounts
+      data.principals.liquidity, // liquidity
+      []
+    ),
+    [data.baseFlow, data.quoteFlow], // inputAmountsDelta
+    [BigInt.zero(), BigInt.zero()] // rewardAmountsDelta
+  );
+}
+
+export function handleMicroBurnRange(event: CrocMicroBurnRange): void {
+  const invetmentAddress = dataSource.address();
+  const data = new CrocMicroRangeData(event, invetmentAddress);
+  savePositionChange(
+    event,
+    PositionChangeAction.Withdraw,
+    data.helper,
+    new PositionParams(
+      event.transaction.from,
+      data.helper.tickToPositionTag(data.tl, data.tu), // tag
+      PositionType.Invest, // type
+      [data.principals.amount0, data.principals.amount1], // inputAmounts
+      [data.rewards.amount0, data.rewards.amount1], // rewardAmounts
+      data.principals.liquidity, // liquidity
+      []
+    ),
+    [data.baseFlow, data.quoteFlow], // inputAmountsDelta
+    [BigInt.zero(), BigInt.zero()] // rewardAmountsDelta
+  );
+}
+// emit CrocEvents.CrocMicroMintAmbient(abi.encode(price, seed, conc, seedGrowth, concGrowth,liq, poolHash), abi.encode(baseFlow, quoteFlow, seedOut));
+export function handleMicroMintAmbient(event: CrocMicroMintAmbient): void {
+  const invetmentAddress = dataSource.address();
+  const data = new CrocMicroRangeData(event, invetmentAddress);
+  savePositionChange(
+    event,
+    PositionChangeAction.Withdraw,
+    data.helper,
+    new PositionParams(
+      event.transaction.from,
+      AmbientHelper.AMBIENT_POSITION, // tag
+      PositionType.Invest, // type
+      [data.principals.amount0, data.principals.amount1], // inputAmounts
+      [data.rewards.amount0, data.rewards.amount1], // rewardAmounts
+      data.principals.liquidity, // liquidity
+      []
+    ),
+    [data.baseFlow, data.quoteFlow], // inputAmountsDelta
+    [BigInt.zero(), BigInt.zero()] // rewardAmountsDelta
+  );
+}
+export function handleMicroBurnAmbient(event: CrocMicroBurnAmbient): void {
+  const invetmentAddress = dataSource.address();
+  const data = new CrocMicroAmbientData(event, invetmentAddress);
+  savePositionChange(
+    event,
+    PositionChangeAction.Withdraw,
+    data.helper,
+    new PositionParams(
+      event.transaction.from,
+      AmbientHelper.AMBIENT_POSITION, // tag
+      PositionType.Invest, // type
+      [data.principals.amount0, data.principals.amount1], // inputAmounts
+      [data.rewards.amount0, data.rewards.amount1], // rewardAmounts
+      data.principals.liquidity, // liquidity
+      []
+    ),
+    [data.baseFlow, data.quoteFlow], // inputAmountsDelta
+    [BigInt.zero(), BigInt.zero()] // rewardAmountsDelta
+  );
+}
+export function handleColdCmd(event: CrocColdCmd): void {
   const initPoolCode = 71;
-  const inputs = event.params.input;  
+  const inputs = event.params.input;
   const cmdCode = inputs[31];
   if (cmdCode === initPoolCode) {
     const params = ethereum
@@ -118,12 +211,11 @@ export function handleBlock(block: ethereum.Block): void {
   if (!protocol) return;
   const investments = protocol.investments.load();
   const batch = dataSource.context().getI32("snapshotBatch");
-  const weeklyBlockEnd = dataSource.context().getI32("weeklyBlockEnd");
-  const weeklyBatch = dataSource.context().getI32("weeklySnapshotBatch");
-  if( block.number < BigInt.fromI32(weeklyBlockEnd) && weeklyBatch > batch) return;
+  const startSnapshotBlock = dataSource.context().getI32("startSnapshotBlock");
+  if (block.timestamp < BigInt.fromI32(startSnapshotBlock)) return;
   const pool = AmbientDex.bind(dataSource.address());
   const protocolInit = protocol._batchIterator.toI32();
-  for (let i = protocolInit; i < investments.length; i+= batch) {
+  for (let i = protocolInit; i < investments.length; i += batch) {
     const investment = investments[i];
     const token0 = investment.inputTokens[0].toHexString();
     const token1 = investment.inputTokens[1].toHexString();
@@ -135,12 +227,11 @@ export function handleBlock(block: ethereum.Block): void {
         investment.meta[0]
       )
     );
-    // ?? 만약 투자처 하나도 20분을 넘으면 어카지??
+
     const positions = investment.positions.load();
     for (let i = 0; i < positions.length; i += 1) {
       const position = positions[i];
       if (position.closed) continue;
-      // const ticks = helper.tagToTicks(position.tag);
       const principals = helper.getPrincipalInfo(
         Address.fromBytes(position.owner),
         position.tag
@@ -168,34 +259,7 @@ export function handleBlock(block: ethereum.Block): void {
   protocol._batchIterator = BigInt.fromI32((protocolInit + 1) % batch);
   protocol.save();
 }
-class UserCmdData {
-  token0: Address;
-  token1: Address;
-  poolIdx: BigInt;
-  tl: i32;
-  tu: i32;
-  liquidity: BigInt;
-  amount0Delta: BigInt;
-  amount1Delta: BigInt;
-  ambientDex: AmbientDex;
-  helper: AmbientHelper;
 
-  constructor(event: CrocWarmCmd, params: ethereum.Tuple) {
-    this.token0 = params[1].toAddress();
-    this.token1 = params[2].toAddress();
-    this.poolIdx = params[3].toBigInt();
-    this.tl = params[4].toI32();
-    this.tu = params[5].toI32();
-    this.liquidity = params[6].toBigInt();
-    this.amount0Delta = event.params.baseFlow; // + : add baseFlow to the pool , - : remove baseFlow from the pool
-    this.amount1Delta = event.params.quoteFlow;
-    this.ambientDex = AmbientDex.bind(dataSource.address());
-    this.helper = new AmbientHelper(
-      this.ambientDex._address,
-      new AmbientDetails(this.token0, this.token1, this.poolIdx.toString())
-    );
-  }
-}
 enum AmbientCode {
   MintRange = 1,
   BurnRange = 2,

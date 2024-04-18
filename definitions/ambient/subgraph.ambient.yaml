@@ -18,12 +18,9 @@ dataSources:
       snapshotBatch:
         type: Int
         data: {{snapshotBatch}} 
-      weeklyBlockEnd:
+      startSnapshotBlock:
         type: Int
-        data: {{weeklyBlock}}
-      weeklySnapshotBatch:
-        type: Int
-        data: {{weeklySnapshotBatch}}
+        data: {{startSnapshotBlock}}
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
