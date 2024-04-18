@@ -1,45 +1,47 @@
 import { AmbientQuery } from "./../../../generated/Ambient/AmbientQuery";
-import {
-  Address,
-  BigInt,
-  Bytes,
-  ethereum,
-} from "@graphprotocol/graph-ts";
+import { Address, BigInt, Bytes, ethereum } from "@graphprotocol/graph-ts";
 import {
   InvestmentHelper,
   InvestmentInfo,
 } from "../../common/helpers/investmentHelper";
 import { getContextAddress } from "../../common/helpers/contextHelper";
 import { Investment } from "../../../generated/schema";
-import { AmbientDetails, AmbientPrincipal, AmbientReward, AmbientSnapshot } from "./type";
+import {
+  AmbientDetails,
+  AmbientPrincipal,
+  AmbientReward,
+  AmbientSnapshot,
+} from "./type";
 
 export const AMBIENT_FINANCE = "ambient";
 
-export function getAmbientInvestmentId(
-  poolHash: Bytes,
-  investmentAddress: Address
-): Bytes {
-  return Bytes.fromUTF8(AMBIENT_FINANCE)
-    .concat(investmentAddress)
-    .concat(poolHash);
-}
 export class AmbientHelper extends InvestmentHelper {
   constructor(investmentAddress: Address, readonly details: AmbientDetails) {
-    super(AMBIENT_FINANCE, investmentAddress, details.toTag(),details.getPoolHash());
+    super(AMBIENT_FINANCE, investmentAddress, details.toTag());
+    this.id = AmbientHelper.getAmbientInvestmentId(details.getPoolHash(), investmentAddress);
   }
   static readonly AMBIENT_POSITION: string = "0_0";
   // tag: {token0}_{token1}_{poolIdx}
-  static getHelperFromInvestmentTag(tag: string,investmentAddress: Address): AmbientHelper {
-
+  static getHelperFromInvestmentTag(
+    tag: string,
+    investmentAddress: Address
+  ): AmbientHelper {
     const tagSplit = tag.split("_");
     const token0 = Address.fromString(tagSplit[0]);
     const token1 = Address.fromString(tagSplit[1]);
     const poolIdx = tagSplit[2];
-    return new AmbientHelper(investmentAddress,new AmbientDetails(
-      token0,
-      token1,
-      poolIdx
-    ))
+    return new AmbientHelper(
+      investmentAddress,
+      new AmbientDetails(token0, token1, poolIdx)
+    );
+  }
+  static getAmbientInvestmentId(
+    poolHash: Bytes,
+    investmentAddress: Address
+  ): Bytes {
+    return Bytes.fromUTF8(AMBIENT_FINANCE)
+      .concat(investmentAddress)
+      .concat(poolHash);
   }
   getProtocolMeta(): string[] {
     return [];
@@ -55,7 +57,7 @@ export class AmbientHelper extends InvestmentHelper {
   }
 
   getOrCreateInvestment(block: ethereum.Block): Investment {
-    let investment = Investment.load(this.id); // Q.poolHash로 investment를 찾기를 원함.
+    let investment = Investment.load(this.id);
     if (!investment) {
       const protocol = this.getProtocol(block);
       const info = this.getInfo(this.investmentAddress);

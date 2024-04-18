@@ -30,7 +30,7 @@ export function upsertPosition(
 
   let closed = true;
   for (let i = 0; i < position.amounts.length; i++) {
-    if (BigInt.fromString(position.amounts[i].toString()) !== BigInt.zero()) {
+    if (position.amounts[i].gt(BigInt.zero())) {
       closed = false;
       break;
     }

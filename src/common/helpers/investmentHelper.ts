@@ -28,7 +28,9 @@ export function getInvestmentId(
   investmentAddress: Address,
   tag: string = ""
 ): Bytes {
-  return Bytes.fromUTF8(protocol).concat(investmentAddress).concat(Bytes.fromUTF8(tag));
+  return Bytes.fromUTF8(protocol)
+    .concat(investmentAddress)
+    .concat(Bytes.fromUTF8(tag));
 }
 
 export function getProtocolId(protocolName: string): Bytes {
@@ -43,13 +45,8 @@ export abstract class InvestmentHelper {
     readonly tag: string,
     readonly _id: Bytes = Bytes.fromHexString("")
   ) {
-    if(_id === Bytes.fromHexString("")){
-      // create investment id for the specific investment, ex. ambient) id: {protocolName}{investmentAddress}:{poolHash}
-      this.id = _id;
-    } else {
-      // create investment base id with protocol name and investment address, base id: {protocolName}{investmentAddress}:{tag}
-      this.id = getInvestmentId(protocolName, investmentAddress, tag);
-    }
+    // create investment base id with protocol name and investment address, base id: {protocolName}{investmentAddress}:{tag}
+    this.id = getInvestmentId(protocolName, investmentAddress, tag);
   }
   ////// ABSTRACTS //////
   /**
