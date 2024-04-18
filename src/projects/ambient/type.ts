@@ -1,8 +1,11 @@
 import { Address, BigInt, Bytes, crypto, dataSource, ethereum } from "@graphprotocol/graph-ts";
-import { AmbientHelper, getAmbientInvestmentId } from "./helper";
+import { AmbientHelper } from "./helper";
 import { Investment } from "../../../generated/schema";
-import { AmbientDex, CrocMicroBurnAmbient, CrocMicroBurnRange, CrocMicroMintAmbient, CrocMicroMintRange, CrocWarmCmd } from "../../../generated/Ambient/AmbientDex";
-
+import { AmbientDex, CrocWarmCmd } from "../../../generated/Ambient/AmbientDex";
+export enum AmbientInvestment {
+  NOT_FOUND,
+  FOUND
+}
 export class AmbientSnapshot {
   constructor(
     readonly principal: AmbientPrincipal,
@@ -91,9 +94,9 @@ export class CrocMicroAmbientData {
   readonly baseFlow: BigInt;
   readonly quoteFlow: BigInt;
   readonly helper: AmbientHelper;
-
   readonly principals: AmbientPrincipal;
   readonly rewards: AmbientReward;
+  readonly isInvestFound: AmbientInvestment;
   constructor(
     event: ethereum.Event,
     investmentAddress: Address
@@ -115,22 +118,31 @@ export class CrocMicroAmbientData {
 
     // get investment from poolHash
     const poolHash = input_d[6].toBytes();
-    const id = getAmbientInvestmentId(poolHash, investmentAddress);
-    const investment = Investment.load(id)!;
-    // get helper from investment
-    this.helper = AmbientHelper.getHelperFromInvestmentTag(
-      investment.tag,
-      investmentAddress
-    );
-    //get reward & principal info
-    this.principals = this.helper.getPrincipalInfo(
-      event.transaction.from,
-      AmbientHelper.AMBIENT_POSITION
-    );
-    this.rewards = this.helper.getRewardInfo(
-      event.transaction.from,
-      AmbientHelper.AMBIENT_POSITION
-    );
+    const id = AmbientHelper.getAmbientInvestmentId(poolHash, investmentAddress);
+    const investment = Investment.load(id);
+    if(investment) {
+      this.isInvestFound = AmbientInvestment.FOUND;
+      // get helper from investment
+      this.helper = AmbientHelper.getHelperFromInvestmentTag(
+        investment.tag,
+        investmentAddress
+      );
+      //get reward & principal info
+      this.principals = this.helper.getPrincipalInfo(
+        event.transaction.from,
+        AmbientHelper.AMBIENT_POSITION
+      );
+      this.rewards = this.helper.getRewardInfo(
+        event.transaction.from,
+        AmbientHelper.AMBIENT_POSITION
+      );
+    } else {
+      this.isInvestFound = AmbientInvestment.NOT_FOUND;
+      this.helper = new AmbientHelper(investmentAddress, new AmbientDetails(Address.fromString("0x0"), Address.fromString("0x0"), "0"));
+      this.principals = new AmbientPrincipal(BigInt.fromI32(0), BigInt.fromI32(0), BigInt.fromI32(0));
+      this.rewards = new AmbientReward(BigInt.fromI32(0), BigInt.fromI32(0));
+    };
+    
   }
 }
 // emit CrocEvents.CrocMicroMintRange
@@ -146,9 +158,9 @@ export class CrocMicroRangeData {
   readonly baseFlow: BigInt;
   readonly quoteFlow: BigInt;
   readonly helper: AmbientHelper;
-
   readonly principals: AmbientPrincipal;
   readonly rewards: AmbientReward;
+  readonly isInvestFound: AmbientInvestment;
   constructor(
     event: ethereum.Event,
     investmentAddress: Address
@@ -171,22 +183,31 @@ export class CrocMicroRangeData {
 
     // get investment from poolHash
     const poolHash = input_d[9].toBytes();
-    const id = getAmbientInvestmentId(poolHash, investmentAddress);
-    const investment = Investment.load(id)!;
-    // get helper from investment
-    this.helper = AmbientHelper.getHelperFromInvestmentTag(
-      investment.tag,
-      investmentAddress
-    );
-    //get reward & principal info
-    this.principals = this.helper.getPrincipalInfo(
-      event.transaction.from,
-      this.helper.tickToPositionTag(this.tl, this.tu)
-    );
-    this.rewards = this.helper.getRewardInfo(
-      event.transaction.from,
-      this.helper.tickToPositionTag(this.tl, this.tu)
-    );
+    const id = AmbientHelper.getAmbientInvestmentId(poolHash, investmentAddress);
+    const investment = Investment.load(id);
+    if(investment) {
+      this.isInvestFound = AmbientInvestment.FOUND;
+      // get helper from investment
+      this.helper = AmbientHelper.getHelperFromInvestmentTag(
+        investment.tag,
+        investmentAddress
+      );
+      //get reward & principal info
+      this.principals = this.helper.getPrincipalInfo(
+        event.transaction.from,
+        this.helper.tickToPositionTag(this.tl, this.tu)
+      );
+      this.rewards = this.helper.getRewardInfo(
+        event.transaction.from,
+        this.helper.tickToPositionTag(this.tl, this.tu)
+      );
+    } else {
+      this.isInvestFound = AmbientInvestment.NOT_FOUND;
+      this.helper = new AmbientHelper(investmentAddress, new AmbientDetails(Address.fromString("0x0"), Address.fromString("0x0"), "0"));
+      this.principals = new AmbientPrincipal(BigInt.fromI32(0), BigInt.fromI32(0), BigInt.fromI32(0));
+      this.rewards = new AmbientReward(BigInt.fromI32(0), BigInt.fromI32(0));
+    }
+    
   }
 } 
 

@@ -18,6 +18,7 @@ import { savePositionSnapshot } from "../../common/savePositionSnapshot";
 import { getProtocolId } from "../../common/helpers/investmentHelper";
 import {
   AmbientDetails,
+  AmbientInvestment,
   CrocMicroAmbientData,
   CrocMicroRangeData,
   CrocWarmCmdData,
@@ -108,6 +109,7 @@ export function handleWarmCmd(event: CrocWarmCmd): void {
 export function handleMicroMintRange(event: CrocMicroMintRange): void {
   const invetmentAddress = dataSource.address();
   const data = new CrocMicroRangeData(event, invetmentAddress);
+  if (data.isInvestFound === AmbientInvestment.NOT_FOUND) return;
   savePositionChange(
     event,
     PositionChangeAction.Deposit,
@@ -129,6 +131,7 @@ export function handleMicroMintRange(event: CrocMicroMintRange): void {
 export function handleMicroBurnRange(event: CrocMicroBurnRange): void {
   const invetmentAddress = dataSource.address();
   const data = new CrocMicroRangeData(event, invetmentAddress);
+  if (data.isInvestFound === AmbientInvestment.NOT_FOUND) return;
   savePositionChange(
     event,
     PositionChangeAction.Withdraw,
@@ -150,6 +153,7 @@ export function handleMicroBurnRange(event: CrocMicroBurnRange): void {
 export function handleMicroMintAmbient(event: CrocMicroMintAmbient): void {
   const invetmentAddress = dataSource.address();
   const data = new CrocMicroRangeData(event, invetmentAddress);
+  if (data.isInvestFound === AmbientInvestment.NOT_FOUND) return;
   savePositionChange(
     event,
     PositionChangeAction.Withdraw,
@@ -170,6 +174,7 @@ export function handleMicroMintAmbient(event: CrocMicroMintAmbient): void {
 export function handleMicroBurnAmbient(event: CrocMicroBurnAmbient): void {
   const invetmentAddress = dataSource.address();
   const data = new CrocMicroAmbientData(event, invetmentAddress);
+  if (data.isInvestFound === AmbientInvestment.NOT_FOUND) return;
   savePositionChange(
     event,
     PositionChangeAction.Withdraw,
