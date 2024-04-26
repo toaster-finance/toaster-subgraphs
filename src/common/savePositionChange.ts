@@ -5,7 +5,7 @@ import { savePositionSnapshot } from "./savePositionSnapshot";
 import { PositionParams } from "./helpers/positionHelper";
 import { InvestmentHelper } from "./helpers/investmentHelper";
 /**
- * snapshot position every event for saving position change
+ * snapshot position every event for saving position change, snapshot position before record position change
  * @param event : event info
  * @param action : position change action
  * @param helper : investment helper for using util functions on investment

@@ -5,5 +5,5 @@
   "polling": 108,
   "snapshotBatch": 200,
   "startBlock": 182357,
-  "startSnapshotBlock": 0
+  "startSnapshotBlock": 2646840
 }

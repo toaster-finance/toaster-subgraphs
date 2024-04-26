@@ -1,4 +1,4 @@
-import { Protocol } from "./../../../generated/schema";
+import { Position, Protocol } from "./../../../generated/schema";
 import { Address, BigInt, dataSource, ethereum } from "@graphprotocol/graph-ts";
 import {
   AmbientDex,
@@ -18,12 +18,15 @@ import { savePositionSnapshot } from "../../common/savePositionSnapshot";
 import { getProtocolId } from "../../common/helpers/investmentHelper";
 import {
   AmbientDetails,
-  AmbientInvestment,
+  AmbientPrincipal,
+  AmbientReward,
   CrocMicroAmbientData,
   CrocMicroRangeData,
   CrocWarmCmdData,
 } from "./type";
-
+// CrocWarmCmd 
+// CrocColdCmd
+// CrocMicroEvent
 export function handleWarmCmd(event: CrocWarmCmd): void {
   const inputs = event.params.input;
   const code = inputs[31];
@@ -36,14 +39,21 @@ export function handleWarmCmd(event: CrocWarmCmd): void {
     )!
     .toTuple();
   const data = new CrocWarmCmdData(event, params);
-  const principals = data.helper.getPrincipalInfo(
-    event.transaction.from,
-    data.helper.tickToPositionTag(data.tl, data.tu)
-  );
-  const rewards = data.helper.getRewardInfo(
-    event.transaction.from,
-    data.helper.tickToPositionTag(data.tl, data.tu)
-  );
+  const positionTag = data.helper.tickToPositionTag(data.tl, data.tu);
+  const positionId = data.helper.getPositionId(event.transaction.from, positionTag);
+  const position = Position.load(positionId);
+  let principals: AmbientPrincipal;
+  let rewards: AmbientReward;
+  if(position) {
+    principals = data.helper.getPrincipalInfo(
+      event.transaction.from,
+      positionTag
+    );
+    rewards = data.helper.getRewardInfo(event.transaction.from, positionTag);
+  } else {
+    principals = new AmbientPrincipal(data.amount0Delta, data.amount1Delta, data.liquidity);
+    rewards = new AmbientReward(BigInt.zero(), BigInt.zero());
+  }
   let changeAction: PositionChangeAction = PositionChangeAction.Deposit;
   let inputAmountDelta: BigInt[] = [];
   let rewardAmountDelta: BigInt[] = [];
@@ -85,7 +95,7 @@ export function handleWarmCmd(event: CrocWarmCmd): void {
           : AmbientHelper.AMBIENT_POSITION; //ambient
       break;
     default:
-      return;
+      throw new Error("Invalid Ambient Code");
   }
   savePositionChange(
     event,
@@ -109,7 +119,6 @@ export function handleWarmCmd(event: CrocWarmCmd): void {
 export function handleMicroMintRange(event: CrocMicroMintRange): void {
   const invetmentAddress = dataSource.address();
   const data = new CrocMicroRangeData(event, invetmentAddress);
-  if (data.isInvestFound === AmbientInvestment.NOT_FOUND) return;
   savePositionChange(
     event,
     PositionChangeAction.Deposit,
@@ -131,7 +140,6 @@ export function handleMicroMintRange(event: CrocMicroMintRange): void {
 export function handleMicroBurnRange(event: CrocMicroBurnRange): void {
   const invetmentAddress = dataSource.address();
   const data = new CrocMicroRangeData(event, invetmentAddress);
-  if (data.isInvestFound === AmbientInvestment.NOT_FOUND) return;
   savePositionChange(
     event,
     PositionChangeAction.Withdraw,
@@ -153,7 +161,6 @@ export function handleMicroBurnRange(event: CrocMicroBurnRange): void {
 export function handleMicroMintAmbient(event: CrocMicroMintAmbient): void {
   const invetmentAddress = dataSource.address();
   const data = new CrocMicroRangeData(event, invetmentAddress);
-  if (data.isInvestFound === AmbientInvestment.NOT_FOUND) return;
   savePositionChange(
     event,
     PositionChangeAction.Withdraw,
@@ -174,7 +181,6 @@ export function handleMicroMintAmbient(event: CrocMicroMintAmbient): void {
 export function handleMicroBurnAmbient(event: CrocMicroBurnAmbient): void {
   const invetmentAddress = dataSource.address();
   const data = new CrocMicroAmbientData(event, invetmentAddress);
-  if (data.isInvestFound === AmbientInvestment.NOT_FOUND) return;
   savePositionChange(
     event,
     PositionChangeAction.Withdraw,
