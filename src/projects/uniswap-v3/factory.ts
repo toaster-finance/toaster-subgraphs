@@ -16,6 +16,7 @@ export function handlePoolCreated(event: PoolCreated): void {
   i.address = event.params.pool;
   i.inputTokens = [event.params.token0, event.params.token1];
   i.rewardTokens = [event.params.token0, event.params.token1];
+  i.tag = "";
 
   const pool = UniswapV3PoolContract.bind(event.params.pool);
   i.meta = [pool.fee().toString()];

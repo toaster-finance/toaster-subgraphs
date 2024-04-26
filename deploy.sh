@@ -21,14 +21,12 @@ if [[ -z "$network" || -z "$protocol" || -z "$env" ]]; then
     exit 1
 fi
 
-if [[ "$env" != "prod" && "$env" != "local" ]]; then
-    echo "Error: Invalid environment specified. Environment must be 'prod' or 'local'."
-    exit 1
-fi
-
 # env 파일을 통한 graph key 가져오기
 if [[ -f ".env.$env" ]]; then
     source ".env.$env"
+else
+    echo "Error: .env.$env file not found."
+    exit 1
 fi
 
 # 파일의 존재 여부 확인

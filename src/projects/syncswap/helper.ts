@@ -38,6 +38,7 @@ export class SyncSwapHelper extends InvestmentHelper {
       investment.rewardTokens = info.rewardTokens.map<Bytes>((addr) =>
         Bytes.fromHexString(addr.toHexString())
       );
+      investment.tag = this.tag;
       investment.meta = info.meta;
       investment.blockNumber = block.number;
       investment.blockTimestamp = block.timestamp;
@@ -90,7 +91,12 @@ class LiquidityInfo {
   ) {}
 
   saveTotalSupply(ts: BigInt): void {
-    this.investment.meta[3] = ts.toString();
+    this.investment.meta = [
+      this.investment.meta[0],
+      this.investment.meta[1],
+      this.investment.meta[2],
+      ts.toString(),
+    ]
     this.investment.save();
   }
 }

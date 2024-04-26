@@ -58,7 +58,12 @@ export function handleBlock(block: ethereum.Block): void {
     );
   }
 
-  l.investment.meta[0] = ((init + 1) % batch).toString();
+  l.investment.meta = [
+    ((init + 1) % batch).toString(),
+    l.investment.meta[1],
+    l.investment.meta[2],
+    l.investment.meta[3],
+  ];
   l.investment.save();
 }
 
@@ -272,5 +277,12 @@ export function handleSync(event: Sync): void {
   );
   i.meta[1] = event.params.reserve0.toString();
   i.meta[2] = event.params.reserve1.toString();
+
+  i.meta = [
+    i.meta[0],
+    event.params.reserve0.toString(),
+    event.params.reserve1.toString(),
+    i.meta[3],
+  ]
   i.save();
 }

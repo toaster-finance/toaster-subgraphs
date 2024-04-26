@@ -17,6 +17,7 @@ export function handlePoolCreated(event: PoolCreated): void {
 
   i.protocol = protocol.id;
   i.address = event.params.pool;
+  i.tag = "";
   i.inputTokens = [event.params.token0, event.params.token1];
   i.rewardTokens = [
     event.params.token0,
