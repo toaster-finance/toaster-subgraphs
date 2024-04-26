@@ -91,8 +91,8 @@ export function handleWarmCmd(event: CrocWarmCmd): void {
       rewardAmountDelta = [data.amount0Delta, data.amount1Delta];
       tag =
         data.tl === 0 && data.tu === 0
-          ? data.helper.tickToPositionTag(data.tl, data.tu)
-          : AmbientHelper.AMBIENT_POSITION; //ambient
+          ? AmbientHelper.AMBIENT_POSITION
+          : data.helper.tickToPositionTag(data.tl, data.tu); //ambient
       break;
     default:
       throw new Error("Invalid Ambient Code");
@@ -223,7 +223,7 @@ export function handleBlock(block: ethereum.Block): void {
   const investments = protocol.investments.load();
   const batch = dataSource.context().getI32("snapshotBatch");
   const startSnapshotBlock = dataSource.context().getI32("startSnapshotBlock");
-  if (block.timestamp < BigInt.fromI32(startSnapshotBlock)) return;
+  if (block.number < BigInt.fromI32(startSnapshotBlock)) return;
   const pool = AmbientDex.bind(dataSource.address());
   const protocolInit = protocol._batchIterator.toI32();
   for (let i = protocolInit; i < investments.length; i += batch) {
@@ -264,7 +264,6 @@ export function handleBlock(block: ethereum.Block): void {
           []
         )
       );
-      position.save();
     }
   }
   protocol._batchIterator = BigInt.fromI32((protocolInit + 1) % batch);
@@ -279,6 +278,7 @@ enum AmbientCode {
   Harvest = 5,
   Error = -1,
 }
+//https://docs.ambient.finance/developers/dex-contract-interface/flat-lp-calls
 export function decodeWarmPathCode(code: i32): AmbientCode {
   switch (code) {
     case 1:
