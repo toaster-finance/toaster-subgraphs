@@ -10,15 +10,24 @@ import {
   AmbientDetails,
   AmbientPrincipal,
   AmbientReward,
-  AmbientSnapshot,
 } from "./type";
 
 export const AMBIENT_FINANCE = "ambient";
 
+/**
+ * id: ambient_{investmentAddress}_{poolHash}
+ * - poolHash: keccak256({token0}_{token1}_{poolIdx})
+ * protocolName: ambient
+ * investmentAddress: address of investment
+ * tag: {token0}_{token1}_{poolIdx}
+ */
 export class AmbientHelper extends InvestmentHelper {
   constructor(investmentAddress: Address, readonly details: AmbientDetails) {
     super(AMBIENT_FINANCE, investmentAddress, details.toTag());
-    this.id = AmbientHelper.getAmbientInvestmentId(details.getPoolHash(), investmentAddress);
+    this.id = AmbientHelper.getAmbientInvestmentId(
+      details.getPoolHash(),
+      investmentAddress
+    );
   }
   static readonly AMBIENT_POSITION: string = "0_0";
   // tag: {token0}_{token1}_{poolIdx}
@@ -35,6 +44,12 @@ export class AmbientHelper extends InvestmentHelper {
       new AmbientDetails(token0, token1, poolIdx)
     );
   }
+  /**
+   *
+   * @param poolHash keccak256({token0}_{token1}_{poolIdx})
+   * @param investmentAddress address of investment
+   * @returns
+   */
   static getAmbientInvestmentId(
     poolHash: Bytes,
     investmentAddress: Address
@@ -130,31 +145,6 @@ export class AmbientHelper extends InvestmentHelper {
         rewards.getQuoteRewards()
       ); //amount0,amount1
     }
-  }
-
-  getPositionFromSnapshot(block: ethereum.Block, tag: string): AmbientSnapshot {
-    const investment = this.getOrCreateInvestment(block);
-    const positions = investment.positions.load();
-    for (let i = 0; i < positions.length; i++) {
-      if (positions[i].tag == tag) {
-        return new AmbientSnapshot(
-          new AmbientPrincipal(
-            positions[i].amounts[0],
-            positions[i].amounts[1],
-            positions[i].liquidity
-          ),
-          new AmbientReward(positions[i].amounts[2], positions[i].amounts[3])
-        );
-      }
-    }
-    return new AmbientSnapshot(
-      new AmbientPrincipal(
-        BigInt.fromI32(0),
-        BigInt.fromI32(0),
-        BigInt.fromI32(0)
-      ),
-      new AmbientReward(BigInt.fromI32(0), BigInt.fromI32(0))
-    );
   }
   tickToPositionTag(tickLower: i32, tickUpper: i32): string {
     return tickLower.toString() + "_" + tickUpper.toString();

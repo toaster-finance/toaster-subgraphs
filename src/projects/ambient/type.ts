@@ -6,9 +6,16 @@ import {
   dataSource,
   ethereum,
 } from "@graphprotocol/graph-ts";
-import { AMBIENT_FINANCE, AmbientHelper } from "./helper";
+import { AmbientHelper } from "./helper";
 import { Investment } from "../../../generated/schema";
-import { AmbientDex, CrocWarmCmd } from "../../../generated/Ambient/AmbientDex";
+import {
+  AmbientDex,
+  CrocMicroBurnAmbient,
+  CrocMicroBurnRange,
+  CrocMicroMintAmbient,
+  CrocMicroMintRange,
+  CrocWarmCmd,
+} from "../../../generated/Ambient/AmbientDex";
 export enum AmbientInvestment {
   NOT_FOUND,
   FOUND,
@@ -92,19 +99,15 @@ export class CrocWarmCmdData {
 // emit CrocEvents.CrocMicroMintAmbient
 // input: abi.encode(price, seed, conc, seedGrowth, concGrowth,liq, poolHash),
 // output: abi.encode(baseFlow, quoteFlow, seedOut));
-
-//emit CrocEvents.CrocMicroBurnAmbient
-//input: (abi.encode(price, seed, conc, seedGrowth, concGrowth,liq, poolHash),
-//output: abi.encode(baseFlow, quoteFlow, seedOut));
-export class CrocMicroAmbientData {
+export class CrocMicroMintAmbientData {
   baseFlow: BigInt;
   quoteFlow: BigInt;
   helper: AmbientHelper;
   principals: AmbientPrincipal;
   rewards: AmbientReward;
-  constructor(event: ethereum.Event, investmentAddress: Address) {
-    const input = event.parameters[0].value.toBytes();
-    const output = event.parameters[1].value.toBytes();
+  constructor(event: CrocMicroMintAmbient, investmentAddress: Address) {
+    const input = event.params.input;
+    const output = event.params.output;
     const input_d = ethereum
       .decode("(uint128,uint128,uint128,uint64,uint64,uint128,bytes32)", input)!
       .toTuple();
@@ -129,36 +132,83 @@ export class CrocMicroAmbientData {
       investmentAddress
     );
 
-    const position = this.helper.findPosition(event.transaction.from, AmbientHelper.AMBIENT_POSITION);
+    const position = this.helper.findPosition(
+      event.transaction.from,
+      AmbientHelper.AMBIENT_POSITION
+    );
     if (position) {
       //get reward & principal info
       this.principals = this.helper.getPrincipalInfo(
         event.transaction.from,
         AmbientHelper.AMBIENT_POSITION
       );
-      this.rewards = this.helper.getRewardInfo(event.transaction.from, AmbientHelper.AMBIENT_POSITION);
+      this.rewards = this.helper.getRewardInfo(
+        event.transaction.from,
+        AmbientHelper.AMBIENT_POSITION
+      );
     } else {
       this.principals = new AmbientPrincipal(
         this.baseFlow,
         this.quoteFlow,
         liq
       );
-      this.rewards = new AmbientReward(
-        BigInt.fromI32(0),
-        BigInt.fromI32(0)
-      );
+      this.rewards = new AmbientReward(BigInt.fromI32(0), BigInt.fromI32(0));
     }
-    
+  }
+}
+//emit CrocEvents.CrocMicroBurnAmbient
+//input: (abi.encode(price, seed, conc, seedGrowth, concGrowth,liq, poolHash),
+//output: abi.encode(baseFlow, quoteFlow, seedOut));
+export class CrocMicroBurnAmbientData {
+  baseFlow: BigInt;
+  quoteFlow: BigInt;
+  helper: AmbientHelper;
+  principals: AmbientPrincipal;
+  rewards: AmbientReward;
+  constructor(event: CrocMicroBurnAmbient, investmentAddress: Address) {
+    const input = event.params.input;
+    const output = event.params.output;
+    const input_d = ethereum
+      .decode("(uint128,uint128,uint128,uint64,uint64,uint128,bytes32)", input)!
+      .toTuple();
+    const output_d = ethereum
+      .decode("(int128,int128,uint128)", output)!
+      .toTuple();
+
+    this.baseFlow = output_d[0].toBigInt();
+    this.quoteFlow = output_d[1].toBigInt();
+    const liq = input_d[5].toBigInt();
+    // get investment from poolHash
+    const poolHash = input_d[6].toBytes();
+    const id = AmbientHelper.getAmbientInvestmentId(
+      poolHash,
+      investmentAddress
+    );
+    const investment = Investment.load(id);
+    if (!investment) throw new Error("Investment not found");
+    // get helper from investment
+    this.helper = AmbientHelper.getHelperFromInvestmentTag(
+      investment.tag,
+      investmentAddress
+    );
+
+    const position = this.helper.findPosition(
+      event.transaction.from,
+      AmbientHelper.AMBIENT_POSITION
+    );
+    if (!position) throw new Error("Position Not Found");
+    //get reward & principal info
+    this.principals = this.helper.getPrincipalInfo(
+      event.transaction.from,
+      AmbientHelper.AMBIENT_POSITION
+    );
+    this.rewards = new AmbientReward(BigInt.fromI32(0), BigInt.fromI32(0));
   }
 }
 // emit CrocEvents.CrocMicroMintRange
 // input: (abi.encode(price, priceTick, seed, conc, seedGrowth concGrowth,tl,tu,liq,poolHash),
 // output: abi.encode(baseFlow, quoteFlow, concOut, seedOut));
-
-// emit CrocEvents.CrocMicroBurnRange
-// input: (abi.encode(price, priceTick, seed, conc, seedGrowth, concGrowth,tl, tu, liq, poolHash),
-// output: abi.encode(baseFlow, quoteFlow, concOut, seedOut));
-export class CrocMicroRangeData {
+export class CrocMicroMintRangeData {
   tl: i32;
   tu: i32;
   baseFlow: BigInt;
@@ -166,9 +216,9 @@ export class CrocMicroRangeData {
   helper: AmbientHelper;
   principals: AmbientPrincipal;
   rewards: AmbientReward;
-  constructor(event: ethereum.Event, investmentAddress: Address) {
-    const input = event.parameters[0].value.toBytes();
-    const output = event.parameters[1].value.toBytes();
+  constructor(event: CrocMicroMintRange, investmentAddress: Address) {
+    const input = event.params.input;
+    const output = event.params.output;
     const input_d = ethereum
       .decode(
         "(uint128,uint128,uint128,uint128,uint64,uint64,int24,int24,uint128,bytes32)",
@@ -214,7 +264,59 @@ export class CrocMicroRangeData {
       );
       this.rewards = new AmbientReward(BigInt.fromI32(0), BigInt.fromI32(0));
     }
-    
-    
+  }
+}
+// emit CrocEvents.CrocMicroBurnRange
+// input: (abi.encode(price, priceTick, seed, conc, seedGrowth, concGrowth,tl, tu, liq, poolHash),
+// output: abi.encode(baseFlow, quoteFlow, concOut, seedOut));
+export class CrocMicroBurnRangeData {
+  tl: i32;
+  tu: i32;
+  baseFlow: BigInt;
+  quoteFlow: BigInt;
+  helper: AmbientHelper;
+  principals: AmbientPrincipal;
+  rewards: AmbientReward;
+  constructor(event: CrocMicroBurnRange, investmentAddress: Address) {
+    const input = event.params.input;
+    const output = event.params.output;
+    const input_d = ethereum
+      .decode(
+        "(uint128,uint128,uint128,uint128,uint64,uint64,int24,int24,uint128,bytes32)",
+        input
+      )!
+      .toTuple();
+    const output_d = ethereum
+      .decode("(int128,int128,uint128,uint128)", output)!
+      .toTuple();
+    this.tl = input_d[6].toI32();
+    this.tu = input_d[7].toI32();
+    this.baseFlow = output_d[0].toBigInt();
+    this.quoteFlow = output_d[1].toBigInt();
+    const liq = input_d[8].toBigInt();
+
+    // get investment from poolHash
+    const poolHash = input_d[9].toBytes();
+    const id = AmbientHelper.getAmbientInvestmentId(
+      poolHash,
+      investmentAddress
+    );
+    const investment = Investment.load(id);
+    if (!investment) throw new Error("Investment not found");
+    // get helper from investment
+    this.helper = AmbientHelper.getHelperFromInvestmentTag(
+      investment.tag,
+      investmentAddress
+    );
+    const posTag = this.helper.tickToPositionTag(this.tl, this.tu);
+    const position = this.helper.findPosition(event.transaction.from, posTag);
+    if (!position) throw new Error("Position Not Found");
+    //get reward & principal info
+    this.principals = this.helper.getPrincipalInfo(
+      event.transaction.from,
+      posTag
+    );
+
+    this.rewards = new AmbientReward(BigInt.fromI32(0), BigInt.fromI32(0));
   }
 }
