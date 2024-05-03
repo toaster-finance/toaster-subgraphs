@@ -98,7 +98,7 @@ export class AmbientHelper extends InvestmentHelper {
     const query = AmbientQuery.bind(getContextAddress("ambientQuery"));
     const ticks = this.tagToTicks(tag);
 
-    if (tag === AmbientHelper.AMBIENT_POSITION) {
+    if (ticks[0] === 0 && ticks[1] === 0) {
       const principals = query.queryAmbientTokens(
         owner,
         this.details.token0,

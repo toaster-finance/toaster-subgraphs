@@ -37,38 +37,3 @@ export function savePositionChange(
 
   pc.save();
 }
-
-
-/**
- * snapshot position every event for saving position change, snapshot position before record position change
- * @param event : event info
- * @param action : position change action
- * @param helper : investment helper for using util functions on investment
- * @param p : position params
- * @param dInputs : delta input amounts
- * @param dRewards : delta reward amounts (fees, rewards(etc. STG, CAKE))
- */
-export function savePositionChangeByCall(
-  call: ethereum.Call,
-  action: PositionChangeAction,
-  helper: InvestmentHelper,
-  p: PositionParams,
-  dInputs: BigInt[],
-  dRewards: BigInt[]
-): void {
-  const position = savePositionSnapshot(call.block, helper, p);
-
-  const pc = new PositionChange(
-    call.transaction.hash.concatI32(call.transaction.index.toI32())
-  );
-
-  pc.position = position.id;
-  pc.blockNumber = call.block.number;
-  pc.blockTimestamp = call.block.timestamp;
-  pc.transactionHash = call.transaction.hash;
-  pc.action = getAction(action);
-  pc.dAmounts = dInputs.concat(dRewards);
-  pc.afterAmounts = p.inputAmounts.concat(p.rewardAmounts);
-
-  pc.save();
-}

@@ -1,5 +1,4 @@
 import { Position, Protocol } from "./../../../generated/schema";
-// import { UserCmdCall as WarmPathCall } from "../../../generated/WarmPath/WarmPath";
 import {
   Address,
   BigInt,
@@ -16,7 +15,7 @@ import {
   CrocMicroMintRange,
   CrocWarmCmd,
 } from "../../../generated/Ambient/AmbientDex";
-import { savePositionChange, savePositionChangeByCall } from "../../common/savePositionChange";
+import { savePositionChange } from "../../common/savePositionChange";
 import { PositionChangeAction } from "../../common/PositionChangeAction.enum";
 import { AMBIENT_FINANCE, AmbientHelper } from "./helper";
 import { PositionParams } from "../../common/helpers/positionHelper";
@@ -32,7 +31,7 @@ import {
   MicroMintAmbientEventData,
   MicroMintRangeEventData,
   WarmCmdCallData,
-  WarmCmdEventData
+  WarmCmdEventData,
 } from "./type";
 //docs.ambient.finance/developers/dex-contract-interface/knockout-lp-calls
 
@@ -179,147 +178,6 @@ export function handleWarmCmd(event: CrocWarmCmd): void {
     rewardAmountDelta // rewardAmountsDelta
   );
 }
-// export function handleWarmPathCall(call: 
-//   WarmPathCall
-// ): void {
-//   const inputs = call.inputs.input;
-//   const code = inputs[31];
-//   const ambientCode = decodeWarmPathCode(code);
-
-//   if (ambientCode == AmbientCode.Error) return;
-//   const params = ethereum
-//     .decode(
-//       "(uint8,address,address,uint256,int24,int24,uint128,uint128,uint128,uint8,address)",
-//       inputs
-//     )!
-//     .toTuple();
-//   const data = new WarmCmdCallData(call, params);
-//   const positionTag = data.helper.tickToPositionTag(data.tl, data.tu);
-//   const owner = call.from;
-
-//   const positionId = data.helper.getPositionId(owner, positionTag);
-//   const position = Position.load(positionId);
-//   let principals: AmbientPrincipal;
-//   let rewards: AmbientReward;
-//   let changeAction: PositionChangeAction = PositionChangeAction.Deposit;
-//   let inputAmountDelta: BigInt[] = [];
-//   let rewardAmountDelta: BigInt[] = [];
-//   let tag: string = "";
-
-//   // (uint8 code, address base, address quote, uint256 poolIdx,int24 bidTick, int24 askTick, uint128 liq,uint128 limitLower, uint128 limitHigher,uint8 reserveFlags, address lpConduit)
-//   switch (ambientCode) {
-//     case AmbientCode.MintRange:
-//       changeAction = PositionChangeAction.Deposit;
-//       inputAmountDelta = [data.amount0Delta, data.amount1Delta];
-//       rewardAmountDelta = [BigInt.zero(), BigInt.zero()];
-//       tag = data.helper.tickToPositionTag(data.tl, data.tu);
-//       if (position) {
-//         principals = data.helper.getPrincipalInfo(
-//           call.from,
-//           positionTag
-//         );
-//         rewards = data.helper.getRewardInfo(
-//           call.from,
-//           positionTag
-//         );
-//       } else {
-//         principals = new AmbientPrincipal(
-//           data.amount0Delta,
-//           data.amount1Delta,
-//           data.liquidity
-//         );
-//         rewards = new AmbientReward(BigInt.zero(), BigInt.zero());
-//       }
-//       break;
-//     case AmbientCode.BurnRange:
-//       changeAction = PositionChangeAction.Withdraw;
-//       inputAmountDelta = [data.amount0Delta, data.amount1Delta];
-//       rewardAmountDelta = [BigInt.zero(), BigInt.zero()];
-//       tag = data.helper.tickToPositionTag(data.tl, data.tu);
-//       if (!position) log.warning("Tag: {} , Unreachable: Position not found",[tag]);
-
-//       principals = data.helper.getPrincipalInfo(
-//         call.from,
-//         positionTag
-//       );
-//       rewards = new AmbientReward(BigInt.zero(), BigInt.zero());
-
-//       break;
-//     case AmbientCode.MintAmbient:
-//       changeAction = PositionChangeAction.Deposit;
-//       inputAmountDelta = [data.amount0Delta, data.amount1Delta];
-//       rewardAmountDelta = [BigInt.zero(), BigInt.zero()];
-//       tag = AmbientHelper.AMBIENT_POSITION; //ambient
-
-//       if (position) {
-//         principals = data.helper.getPrincipalInfo(
-//           call.from,
-//           positionTag
-//         );
-//         rewards = data.helper.getRewardInfo(
-//           call.from,
-//           positionTag
-//         );
-//       } else {
-//         principals = new AmbientPrincipal(
-//           data.amount0Delta,
-//           data.amount1Delta,
-//           data.liquidity
-//         );
-//         rewards = new AmbientReward(BigInt.zero(), BigInt.zero());
-//       }
-//       break;
-//     case AmbientCode.BurnAmbient:
-//       changeAction = PositionChangeAction.Withdraw;
-//       inputAmountDelta = [data.amount0Delta, data.amount1Delta];
-//       rewardAmountDelta = [BigInt.zero(), BigInt.zero()];
-//       tag = AmbientHelper.AMBIENT_POSITION; //ambient
-//       if (!position)
-//         log.warning("Tag: {} , Unreachable: Position not found", [tag]);
-
-//       principals = data.helper.getPrincipalInfo(
-//         call.from,
-//         positionTag
-//       );
-//       rewards = new AmbientReward(BigInt.zero(), BigInt.zero());
-//       break;
-//     case AmbientCode.Harvest:
-//       changeAction = PositionChangeAction.Harvest;
-//       inputAmountDelta = [BigInt.zero(), BigInt.zero()];
-//       rewardAmountDelta = [data.amount0Delta, data.amount1Delta];
-//       tag =
-//         data.tl === 0 && data.tu === 0
-//           ? AmbientHelper.AMBIENT_POSITION
-//           : data.helper.tickToPositionTag(data.tl, data.tu); //ambient
-//       if (!position)
-//         log.warning("Tag: {} , Unreachable: Position not found", [tag]);
-
-//       principals = data.helper.getPrincipalInfo(
-//         call.from,
-//         positionTag
-//       );
-//       rewards = data.helper.getRewardInfo(call.from, positionTag);
-//       break;
-//     default:
-//       throw new Error("Unreachable: Invalid Ambient Code");
-//   }
-//   savePositionChangeByCall(
-//     call,
-//     changeAction,
-//     data.helper,
-//     new PositionParams(
-//       owner,
-//       data.helper.tickToPositionTag(data.tl, data.tu), // tag
-//       PositionType.Invest, // type
-//       [principals.amount0, principals.amount1], // inputAmounts
-//       [rewards.amount0, rewards.amount1], // rewardAmounts
-//       principals.liquidity, // liquidity
-//       []
-//     ),
-//     inputAmountDelta, // inputAmountsDelta
-//     rewardAmountDelta // rewardAmountsDelta
-//   );
-// }
 // emit CrocEvents.CrocMicroMintRange(abi.encode(price, priceTick, seed, conc, seedGrowth, concGrowth,tl, tu, liq, poolHash), abi.encode(baseFlow, quoteFlow, concOut, seedOut));
 export function handleMicroMintRange(event: CrocMicroMintRange): void {
   const invetmentAddress = dataSource.address();
@@ -473,13 +331,13 @@ export function handleBlock(block: ethereum.Block): void {
         Address.fromBytes(position.owner),
         position.tag
       );
-      if(position.tag === AmbientHelper.AMBIENT_POSITION)log.warning("Meta: {} Amount0: {} Amount1: {} Reward0: {} Reward1: {}", [
-        investment.meta[0],
-        principals.amount0.toString(),
-        principals.amount1.toString(),
-        rewards.amount0.toString(),
-        rewards.amount1.toString(),
-      ]);
+      if (position.tag == AmbientHelper.AMBIENT_POSITION)
+        log.warning("{} {} {} {}", [
+          principals.amount0.toString(),
+          principals.amount1.toString(),
+          rewards.amount0.toString(),
+          rewards.amount1.toString(),
+        ]);
       savePositionSnapshot(
         block,
         helper,
