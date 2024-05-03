@@ -105,16 +105,6 @@ export class AmbientHelper extends InvestmentHelper {
         this.details.token1,
         BigInt.fromString(this.details.poolIdx)
       );
-
-      log.warning(
-        "Ambient position: {} {} {} {}",
-        [
-          principals.getBaseQty().toString(),
-          principals.getQuoteQty().toString(),
-          principals.getLiq().toString(),
-          this.details.token0.toHexString() + "_" + this.details.token1.toHexString(),
-        ]
-      )
       return new AmbientPrincipal(
         principals.getBaseQty(),
         principals.getQuoteQty(),

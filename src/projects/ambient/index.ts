@@ -324,12 +324,16 @@ export function handleWarmCmd(event: CrocWarmCmd): void {
 export function handleMicroMintRange(event: CrocMicroMintRange): void {
   const invetmentAddress = dataSource.address();
   const data = new MicroMintRangeEventData(event, invetmentAddress);
+  const crocSwapDex = dataSource.address();
+  const owner = event.transaction.to!.equals(crocSwapDex)
+    ? event.transaction.from
+    : event.transaction.to;
   savePositionChange(
     event,
     PositionChangeAction.Deposit,
     data.helper,
     new PositionParams(
-      event.transaction.from,
+      owner!,
       data.helper.tickToPositionTag(data.tl, data.tu), // tag
       PositionType.Invest, // type
       [data.principals.amount0, data.principals.amount1], // inputAmounts
@@ -345,12 +349,17 @@ export function handleMicroMintRange(event: CrocMicroMintRange): void {
 export function handleMicroBurnRange(event: CrocMicroBurnRange): void {
   const invetmentAddress = dataSource.address();
   const data = new MicroBurnRangeEventData(event, invetmentAddress);
+
+  const crocSwapDex = dataSource.address();
+  const owner = event.transaction.to!.equals(crocSwapDex)
+    ? event.transaction.from
+    : event.transaction.to;
   savePositionChange(
     event,
     PositionChangeAction.Withdraw,
     data.helper,
     new PositionParams(
-      event.transaction.from,
+      owner!,
       data.helper.tickToPositionTag(data.tl, data.tu), // tag
       PositionType.Invest, // type
       [data.principals.amount0, data.principals.amount1], // inputAmounts
@@ -366,12 +375,16 @@ export function handleMicroBurnRange(event: CrocMicroBurnRange): void {
 export function handleMicroMintAmbient(event: CrocMicroMintAmbient): void {
   const invetmentAddress = dataSource.address();
   const data = new MicroMintAmbientEventData(event, invetmentAddress);
+  const crocSwapDex = dataSource.address();
+  const owner = event.transaction.to!.equals(crocSwapDex)
+    ? event.transaction.from
+    : event.transaction.to;
   savePositionChange(
     event,
     PositionChangeAction.Withdraw,
     data.helper,
     new PositionParams(
-      event.transaction.from,
+      owner!,
       AmbientHelper.AMBIENT_POSITION, // tag
       PositionType.Invest, // type
       [data.principals.amount0, data.principals.amount1], // inputAmounts
@@ -386,12 +399,16 @@ export function handleMicroMintAmbient(event: CrocMicroMintAmbient): void {
 export function handleMicroBurnAmbient(event: CrocMicroBurnAmbient): void {
   const invetmentAddress = dataSource.address();
   const data = new MicroBurnAmbientEventData(event, invetmentAddress);
+  const crocSwapDex = dataSource.address();
+  const owner = event.transaction.to!.equals(crocSwapDex)
+    ? event.transaction.from
+    : event.transaction.to;
   savePositionChange(
     event,
     PositionChangeAction.Withdraw,
     data.helper,
     new PositionParams(
-      event.transaction.from,
+      owner!,
       AmbientHelper.AMBIENT_POSITION, // tag
       PositionType.Invest, // type
       [data.principals.amount0, data.principals.amount1], // inputAmounts
@@ -456,8 +473,8 @@ export function handleBlock(block: ethereum.Block): void {
         Address.fromBytes(position.owner),
         position.tag
       );
-      if(position.tag === AmbientHelper.AMBIENT_POSITION)log.warning("Tag: {} Amount0: {} Amount1: {} Reward0: {} Reward1: {}", [
-        position.tag,
+      if(position.tag === AmbientHelper.AMBIENT_POSITION)log.warning("Meta: {} Amount0: {} Amount1: {} Reward0: {} Reward1: {}", [
+        investment.meta[0],
         principals.amount0.toString(),
         principals.amount1.toString(),
         rewards.amount0.toString(),
