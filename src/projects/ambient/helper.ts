@@ -1,5 +1,5 @@
 import { AmbientQuery } from "./../../../generated/Ambient/AmbientQuery";
-import { Address, BigInt, Bytes, ethereum } from "@graphprotocol/graph-ts";
+import { Address, BigInt, Bytes, ethereum, log } from "@graphprotocol/graph-ts";
 import {
   InvestmentHelper,
   InvestmentInfo,
@@ -67,7 +67,7 @@ export class AmbientHelper extends InvestmentHelper {
     return new InvestmentInfo(
       [token0, token1],
       [token0, token1],
-      [this.details.poolIdx, this.details.getPoolHash().toHexString()]
+      [this.details.poolIdx]
     );
   }
 
@@ -97,6 +97,7 @@ export class AmbientHelper extends InvestmentHelper {
   getPrincipalInfo(owner: Address, tag: string): AmbientPrincipal {
     const query = AmbientQuery.bind(getContextAddress("ambientQuery"));
     const ticks = this.tagToTicks(tag);
+
     if (tag === AmbientHelper.AMBIENT_POSITION) {
       const principals = query.queryAmbientTokens(
         owner,
@@ -104,6 +105,16 @@ export class AmbientHelper extends InvestmentHelper {
         this.details.token1,
         BigInt.fromString(this.details.poolIdx)
       );
+
+      log.warning(
+        "Ambient position: {} {} {} {}",
+        [
+          principals.getBaseQty().toString(),
+          principals.getQuoteQty().toString(),
+          principals.getLiq().toString(),
+          this.details.token0.toHexString() + "_" + this.details.token1.toHexString(),
+        ]
+      )
       return new AmbientPrincipal(
         principals.getBaseQty(),
         principals.getQuoteQty(),

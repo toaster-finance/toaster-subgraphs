@@ -112,5 +112,30 @@
     ],
     "name": "CrocMicroMintRange",
     "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bytes",
+        "name": "input",
+        "type": "bytes"
+      },
+      {
+        "indexed": false,
+        "internalType": "int128",
+        "name": "baseFlow",
+        "type": "int128"
+      },
+      {
+        "indexed": false,
+        "internalType": "int128",
+        "name": "quoteFlow",
+        "type": "int128"
+      }
+    ],
+    "name": "CrocKnockoutCmd",
+    "type": "event"
   }
 ]
