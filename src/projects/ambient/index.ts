@@ -95,7 +95,7 @@ export function handleWarmCmd(event: CrocWarmCmd): void {
       inputAmountDelta = [data.amount0Delta, data.amount1Delta];
       rewardAmountDelta = [BigInt.zero(), BigInt.zero()];
       tag = data.helper.tickToPositionTag(data.tl, data.tu);
-      if (!position) return;
+      if (!position) new Error("Unreachable: Invalid Position");
 
       principals = data.helper.getPrincipalInfo(
         event.transaction.from,
@@ -133,7 +133,7 @@ export function handleWarmCmd(event: CrocWarmCmd): void {
       inputAmountDelta = [data.amount0Delta, data.amount1Delta];
       rewardAmountDelta = [BigInt.zero(), BigInt.zero()];
       tag = AmbientHelper.AMBIENT_POSITION; //ambient
-      if (!position) return;
+      if (!position) throw new Error("Unreachable: Invalid Position");
 
       principals = data.helper.getPrincipalInfo(
         event.transaction.from,
@@ -145,13 +145,8 @@ export function handleWarmCmd(event: CrocWarmCmd): void {
       changeAction = PositionChangeAction.Harvest;
       inputAmountDelta = [BigInt.zero(), BigInt.zero()];
       rewardAmountDelta = [data.amount0Delta, data.amount1Delta];
-      tag =
-        data.tl === 0 && data.tu === 0
-          ? AmbientHelper.AMBIENT_POSITION
-          : data.helper.tickToPositionTag(data.tl, data.tu); //ambient
-      if (!position) {
-        return;
-      }
+      tag = data.helper.tickToPositionTag(data.tl, data.tu);
+      if (!position) throw new Error("Unreachable: Invalid Position");
       principals = data.helper.getPrincipalInfo(
         event.transaction.from,
         positionTag
@@ -331,13 +326,6 @@ export function handleBlock(block: ethereum.Block): void {
         Address.fromBytes(position.owner),
         position.tag
       );
-      if (position.tag == AmbientHelper.AMBIENT_POSITION)
-        log.warning("{} {} {} {}", [
-          principals.amount0.toString(),
-          principals.amount1.toString(),
-          rewards.amount0.toString(),
-          rewards.amount1.toString(),
-        ]);
       savePositionSnapshot(
         block,
         helper,
