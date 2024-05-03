@@ -17,7 +17,6 @@ import {
   CrocMicroMintRange,
   CrocWarmCmd,
 } from "../../../generated/Ambient/AmbientDex";
-import { BurnAmbientCall, BurnRangeCall, MintAmbientCall, MintRangeCall } from "../../../generated/MicroPaths/MicroPaths";
 export enum AmbientInvestment {
   NOT_FOUND,
   FOUND,
