@@ -30,7 +30,6 @@ import {
   MicroBurnRangeEventData,
   MicroMintAmbientEventData,
   MicroMintRangeEventData,
-  WarmCmdCallData,
   WarmCmdEventData,
 } from "./type";
 //docs.ambient.finance/developers/dex-contract-interface/knockout-lp-calls

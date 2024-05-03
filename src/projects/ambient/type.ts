@@ -17,7 +17,6 @@ import {
   CrocMicroMintRange,
   CrocWarmCmd,
 } from "../../../generated/Ambient/AmbientDex";
-import { UserCmdCall } from "../../../generated/WarmPath/WarmPath";
 import { BurnAmbientCall, BurnRangeCall, MintAmbientCall, MintRangeCall } from "../../../generated/MicroPaths/MicroPaths";
 export enum AmbientInvestment {
   NOT_FOUND,
@@ -68,34 +67,7 @@ export class AmbientDetails {
     return changetype<Bytes>(crypto.keccak256(encoded));
   }
 }
-export class WarmCmdCallData {
-  token0: Address;
-  token1: Address;
-  poolIdx: BigInt;
-  tl: i32;
-  tu: i32;
-  liquidity: BigInt;
-  amount0Delta: BigInt;
-  amount1Delta: BigInt;
-  ambientDex: AmbientDex;
-  helper: AmbientHelper;
 
-  constructor(call: UserCmdCall, params: ethereum.Tuple) {
-    this.token0 = params[1].toAddress();
-    this.token1 = params[2].toAddress();
-    this.poolIdx = params[3].toBigInt();
-    this.tl = params[4].toI32();
-    this.tu = params[5].toI32();
-    this.liquidity = params[6].toBigInt();
-    this.amount0Delta = call.outputs.baseFlow; // + : add baseFlow to the pool , - : remove baseFlow from the pool
-    this.amount1Delta = call.outputs.quoteFlow;
-    this.ambientDex = AmbientDex.bind(dataSource.address());
-    this.helper = new AmbientHelper(
-      this.ambientDex._address,
-      new AmbientDetails(this.token0, this.token1, this.poolIdx.toString())
-    );
-  }
-}
 export class WarmCmdEventData {
   token0: Address;
   token1: Address;
@@ -122,59 +94,6 @@ export class WarmCmdEventData {
       this.ambientDex._address,
       new AmbientDetails(this.token0, this.token1, this.poolIdx.toString())
     );
-  }
-}
-export class MicroMintAmbientCallData {
-  baseFlow: BigInt;
-  quoteFlow: BigInt;
-  helper: AmbientHelper;
-  principals: AmbientPrincipal;
-  rewards: AmbientReward;
-  constructor(call: MintAmbientCall, investmentAddress: Address) {
-    const input = call.inputs;
-    const output = call.outputs;
-
-    this.baseFlow = output.baseFlow;
-    this.quoteFlow = output.quoteFlow;
-    const liq = input.liq;
-    // get investment from poolHash
-    const poolHash = input.poolHash;
-    const id = AmbientHelper.getAmbientInvestmentId(
-      poolHash,
-      investmentAddress
-    );
-    const investment = Investment.load(id);
-    if (!investment) throw new Error("Investment not found");
-    // get helper from investment
-    this.helper = AmbientHelper.getHelperFromInvestmentTag(
-      investment.tag,
-      investmentAddress
-    );
-    const crocSwapDex = dataSource.address();
-    const owner = call.from; 
-
-    const position = this.helper.findPosition(
-      owner,
-      AmbientHelper.AMBIENT_POSITION
-    );
-    if (position) {
-      //get reward & principal info
-      this.principals = this.helper.getPrincipalInfo(
-        owner!,
-        AmbientHelper.AMBIENT_POSITION
-      );
-      this.rewards = this.helper.getRewardInfo(
-        owner!,
-        AmbientHelper.AMBIENT_POSITION
-      );
-    } else {
-      this.principals = new AmbientPrincipal(
-        this.baseFlow,
-        this.quoteFlow,
-        liq
-      );
-      this.rewards = new AmbientReward(BigInt.fromI32(0), BigInt.fromI32(0));
-    }
   }
 }
 
@@ -241,49 +160,6 @@ export class MicroMintAmbientEventData {
       );
       this.rewards = new AmbientReward(BigInt.fromI32(0), BigInt.fromI32(0));
     }
-  }
-}
-
-export class MicroBurnAmbientCallData {
-  baseFlow: BigInt;
-  quoteFlow: BigInt;
-  helper: AmbientHelper;
-  principals: AmbientPrincipal;
-  rewards: AmbientReward;
-  constructor(call: BurnAmbientCall, investmentAddress: Address) {
-    const input = call.inputs;
-    const output = call.outputs;
-
-    this.baseFlow = output.baseFlow;
-    this.quoteFlow = output.quoteFlow;
-    // get investment from poolHash
-    const poolHash = input.poolHash;
-    const id = AmbientHelper.getAmbientInvestmentId(
-      poolHash,
-      investmentAddress
-    );
-
-    const investment = Investment.load(id);
-    if (!investment) throw new Error("Investment not found");
-    // get helper from investment
-    this.helper = AmbientHelper.getHelperFromInvestmentTag(
-      investment.tag,
-      investmentAddress
-    );
-    const crocSwapDex = dataSource.address();
-    const owner = call.from; 
-
-    const position = this.helper.findPosition(
-      owner,
-      AmbientHelper.AMBIENT_POSITION
-    );
-    if (!position) log.warning("Owner = {}", [owner!.toHexString()]);
-    //get reward & principal info
-    this.principals = this.helper.getPrincipalInfo(
-      owner,
-      AmbientHelper.AMBIENT_POSITION
-    );
-    this.rewards = new AmbientReward(BigInt.fromI32(0), BigInt.fromI32(0));
   }
 }
 //emit CrocEvents.CrocMicroBurnAmbient
@@ -405,57 +281,6 @@ export class MicroMintRangeEventData {
     }
   }
 }
-
-export class MicroMintRangeCallData {
-  tl: i32;
-  tu: i32;
-  baseFlow: BigInt;
-  quoteFlow: BigInt;
-  helper: AmbientHelper;
-  principals: AmbientPrincipal;
-  rewards: AmbientReward;
-  constructor(call: MintRangeCall, investmentAddress: Address) {
-    const input = call.inputs;
-    const output = call.outputs;
-    
-    this.tl = input.lowTick
-    this.tu = input.highTick
-    this.baseFlow = output.baseFlow
-    this.quoteFlow = output.quoteFlow
-    const liq = input.liq
-
-    // get investment from poolHash
-    const poolHash = input.poolHash;
-    const id = AmbientHelper.getAmbientInvestmentId(
-      poolHash,
-      investmentAddress
-    );
-    const investment = Investment.load(id);
-    if (!investment) throw new Error("Investment not found");
-    // get helper from investment
-    this.helper = AmbientHelper.getHelperFromInvestmentTag(
-      investment.tag,
-      investmentAddress
-    );
-    const crocSwapDex = dataSource.address();
-    const owner = call.from;
-
-    const posTag = this.helper.tickToPositionTag(this.tl, this.tu);
-    const position = this.helper.findPosition(owner!, posTag);
-    if (position) {
-      //get reward & principal info
-      this.principals = this.helper.getPrincipalInfo(owner!, posTag);
-      this.rewards = this.helper.getRewardInfo(owner!, posTag);
-    } else {
-      this.principals = new AmbientPrincipal(
-        this.baseFlow,
-        this.quoteFlow,
-        liq
-      );
-      this.rewards = new AmbientReward(BigInt.fromI32(0), BigInt.fromI32(0));
-    }
-  }
-}
 // emit CrocEvents.CrocMicroBurnRange
 // input: (abi.encode(price, priceTick, seed, conc, seedGrowth, concGrowth,tl, tu, liq, poolHash),
 // output: abi.encode(baseFlow, quoteFlow, concOut, seedOut));
@@ -508,47 +333,6 @@ export class MicroBurnRangeEventData {
     if (!position) log.warning("Owner = {}", [owner!.toHexString()]);
       
     
-    //get reward & principal info
-    this.principals = this.helper.getPrincipalInfo(owner!, posTag);
-
-    this.rewards = new AmbientReward(BigInt.fromI32(0), BigInt.fromI32(0));
-  }
-}
-export class MicroBurnRangeCallData {
-  tl: i32;
-  tu: i32;
-  baseFlow: BigInt;
-  quoteFlow: BigInt;
-  helper: AmbientHelper;
-  principals: AmbientPrincipal;
-  rewards: AmbientReward;
-  constructor(call: BurnRangeCall, investmentAddress: Address) {
-    const input = call.inputs;
-    const output = call.outputs;
-
-    this.tl = input.lowTick;
-    this.tu = input.highTick;
-    this.baseFlow = output.baseFlow;
-    this.quoteFlow = output.quoteFlow;
-
-    // get investment from poolHash
-    const poolHash = input.poolHash;
-    const id = AmbientHelper.getAmbientInvestmentId(
-      poolHash,
-      investmentAddress
-    );
-    const investment = Investment.load(id);
-    if (!investment) throw new Error("Investment not found");
-    // get helper from investment
-    this.helper = AmbientHelper.getHelperFromInvestmentTag(
-      investment.tag,
-      investmentAddress
-    );
-    const posTag = this.helper.tickToPositionTag(this.tl, this.tu);
-    const owner = call.from;
-    const position = this.helper.findPosition(owner, posTag);
-    if (!position) log.warning("Owner = {}", [owner.toHexString()]);
-      
     //get reward & principal info
     this.principals = this.helper.getPrincipalInfo(owner!, posTag);
 
