@@ -56,7 +56,7 @@ else
 fi
 
 # Deploy할 그래프 이름 생성 (최대 30자)
-graph_name="testtest-$protocol-$network"
+graph_name="test-$protocol-$network"
 graph_name="${graph_name:0:30}" # 그래프 이름이 30자를 초과하면 초과하는 부분을 잘라냄
 
 graph deploy --node https://api.studio.thegraph.com/deploy/ --studio "$graph_name"
