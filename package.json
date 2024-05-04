@@ -6,7 +6,8 @@
     "build": "graph build",
     "deploy": "sh deploy.sh --",
     "codegen": "sh codegen.sh --",
-    "test": "graph test"
+    "test": "graph test",
+    "deploy-stage": "sh deploy-stage.sh --stage"
   },
   "dependencies": {
     "@graphprotocol/graph-ts": "0.32.0",

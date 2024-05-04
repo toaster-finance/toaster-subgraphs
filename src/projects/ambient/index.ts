@@ -94,7 +94,10 @@ export function handleWarmCmd(event: CrocWarmCmd): void {
       inputAmountDelta = [data.amount0Delta, data.amount1Delta];
       rewardAmountDelta = [BigInt.zero(), BigInt.zero()];
       tag = data.helper.tickToPositionTag(data.tl, data.tu);
-      if (!position) new Error("Unreachable: Invalid Position");
+      if (!position) {
+        log.warning("Unreachable: Invalid Position", [event.transaction.hash.toHexString()]);
+        return;
+      }
 
       principals = data.helper.getPrincipalInfo(
         event.transaction.from,
@@ -132,7 +135,12 @@ export function handleWarmCmd(event: CrocWarmCmd): void {
       inputAmountDelta = [data.amount0Delta, data.amount1Delta];
       rewardAmountDelta = [BigInt.zero(), BigInt.zero()];
       tag = AmbientHelper.AMBIENT_POSITION; //ambient
-      if (!position) throw new Error("Unreachable: Invalid Position");
+      if (!position) {
+        log.warning("Unreachable: Invalid Position tx: {}", [
+          event.transaction.hash.toHexString(),
+        ]);
+        return;
+      }
 
       principals = data.helper.getPrincipalInfo(
         event.transaction.from,
@@ -145,7 +153,12 @@ export function handleWarmCmd(event: CrocWarmCmd): void {
       inputAmountDelta = [BigInt.zero(), BigInt.zero()];
       rewardAmountDelta = [data.amount0Delta, data.amount1Delta];
       tag = data.helper.tickToPositionTag(data.tl, data.tu);
-      if (!position) throw new Error("Unreachable: Invalid Position");
+      if (!position) {
+        log.warning("Unreachable: Invalid Position tx: {}", [
+          event.transaction.hash.toHexString(),
+        ]);
+        return;
+      }
       principals = data.helper.getPrincipalInfo(
         event.transaction.from,
         positionTag
@@ -153,7 +166,10 @@ export function handleWarmCmd(event: CrocWarmCmd): void {
       rewards = data.helper.getRewardInfo(event.transaction.from, positionTag);
       break;
     default:
-      throw new Error("Unreachable: Invalid Ambient Code");
+      log.warning("Unreachable: Invalid Position tx: {}", [
+        event.transaction.hash.toHexString(),
+      ]);
+      return;
   }
   savePositionChange(
     event,
