@@ -28,7 +28,9 @@ export function getInvestmentId(
   investmentAddress: Address,
   tag: string = ""
 ): Bytes {
-  return Bytes.fromUTF8(protocol).concat(investmentAddress).concat(Bytes.fromUTF8(tag));
+  return Bytes.fromUTF8(protocol)
+    .concat(investmentAddress)
+    .concat(Bytes.fromUTF8(tag));
 }
 
 export function getProtocolId(protocolName: string): Bytes {
@@ -40,12 +42,12 @@ export abstract class InvestmentHelper {
   constructor(
     readonly protocolName: string,
     readonly investmentAddress: Address,
-    readonly tag: string
+    readonly tag: string,
+    readonly _id: Bytes = Bytes.fromHexString("")
   ) {
     // create investment base id with protocol name and investment address, base id: {protocolName}{investmentAddress}:{tag}
     this.id = getInvestmentId(protocolName, investmentAddress, tag);
   }
-
   ////// ABSTRACTS //////
   /**
    * @param investmentAddress : investment address.

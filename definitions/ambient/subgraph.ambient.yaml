@@ -17,14 +17,21 @@ dataSources:
         data: "{{Query}}"
       snapshotBatch:
         type: Int
-        data: {{snapshotBatch}} # 12 hours
+        data: {{snapshotBatch}} 
+      startSnapshotBlock:
+        type: Int
+        data: {{startSnapshotBlock}}
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
       language: wasm/assemblyscript
       entities:
-        - CrocWarmCmd
-        - CrocColdCmd
+        - Position
+        - PositionSnapshot
+        - PositionChange
+        - Investment
+        - Protocol
+        - Holder
       abis:
         - name: AmbientDex
           file: ./abis/Ambient/AmbientDex.json
@@ -35,6 +42,14 @@ dataSources:
           handler: handleWarmCmd
         - event: CrocColdCmd(bytes)
           handler: handleColdCmd
+        - event: CrocMicroBurnAmbient(bytes,bytes)
+          handler: handleMicroBurnAmbient
+        - event: CrocMicroMintAmbient(bytes,bytes)
+          handler: handleMicroMintAmbient
+        - event: CrocMicroBurnRange(bytes,bytes)
+          handler: handleMicroBurnRange
+        - event: CrocMicroMintRange(bytes,bytes)
+          handler: handleMicroMintRange
       file: ./src/projects/ambient/index.ts
       blockHandlers:
         - handler: handleBlock
