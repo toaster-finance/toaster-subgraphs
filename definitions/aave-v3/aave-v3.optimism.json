@@ -1,0 +1,9 @@
+{
+  "network": "optimism",
+  "Pool": "0x794a61358D6845594F94dc1DB02A252b5b4814aD",
+  "PoolDataProvider": "0x69FA688f1Dc47d4B5d8029D5a35FB7a548310654",
+  "UniPoolDataProvider": "0xbd83DdBE37fc91923d59C8c1E0bDe0CccCa332d5",
+  "snapshotBatch": 5,
+  "startBlock": 4365693,
+  "startSnapshotBlock": 109663187
+}

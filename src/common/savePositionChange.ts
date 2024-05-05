@@ -11,7 +11,7 @@ import { InvestmentHelper } from "./helpers/investmentHelper";
  * @param helper : investment helper for using util functions on investment
  * @param p : position params
  * @param dInputs : delta input amounts
- * @param dRewards : delta reward amounts (fees, rewards(etc. STG, CAKE))
+ * @param dRewards : delta reward amounts (fees, rewards(etc. STG, CAKE)). if you can't get reward amount by harvest, just pass empty array
  */
 export function savePositionChange(
   event: ethereum.Event,
