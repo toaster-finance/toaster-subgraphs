@@ -47,8 +47,8 @@ dataSources:
       eventHandlers:
         - event: Supply(indexed address,address,indexed address,uint256,indexed uint16)
           handler: handleSupply
-        - event: Withdraw(indexed address,indexed address,indexed address,uint256)
-          handler: handleWithdraw
+        # - event: Withdraw(indexed address,indexed address,indexed address,uint256)
+        #   handler: handleWithdraw
         - event: Borrow(indexed address,address,indexed address,uint256,uint8,uint256,indexed uint16)
           handler: handleBorrow
         - event: Repay(indexed address,indexed address,indexed address,uint256,bool)
@@ -61,5 +61,30 @@ dataSources:
           filter:
             kind: polling
             every: {{polling}}
+templates:
+  - kind: ethereum/contract
+    name: aToken
+    network: {{network}}
+    source:
+      abi: aToken
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      file: ./src/projects/aave-v3/index.ts
+      entities:
+        - Position
+        - PositionSnapshot
+        - PositionChange
+        - Investment
+        - Protocol
+        - Holder
+      abis:
+        - name: aToken
+          file: ./abis/AaveV3/aToken.json
+      eventHandlers:
+        - event: Transfer(indexed address,indexed address,uint256)
+          handler: handleTransfer
+          receipt: true
     
   

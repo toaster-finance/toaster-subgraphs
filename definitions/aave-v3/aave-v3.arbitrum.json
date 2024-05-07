@@ -4,6 +4,7 @@
   "PoolDataProvider": "0x69FA688f1Dc47d4B5d8029D5a35FB7a548310654",
   "UniPoolDataProvider": "0x145dE30c929a065582da84Cf96F88460dB9745A7",
   "snapshotBatch": 5,
-  "startBlock": 7742429 ,
-  "startSnapshotBlock": 198141080 
+  "startBlock": 7742429,
+  "polling": 21600,
+  "startSnapshotBlock": 198141080
 }

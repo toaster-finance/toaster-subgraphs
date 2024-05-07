@@ -19,9 +19,9 @@ export class ReserveUserData {
     const position = Position.load(posId);
 
     if (!position) {
-      this.underlyingAmount = BigInt.fromI32(0);
-      this.stableDebt = BigInt.fromI32(0);
-      this.variavbleDebt = BigInt.fromI32(0);
+      this.underlyingAmount = BigInt.zero();
+      this.stableDebt = BigInt.zero();
+      this.variavbleDebt = BigInt.zero();
     } else {
       const userData = poolDataProvider.getUserReserveData(underlying, owner);
       this.underlyingAmount = userData.getCurrentATokenBalance();

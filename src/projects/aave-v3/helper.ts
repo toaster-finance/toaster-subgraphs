@@ -28,7 +28,7 @@ export class AaveV3Helper extends InvestmentHelper {
   getAtokenAddress(underlying: Address, dataProviderAddress:Address): Address {
     const id = getInvestmentId("AaveV3", this.investmentAddress, this.tag);
     const investment = Investment.load(id);
-    if (investment) return Address.fromHexString(investment.meta[0]);
+    if (investment) return Address.fromString(investment.meta[0]);
     const poolDataProvider = PoolDataProvider.bind(dataProviderAddress);
     const aTokenAddress = poolDataProvider
       .getReserveTokensAddresses(underlying)
