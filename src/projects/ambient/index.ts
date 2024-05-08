@@ -330,8 +330,8 @@ export function handleBlock(block: ethereum.Block): void {
     );
 
     const positions = investment.positions.load();
-    for (let i = 0; i < positions.length; i += 1) {
-      const position = positions[i];
+    for (let j = 0; j < positions.length; j += 1) {
+      const position = positions[j];
       if (position.closed) continue;
       const principals = helper.getPrincipalInfo(
         Address.fromBytes(position.owner),
