@@ -5,7 +5,6 @@ import {
   DataSourceContext,
   dataSource,
   ethereum,
-  log,
 } from "@graphprotocol/graph-ts";
 import { savePositionChange } from "../../common/savePositionChange";
 import {
@@ -13,6 +12,7 @@ import {
   LiquidationCall,
   Repay,
   Supply,
+  Withdraw,
 } from "./../../../generated/Pool/Pool";
 import { Transfer } from "../../../generated/templates/aToken/aToken";
 import { PositionParams } from "../../common/helpers/positionHelper";
@@ -37,65 +37,9 @@ export function handleSupply(event: Supply): void {
   const owner = event.params.onBehalfOf;
   const data = new ReserveUserData(owner, underlying);
   if (data.underlyingAmount.equals(BigInt.zero())) return;
-  const aTokenAddress = data.helper.getAtokenAddress(
-    underlying,
-    getContextAddress("dataProvider")
-  );
-  const aTokenContext = new DataSourceContext();
-  aTokenContext.setString("underlying", underlying.toHexString());
-  aToken.createWithContext(aTokenAddress, aTokenContext);
-}
-// Handle withdraw event will be handled by aToken contract transfer event
-// export function handleWithdraw(event: Withdraw):void {
-//   const underlying = event.params.reserve;
-//   const owner = event.params.user;
-//   const data = new ReserveUserData(owner, underlying);
-//   if (data.underlyingAmount.equals(BigInt.zero())) return;
-//   savePositionChange(
-//     event,
-//     PositionChangeAction.Withdraw,
-//     data.helper,
-//     new PositionParams(
-//       owner,
-//       "",
-//       PositionType.Invest,
-//       [data.underlyingAmount],
-//       [],
-//       BigInt.zero(),
-//       [data.stableDebt.toString(), data.variavbleDebt.toString()] // stable debt / variable debt
-//     ),
-//     [event.params.amount.neg()], // + : deposit, - :withdraw
-//     [BigInt.zero()]
-//   );
-// }
-
-export function handleTransfer(event: Transfer): void {
-  if (event.params.value.equals(BigInt.zero())) return;
-  let action: PositionChangeAction;
-  let owner: Address;
-  let owner2 = Address.zero();
-  if (event.params.from.equals(Address.zero())) {
-    action = PositionChangeAction.Deposit;
-    owner = event.params.to;
-  } else if (event.params.to.equals(Address.zero())) {
-    action = PositionChangeAction.Withdraw;
-    owner = event.params.from;
-  } else {
-    action = PositionChangeAction.Send;
-    owner = event.params.from; // aToken decrease
-    owner2 = event.params.to; // aToken increase
-  }
-  const underlying = Address.fromString(
-    dataSource.context().getString("underlying")
-  );
-  log.warning("underlying: {}", [underlying.toHexString()]);
-  const data = new ReserveUserData(owner, underlying);
-  if (data.underlyingAmount.equals(BigInt.zero())) return;
-  const sendingAmount = event.params.value;
-  const dInput = action === PositionChangeAction.Deposit ? sendingAmount : sendingAmount.neg();
   savePositionChange(
     event,
-    action,
+    PositionChangeAction.Deposit,
     data.helper,
     new PositionParams(
       owner,
@@ -106,16 +50,27 @@ export function handleTransfer(event: Transfer): void {
       BigInt.zero(),
       [data.stableDebt.toString(), data.variavbleDebt.toString()] // stable debt / variable debt
     ),
-    [dInput], // + : deposit, - :withdraw
+    [event.params.amount], // + : deposit, - :withdraw
     [BigInt.zero()]
   );
+  const aTokenAddress = data.helper.getAtokenAddress(underlying);
+  const aTokenContext = new DataSourceContext();
+  aTokenContext.setString("underlying", underlying.toHexString());
+  aTokenContext.setString("dataProvider", getContextAddress("dataProvider").toHexString());
+  aToken.createWithContext(aTokenAddress, aTokenContext);
+}
 
-  if(owner2.notEqual(Address.zero()))savePositionChange(
+export function handleWithdraw(event: Withdraw): void {
+  const underlying = event.params.reserve;
+  const owner = event.params.user;
+  const data = new ReserveUserData(owner, underlying);
+  if (data.underlyingAmount.equals(BigInt.zero())) return;
+  savePositionChange(
     event,
-    action,
+    PositionChangeAction.Withdraw,
     data.helper,
     new PositionParams(
-      owner2,
+      owner,
       "",
       PositionType.Invest,
       [data.underlyingAmount],
@@ -123,7 +78,56 @@ export function handleTransfer(event: Transfer): void {
       BigInt.zero(),
       [data.stableDebt.toString(), data.variavbleDebt.toString()] // stable debt / variable debt
     ),
-    [dInput.neg()],
+    [event.params.amount.neg()], // + : deposit, - :withdraw
+    [BigInt.zero()]
+  );
+}
+
+export function handleTransfer(event: Transfer): void {
+  if (event.params.value.equals(BigInt.zero())) return;
+  let action: PositionChangeAction;
+  let sender: Address;
+  let receiver: Address;
+  if (event.params.from.equals(Address.zero())) return; // Supply
+  if (event.params.to.equals(Address.zero())) return; // Withdraw
+  action = PositionChangeAction.Send;
+  sender = event.params.from; // aToken amount decrease
+  receiver = event.params.to; // aToken amount increase
+  const underlying = getContextAddress("underlying");
+  const data = new ReserveUserData(sender, underlying);
+  if (data.underlyingAmount.equals(BigInt.zero())) return;
+  const sendingAmount = event.params.value;
+  savePositionChange(
+    event,
+    action,
+    data.helper,
+    new PositionParams(
+      sender,
+      "",
+      PositionType.Invest,
+      [data.underlyingAmount],
+      [],
+      BigInt.zero(),
+      [data.stableDebt.toString(), data.variavbleDebt.toString()] // stable debt / variable debt
+    ),
+    [sendingAmount.neg()], // + : deposit, - :withdraw
+    [BigInt.zero()]
+  );
+
+  savePositionChange(
+    event,
+    action,
+    data.helper,
+    new PositionParams(
+      receiver,
+      "",
+      PositionType.Invest,
+      [data.underlyingAmount],
+      [],
+      BigInt.zero(),
+      [data.stableDebt.toString(), data.variavbleDebt.toString()] // stable debt / variable debt
+    ),
+    [sendingAmount],
     [BigInt.zero()]
   );
 }

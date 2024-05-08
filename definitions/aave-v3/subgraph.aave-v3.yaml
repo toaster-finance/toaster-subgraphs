@@ -47,8 +47,8 @@ dataSources:
       eventHandlers:
         - event: Supply(indexed address,address,indexed address,uint256,indexed uint16)
           handler: handleSupply
-        # - event: Withdraw(indexed address,indexed address,indexed address,uint256)
-        #   handler: handleWithdraw
+        - event: Withdraw(indexed address,indexed address,indexed address,uint256)
+          handler: handleWithdraw
         - event: Borrow(indexed address,address,indexed address,uint256,uint8,uint256,indexed uint16)
           handler: handleBorrow
         - event: Repay(indexed address,indexed address,indexed address,uint256,bool)

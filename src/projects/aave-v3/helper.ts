@@ -1,11 +1,10 @@
-import { Address, dataSource } from "@graphprotocol/graph-ts";
+import { Address, dataSource, ethereum } from "@graphprotocol/graph-ts";
 import {
   InvestmentHelper,
   InvestmentInfo,
-  getInvestmentId,
 } from "../../common/helpers/investmentHelper";
-import { Investment } from "../../../generated/schema";
 import { PoolDataProvider } from "../../../generated/Pool/PoolDataProvider";
+import { getContextAddress } from "../../common/helpers/contextHelper";
 /**
  * id: investment id  = "AaveV3{PoolAddress}{UnderlyingToken}"
  */
@@ -22,14 +21,13 @@ export class AaveV3Helper extends InvestmentHelper {
     return [];
   }
   getInfo(_invest: Address): InvestmentInfo {
-    return new InvestmentInfo([Address.fromBytes(Address.fromHexString(this.tag))], []);
+    const underlying = Address.fromBytes(Address.fromHexString(this.tag));
+    return new InvestmentInfo([underlying], [],[this.getAtokenAddress(underlying).toHexString()]);// [underlyingTokenAddr], [ ], [aTokenAddr]
   }
 
-  getAtokenAddress(underlying: Address, dataProviderAddress:Address): Address {
-    const id = getInvestmentId("AaveV3", this.investmentAddress, this.tag);
-    const investment = Investment.load(id);
-    if (investment) return Address.fromString(investment.meta[0]);
-    const poolDataProvider = PoolDataProvider.bind(dataProviderAddress);
+  getAtokenAddress(underlying: Address): Address {
+    const dataProviderAddr = getContextAddress("dataProvider");
+    const poolDataProvider = PoolDataProvider.bind(dataProviderAddr);
     const aTokenAddress = poolDataProvider
       .getReserveTokensAddresses(underlying)
       .getATokenAddress();
