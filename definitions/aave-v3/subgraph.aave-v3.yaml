@@ -82,6 +82,8 @@ templates:
       abis:
         - name: aToken
           file: ./abis/AaveV3/aToken.json
+        - name: PoolDataProvider
+          file: ./abis/AaveV3/PoolDataProvider.json
       eventHandlers:
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTransfer
