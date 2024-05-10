@@ -1,0 +1,10 @@
+{
+  "network": "mainnet",
+  "Pool": "0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2",
+  "PoolDataProvider": "0x7B4EB56E7CD4b454BA8ff71E4518426369a138a3",
+  "UniPoolDataProvider": "0x91c0eA31b49B69Ea18607702c5d9aC360bf3dE7d",
+  "snapshotBatch": 5,
+  "startBlock": 16291127,
+  "polling": 2880,
+  "startSnapshotBlock": 18805010
+}
