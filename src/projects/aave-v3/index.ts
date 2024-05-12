@@ -18,7 +18,7 @@ import { Transfer } from "../../../generated/templates/aToken/aToken";
 import { PositionParams } from "../../common/helpers/positionHelper";
 import { PositionType } from "../../common/PositionType.enum";
 import { PositionChangeAction } from "../../common/PositionChangeAction.enum";
-import { ReserveUserData } from "./type";
+import { BorrowUserData, InvestUserData } from "./type";
 import { savePositionSnapshot } from "../../common/savePositionSnapshot";
 import { Protocol } from "../../../generated/schema";
 import { getProtocolId } from "../../common/helpers/investmentHelper";
@@ -33,9 +33,10 @@ import { aToken } from "../../../generated/templates";
 // handle supply event will be handled by aToken contract transfer event
 export const AAVE_V3 = "aave-v3";
 export function handleSupply(event: Supply): void {
+  const amount = event.params.amount;
   const underlying = event.params.reserve;
   const owner = event.params.onBehalfOf;
-  const data = new ReserveUserData(owner, underlying);
+  const data = new InvestUserData(owner, underlying,amount);
   if (data.underlyingAmount.equals(BigInt.zero())) return;
   savePositionChange(
     event,
@@ -61,9 +62,10 @@ export function handleSupply(event: Supply): void {
 }
 
 export function handleWithdraw(event: Withdraw): void {
+  const amount = event.params.amount;
   const underlying = event.params.reserve;
   const owner = event.params.user;
-  const data = new ReserveUserData(owner, underlying);
+  const data = new InvestUserData(owner, underlying,amount);
   if (data.underlyingAmount.equals(BigInt.zero())) return;
   savePositionChange(
     event,
@@ -94,21 +96,21 @@ export function handleTransfer(event: Transfer): void {
   sender = event.params.from; // aToken amount decrease
   receiver = event.params.to; // aToken amount increase
   const underlying = getContextAddress("underlying");
-  const data = new ReserveUserData(sender, underlying);
-  if (data.underlyingAmount.equals(BigInt.zero())) return;
   const sendingAmount = event.params.value;
+  const senderData = new InvestUserData(sender, underlying,BigInt.zero());
+  const receiverData = new InvestUserData(receiver, underlying,BigInt.zero());
   savePositionChange(
     event,
     action,
-    data.helper,
+    senderData.helper,
     new PositionParams(
       sender,
       "",
       PositionType.Invest,
-      [data.underlyingAmount],
+      [senderData.underlyingAmount],
       [],
       BigInt.zero(),
-      [data.stableDebt.toString(), data.variavbleDebt.toString()] // stable debt / variable debt
+      [senderData.stableDebt.toString(), senderData.variavbleDebt.toString()] // stable debt / variable debt
     ),
     [sendingAmount.neg()], // + : deposit, - :withdraw
     [BigInt.zero()]
@@ -117,15 +119,15 @@ export function handleTransfer(event: Transfer): void {
   savePositionChange(
     event,
     action,
-    data.helper,
+    receiverData.helper,
     new PositionParams(
       receiver,
       "",
       PositionType.Invest,
-      [data.underlyingAmount],
+      [receiverData.underlyingAmount],
       [],
       BigInt.zero(),
-      [data.stableDebt.toString(), data.variavbleDebt.toString()] // stable debt / variable debt
+      [receiverData.stableDebt.toString(), receiverData.variavbleDebt.toString()] // stable debt / variable debt
     ),
     [sendingAmount],
     [BigInt.zero()]
@@ -134,7 +136,7 @@ export function handleTransfer(event: Transfer): void {
 export function handleBorrow(event: Borrow): void {
   const underlying = event.params.reserve;
   const owner = event.params.onBehalfOf;
-  const data = new ReserveUserData(owner, underlying);
+  const data = new BorrowUserData(owner, underlying);
   if (data.underlyingAmount.equals(BigInt.zero())) return;
   savePositionChange(
     event,
@@ -156,7 +158,7 @@ export function handleBorrow(event: Borrow): void {
 export function handleRepay(event: Repay): void {
   const underlying = event.params.reserve;
   const owner = event.params.user;
-  const data = new ReserveUserData(owner, underlying);
+  const data = new BorrowUserData(owner, underlying);
   if (data.underlyingAmount.equals(BigInt.zero())) return;
   savePositionChange(
     event,
@@ -180,8 +182,8 @@ export function handleLiquidation(event: LiquidationCall): void {
   const collateralAsset = event.params.collateralAsset;
   const debtAsset = event.params.debtAsset;
   const owner = event.params.user;
-  const debtData = new ReserveUserData(owner, debtAsset);
-  const collateralData = new ReserveUserData(owner, collateralAsset);
+  const debtData = new BorrowUserData(owner, debtAsset);
+  const collateralData = new InvestUserData(owner, collateralAsset,BigInt.zero());
 
   // for debt
   savePositionChange(
