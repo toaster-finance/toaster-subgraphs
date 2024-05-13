@@ -36,7 +36,7 @@ export function handleSupply(event: Supply): void {
   const amount = event.params.amount;
   const underlying = event.params.reserve;
   const owner = event.params.onBehalfOf;
-  const data = new InvestUserData(owner, underlying,amount);
+  const data = new InvestUserData(owner, underlying, amount);
   if (data.underlyingAmount.equals(BigInt.zero())) return;
   savePositionChange(
     event,
@@ -57,7 +57,10 @@ export function handleSupply(event: Supply): void {
   const aTokenAddress = data.helper.getAtokenAddress(underlying);
   const aTokenContext = new DataSourceContext();
   aTokenContext.setString("underlying", underlying.toHexString());
-  aTokenContext.setString("dataProvider", getContextAddress("dataProvider").toHexString());
+  aTokenContext.setString(
+    "dataProvider",
+    getContextAddress("dataProvider").toHexString()
+  );
   aToken.createWithContext(aTokenAddress, aTokenContext);
 }
 
@@ -65,7 +68,7 @@ export function handleWithdraw(event: Withdraw): void {
   const amount = event.params.amount;
   const underlying = event.params.reserve;
   const owner = event.params.user;
-  const data = new InvestUserData(owner, underlying,amount);
+  const data = new InvestUserData(owner, underlying, amount);
   if (data.underlyingAmount.equals(BigInt.zero())) return;
   savePositionChange(
     event,
@@ -97,8 +100,8 @@ export function handleTransfer(event: Transfer): void {
   receiver = event.params.to; // aToken amount increase
   const underlying = getContextAddress("underlying");
   const sendingAmount = event.params.value;
-  const senderData = new InvestUserData(sender, underlying,BigInt.zero());
-  const receiverData = new InvestUserData(receiver, underlying,BigInt.zero());
+  const senderData = new InvestUserData(sender, underlying, BigInt.zero());
+  const receiverData = new InvestUserData(receiver, underlying, BigInt.zero());
   savePositionChange(
     event,
     action,
@@ -127,7 +130,10 @@ export function handleTransfer(event: Transfer): void {
       [receiverData.underlyingAmount],
       [],
       BigInt.zero(),
-      [receiverData.stableDebt.toString(), receiverData.variavbleDebt.toString()] // stable debt / variable debt
+      [
+        receiverData.stableDebt.toString(),
+        receiverData.variavbleDebt.toString(),
+      ] // stable debt / variable debt
     ),
     [sendingAmount],
     [BigInt.zero()]
@@ -183,7 +189,11 @@ export function handleLiquidation(event: LiquidationCall): void {
   const debtAsset = event.params.debtAsset;
   const owner = event.params.user;
   const debtData = new BorrowUserData(owner, debtAsset);
-  const collateralData = new InvestUserData(owner, collateralAsset,BigInt.zero());
+  const collateralData = new InvestUserData(
+    owner,
+    collateralAsset,
+    BigInt.zero()
+  );
 
   // for debt
   savePositionChange(
@@ -237,69 +247,68 @@ export function handleBlock(block: ethereum.Block): void {
     getContextAddress("uniDataProvider")
   );
   const dataProviderAddr = getContextAddress("dataProvider");
-
+  const users = new Set<Address>();
+  // gather all users of all positions
   for (let i = protocolInit; i < investments.length; i += batch) {
-    // gather all users of all positions
     const investment = investments[i];
     const positions = investment.positions.load();
-    const users = new Set<Address>();
     for (let j = 0; j < positions.length; j += 1) {
       if (positions[j].closed) continue;
       users.add(Address.fromBytes(positions[j].owner));
     }
-    const userAddr = users.values();
-    for (let u = 0; u < userAddr.length; u += 1) {
-      const user = userAddr[u];
-      const reserveDatas = uniDataProvider
-        .getUserReservesData(dataProviderAddr, user)
-        .getValue0();
-      for (let d = 0; d < reserveDatas.length; d += 1) {
-        const reserveData = reserveDatas[d];
+  }
+  const userAddr = users.values();
+  for (let u = 0; u < userAddr.length; u += 1) {
+    const user = userAddr[u];
+    const reserveDatas = uniDataProvider
+      .getUserReservesData(dataProviderAddr, user)
+      .getValue0();
+    for (let d = 0; d < reserveDatas.length; d += 1) {
+      const reserveData = reserveDatas[d];
 
-        const totalDebt = reserveData.principalStableDebt.plus(
-          reserveData.scaledVariableDebt
+      const totalDebt = reserveData.principalStableDebt.plus(
+        reserveData.scaledVariableDebt
+      );
+      // for debt
+      if (totalDebt.notEqual(BigInt.zero()))
+        savePositionSnapshot(
+          block,
+          new AaveV3Helper(pool, reserveData.underlyingAsset.toHexString()),
+          new PositionParams(
+            user,
+            "",
+            PositionType.Invest,
+            [
+              reserveData.principalStableDebt
+                .plus(reserveData.scaledVariableDebt)
+                .neg(),
+            ],
+            [],
+            BigInt.zero(),
+            [
+              reserveData.principalStableDebt.toString(),
+              reserveData.scaledVariableDebt.toString(),
+            ] // stable debt / variable debt
+          )
         );
-        // for debt
-        if (totalDebt.notEqual(BigInt.zero()))
-          savePositionSnapshot(
-            block,
-            new AaveV3Helper(pool, reserveData.underlyingAsset.toHexString()),
-            new PositionParams(
-              user,
-              "",
-              PositionType.Invest,
-              [
-                reserveData.principalStableDebt
-                  .plus(reserveData.scaledVariableDebt)
-                  .neg(),
-              ],
-              [],
-              BigInt.zero(),
-              [
-                reserveData.principalStableDebt.toString(),
-                reserveData.scaledVariableDebt.toString(),
-              ] // stable debt / variable debt
-            )
-          );
-        // for collateral
-        if (reserveData.scaledATokenBalance.notEqual(BigInt.zero()))
-          savePositionSnapshot(
-            block,
-            new AaveV3Helper(pool, reserveData.underlyingAsset.toHexString()),
-            new PositionParams(
-              user,
-              "",
-              PositionType.Invest,
-              [reserveData.scaledATokenBalance],
-              [],
-              BigInt.zero(),
-              [
-                reserveData.principalStableDebt.toString(),
-                reserveData.scaledVariableDebt.toString(),
-              ] // stable debt / variable debt
-            )
-          );
-      }
+      // for collateral
+      if (reserveData.scaledATokenBalance.notEqual(BigInt.zero()))
+        savePositionSnapshot(
+          block,
+          new AaveV3Helper(pool, reserveData.underlyingAsset.toHexString()),
+          new PositionParams(
+            user,
+            "",
+            PositionType.Invest,
+            [reserveData.scaledATokenBalance],
+            [],
+            BigInt.zero(),
+            [
+              reserveData.principalStableDebt.toString(),
+              reserveData.scaledVariableDebt.toString(),
+            ] // stable debt / variable debt
+          )
+        );
     }
   }
   protocol._batchIterator = BigInt.fromI32((protocolInit + 1) % batch);
