@@ -1,0 +1,101 @@
+[
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "getCompAddress",
+    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "name": "cToken",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "name": "MarketExited",
+    "type": "event",
+    "signature": "0xe699a64c18b07ac5b7301aa273f36a2287239eb9501d81950672794afba29a0d"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "name": "cToken",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "name": "MarketEntered",
+    "type": "event",
+    "signature": "0x3ab23ab0d51cccc0c3085aec51f99228625aa1a922b3a8ca89a26b0f2027a1a5"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "cToken",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "name": "borrower",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "name": "compDelta",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "name": "compDelta",
+        "type": "uint256"
+      }
+    ],
+    "name": "DistributedBorrowerComp",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "cToken",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "name": "supplier",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "name": "compDelta",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "name": "compDelta",
+        "type": "uint256"
+      }
+    ],
+    "name": "DistributedSupplierComp",
+    "type": "event"
+  }
+]
