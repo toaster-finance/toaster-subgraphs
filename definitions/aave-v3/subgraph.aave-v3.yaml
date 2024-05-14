@@ -12,6 +12,12 @@ dataSources:
       abi: Pool
       startBlock: {{startBlock}}
     context:
+      graphId:
+        type: Int
+        data: {{graphId}} 
+      totalGraphs:
+        type: Int
+        data: {{totalGraphs}}
       dataProvider:
         type: String
         data: "{{PoolDataProvider}}"

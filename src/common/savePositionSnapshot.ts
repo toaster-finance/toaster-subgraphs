@@ -1,4 +1,4 @@
-import { BigInt, Bytes, ethereum } from "@graphprotocol/graph-ts";
+import { Bytes, ethereum } from "@graphprotocol/graph-ts";
 import { upsertPosition } from "./upsertPosition";
 import { Position, PositionSnapshot } from "../../generated/schema";
 import { PositionParams } from "./helpers/positionHelper";
