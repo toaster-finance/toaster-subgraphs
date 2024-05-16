@@ -25,6 +25,7 @@ import { getProtocolId } from "../../common/helpers/investmentHelper";
 import { getContextAddress } from "../../common/helpers/contextHelper";
 import { AaveV3Helper } from "./helper";
 import { aToken } from "../../../generated/templates";
+import { skipAddress } from "../../common/skipAddress";
 
 //PositionType.Invest: it means deposit (deposit amount is positive, withdraw amount is negative)
 //PositionType.Borrow: it means borrow (borrow amount is positive, repay amount is negative)
@@ -36,6 +37,7 @@ export function handleSupply(event: Supply): void {
   const amount = event.params.amount;
   const underlying = event.params.reserve;
   const owner = event.params.onBehalfOf;
+  if (skipAddress(owner)) return;
   const data = new InvestUserData(owner, underlying, amount);
   if (data.underlyingAmount.equals(BigInt.zero())) return;
   savePositionChange(
@@ -54,20 +56,14 @@ export function handleSupply(event: Supply): void {
     [event.params.amount], // + : deposit, - :withdraw
     [BigInt.zero()]
   );
-  const aTokenAddress = data.helper.getAtokenAddress(underlying);
-  const aTokenContext = new DataSourceContext();
-  aTokenContext.setString("underlying", underlying.toHexString());
-  aTokenContext.setString(
-    "dataProvider",
-    getContextAddress("dataProvider").toHexString()
-  );
-  aToken.createWithContext(aTokenAddress, aTokenContext);
+ createATokenTemplate(underlying, event.address); 
 }
 
 export function handleWithdraw(event: Withdraw): void {
   const amount = event.params.amount;
   const underlying = event.params.reserve;
   const owner = event.params.user;
+  if (skipAddress(owner)) return;
   const data = new InvestUserData(owner, underlying, amount);
   if (data.underlyingAmount.equals(BigInt.zero())) return;
   savePositionChange(
@@ -97,6 +93,7 @@ export function handleTransfer(event: Transfer): void {
   if (event.params.to.equals(Address.zero())) return; // Withdraw
   action = PositionChangeAction.Send;
   sender = event.params.from; // aToken amount decrease
+  if (skipAddress(sender)) return;
   receiver = event.params.to; // aToken amount increase
   const underlying = getContextAddress("underlying");
   const sendingAmount = event.params.value;
@@ -142,6 +139,7 @@ export function handleTransfer(event: Transfer): void {
 export function handleBorrow(event: Borrow): void {
   const underlying = event.params.reserve;
   const owner = event.params.onBehalfOf;
+  if (skipAddress(owner)) return;
   const data = new BorrowUserData(owner, underlying);
   if (data.underlyingAmount.equals(BigInt.zero())) return;
   savePositionChange(
@@ -164,6 +162,7 @@ export function handleBorrow(event: Borrow): void {
 export function handleRepay(event: Repay): void {
   const underlying = event.params.reserve;
   const owner = event.params.user;
+  if (skipAddress(owner)) return;
   const data = new BorrowUserData(owner, underlying);
   if (data.underlyingAmount.equals(BigInt.zero())) return;
   savePositionChange(
@@ -188,6 +187,7 @@ export function handleLiquidation(event: LiquidationCall): void {
   const collateralAsset = event.params.collateralAsset;
   const debtAsset = event.params.debtAsset;
   const owner = event.params.user;
+  if (skipAddress(owner)) return;
   const debtData = new BorrowUserData(owner, debtAsset);
   const collateralData = new InvestUserData(
     owner,
@@ -248,13 +248,15 @@ export function handleBlock(block: ethereum.Block): void {
   );
   const dataProviderAddr = getContextAddress("dataProvider");
   const users = new Set<Address>();
-  // gather all users of all positions
-  for (let i = protocolInit; i < investments.length; i += batch) {
+  // gather all users of all positions of all investments
+  for (let i = 0; i < investments.length; i += 1) {
     const investment = investments[i];
+    const aTokenAddr = investment.tag;
     const positions = investment.positions.load();
     for (let j = 0; j < positions.length; j += 1) {
       if (positions[j].closed) continue;
-      users.add(Address.fromBytes(positions[j].owner));
+      if (BigInt.fromString(aTokenAddr).mod(BigInt.fromI32(batch)).equals(BigInt.fromI32(protocolInit)))
+        users.add(Address.fromBytes(positions[j].owner));
     }
   }
   const userAddr = users.values();
@@ -313,4 +315,17 @@ export function handleBlock(block: ethereum.Block): void {
   }
   protocol._batchIterator = BigInt.fromI32((protocolInit + 1) % batch);
   protocol.save();
+}
+
+// create atoken template
+function createATokenTemplate(underlying: Address, aTokenAddress: Address):void {
+  const aTokenContext = new DataSourceContext();
+  aTokenContext.setString("underlying", underlying.toHexString());
+  aTokenContext.setString(
+    "dataProvider",
+    getContextAddress("dataProvider").toHexString()
+  );
+  aTokenContext.setI32("graphId", dataSource.context().getI32("graphId"));
+  aTokenContext.setI32("totalGraphs", dataSource.context().getI32("totalGraphs"));
+  aToken.createWithContext(aTokenAddress, aTokenContext);
 }

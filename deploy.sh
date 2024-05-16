@@ -8,10 +8,10 @@ env=""
 # 모든 인자를 반복하며 처리
 for arg in "$@"; do
     case "$arg" in
-        network=*) network="${arg#network=}" ;;
-        protocol=*) protocol="${arg#protocol=}" ;;
-        env=*) env="${arg#env=}" ;;
-        *) ;;
+    network=*) network="${arg#network=}" ;;
+    protocol=*) protocol="${arg#protocol=}" ;;
+    env=*) env="${arg#env=}" ;;
+    *) ;;
     esac
 done
 
@@ -40,9 +40,22 @@ if [[ ! -f "definitions/$protocol/subgraph.$protocol.yaml" ]]; then
     exit 1
 fi
 
+version=$(jq -r '.version' definitions/"$protocol"/"$protocol"."$network".json)
+if [ -z "$version" ] || [ "$version" == "null" ]; then
+  echo "The 'version' value is missing. Please input a 'version' value in definitions/${protocol}/${protocol}.${network}.json"
+else
+  echo "The subgraph version is: $version"
+fi
+graphId=0
+totalGraphs=0
+# JSON 파일에 graphId 및 totalGraphs 값을 추가하여 temp.json 파일 생성
+jq ".graphId = $graphId | .totalGraphs = $totalGraphs" definitions/"$protocol"/"$protocol"."$network".json >temp.json
 
-# 명령어 실행
-mustache definitions/"$protocol"/"$protocol"."$network".json definitions/"$protocol"/subgraph."$protocol".yaml > subgraph.yaml
+# mustache 명령어를 사용하여 템플릿 렌더링
+mustache temp.json definitions/"$protocol"/subgraph."$protocol".yaml >subgraph.yaml
+
+# temp.json 파일 삭제
+rm temp.json
 
 graph codegen
 
@@ -57,8 +70,10 @@ fi
 graph_name="test-$protocol-$network"
 graph_name="${graph_name:0:30}" # 그래프 이름이 30자를 초과하면 초과하는 부분을 잘라냄
 
-graph deploy --node https://api.studio.thegraph.com/deploy/ --studio "$graph_name"
+# graph deploy --node https://api.studio.thegraph.com/deploy/ --studio "$graph_name"  --version-label="v$version"
 
+deploy_output=$(graph deploy --node https://api.studio.thegraph.com/deploy/ --studio "$graph_name" --version-label="v$version")
+deploy_output=$(echo "$deploy_output" | sed 's/\x1b\[[0-9;]*m//g')
 # Check for error message
 if [ $? -eq 0 ]; then
     # last_output=$(history | tail -n 1)
@@ -67,3 +82,21 @@ if [ $? -eq 0 ]; then
     echo "\033[0;32mPlease create a subgraph named \033[0;92m$graph_name\033[0;32m\033[0m"
     # fi
 fi
+# 출력에서 URL 추출
+query_url=$(echo "$deploy_output" | awk '/Queries \(HTTP\):/{print $NF}')
+# netwok2ChainId 에서 network에 대응하는 chainId를 가져옴.
+chainId=$(jq -r --arg network "$network" '.[$network]' network2ChainId.json)
+# 하이픈을 공백으로 변경
+protocol=$(echo "$protocol" | sed -e 's/-/ /g')
+
+# 각 단어의 첫 글자를 대문자로 변경
+protocol=$(echo "$protocol" | awk '{for(i=1;i<=NF;i++) $i=toupper(substr($i,1,1)) tolower(substr($i,2))}1')
+
+key="$chainId"_"$protocol"
+
+# URL이 유효한지 확인하고 파일에 저장
+if [[ -n "$query_url" ]]; then
+    echo "Saving query URL to file: $query_url"
+    jq -r --arg key "$key" --arg query_url "$query_url" '.[$key] = $query_url' subgraphs.json > temp.json && mv temp.json subgraphs.json
+fi
+rm subgraph.yaml
