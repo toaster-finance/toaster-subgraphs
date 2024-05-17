@@ -1,7 +1,4 @@
-
-### Venus-Protocol
-- Compound V2 Fork
-Comptroller - DistributedBorrowerComp / DistributedSupplierComp-> XVS Token
+Comptroller - RewardGranted -> COMP(Mendi) Token
             - Enter / Exit Market -> Create Pool Template
 ----|
     |

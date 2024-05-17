@@ -5,13 +5,16 @@ schema:
   file: ./schema.graphql
 dataSources:
   - kind: ethereum
-    name: Core
+    name: Comptroller
     network: {{network}}
     source:
-      address: "{{Core}}"
-      abi: Core
+      address: "{{Comptroller}}"
+      abi: Comptroller
       startBlock: {{startBlock}}
     context:
+      COMP:
+        type: String
+        data: "{{COMP}}"
       snapshotBatch:
         type: Int
         data: {{snapshotBatch}} 
@@ -30,18 +33,17 @@ dataSources:
         - Protocol
         - Holder
       abis:
-        - name: Core
-          file: ./abis/LayerBankV2/Core.json
-        - name: lToken
-          file: ./abis/LayerBankV2/lToken.json
+        - name: Comptroller
+          file: ./abis/MendiFinance/Comptroller.json
+        - name: cToken
+          file: ./abis/CompoundV2/cToken.json
       eventHandlers:
-        - event: MarketListed(address)
-          handler: handleMarketListed
-        - event: MarketRedeem(address,address,uint256)
-          handler: handleMarketRedeem
-        - event: MarketSupply(address,address,uint256)
-          handler: handleMarketSupply
-      file: ./src/projects/layerBank-v2/index.ts
+        - event: MarketEntered(address,address)
+          handler: handleMarketEntered
+      # callHandlers:
+      #   - function: claimComp(address)
+      #     handler: handleClaimComp
+      file: ./src/projects/mendi-finance/index.ts
       blockHandlers:
         - handler: handleBlock
           filter:
@@ -49,15 +51,15 @@ dataSources:
             every: {{polling}}
 templates:
   - kind: ethereum/contract
-    name: lToken
+    name: cToken
     network: {{network}}
     source:
-      abi: lToken
+      abi: cToken
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
       language: wasm/assemblyscript
-      file: ./src/projects/layerbank-v2/index.ts
+      file: ./src/projects/mendi-finance/index.ts
       entities:
         - Position
         - PositionSnapshot
@@ -66,9 +68,13 @@ templates:
         - Protocol
         - Holder
       abis:
-        - name: lToken
-          file: ./abis/LayerBankV2/lToken.json
+        - name: cToken
+          file: ./abis/CompoundV2/cToken.json
       eventHandlers:
+        - event: Mint(address,uint256,uint256)
+          handler: handleMint
+        - event: Redeem(address,uint256,uint256)
+          handler: handleRedeem
         - event: Borrow(address,uint256,uint256,uint256)
           handler: handleBorrow
         - event: RepayBorrow(address,address,uint256,uint256,uint256)
@@ -77,8 +83,5 @@ templates:
           handler: handleLiquidateBorrow
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTransfer
-
-
-
     
   

@@ -1,7 +1,7 @@
 
 ### Venus-Protocol
 - Compound V2 Fork
-Core - Enter / Exit Market -> Create Pool Template:  / MarketRedeem / MarketSupply 
+Core - Enter / Exit Market -> Create Pool Template: MarketListed / MarketRedeem / MarketSupply 
 ----|
     |
     |

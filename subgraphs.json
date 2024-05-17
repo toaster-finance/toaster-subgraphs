@@ -33,5 +33,10 @@
     "https://api.studio.thegraph.com/query/70792/id-16-aave-v3-arbitrum-one/v0.0.5"
   ],
   "1_Aave V3": "https://api.studio.thegraph.com/query/70792/test-aave-v3-mainnet/v0.13.0",
-  "1_Compound V2": "https://api.studio.thegraph.com/query/70792/test-compound-v2-mainnet/v0.1.1"
+  "1_Compound V2": "https://api.studio.thegraph.com/query/70792/test-compound-v2-mainnet/v0.1.2",
+  "59144_Layerbank V2": "https://api.studio.thegraph.com/query/70792/test-layerbank-v2-linea/v0.0.3",
+  "56_Venus Protocol": "https://api.studio.thegraph.com/query/70792/test-venus-protocol-bsc/v0.0.6",
+  "59144_Mendi Finance": "https://api.studio.thegraph.com/query/70792/test-mendi-finance-linea/v0.0.1",
+  "34443_Layerbank V2": "https://api.studio.thegraph.com/query/70792/test-layerbank-v2-mode-mainnet/v0.0.1",
+  "534352_Layerbank V2": "https://api.studio.thegraph.com/query/70792/test-layerbank-v2-scroll/v0.0.1"
 }

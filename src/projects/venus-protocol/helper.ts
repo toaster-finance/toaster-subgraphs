@@ -1,4 +1,4 @@
-import { cToken } from './../../../generated/templates/cToken/cToken';
+import { vToken } from './../../../generated/templates/vToken/vToken';
 import {
   InvestmentHelper,
   InvestmentInfo,
@@ -6,44 +6,43 @@ import {
 import { Address, BigInt } from "@graphprotocol/graph-ts";
 
 /**
- * id: investment id  = "Venus{cTokenAddress}{UnderlyingToken}"
+ * id: investment id  = "Venus{vTokenAddress}{UnderlyingToken}"
  */
 export class VenusHelper extends InvestmentHelper {
-  static protocolName = "Venus";
+  static protocolName:string = "Venus";
   /**
    *
-   * @param cToken Venus V2 cToken Contract Address
+   * @param vToken Venus V2 vToken Contract Address
    * @param tag ""
    */
   constructor(
-    cToken: Address,
-    tag: string,
+    vToken: Address,
     readonly comptroller: Address,
-    readonly compAddr: Address
+    readonly xvsAddr: Address
   ) {
-    super("Venus", cToken, tag);
+    super("Venus", vToken, "");
   }
   getProtocolMeta(): string[] {
     return [];
   }
   getInfo(_invest: Address): InvestmentInfo {
     const underlying = this.getUnderlyingToken();
-    return new InvestmentInfo([underlying], [this.compAddr], []);
+    return new InvestmentInfo([underlying], [this.xvsAddr], []);
   }
 
   getUnderlyingToken(): Address {
-    const callResult = cToken.bind(this.investmentAddress).try_underlying();
-    const cTokenAddress = callResult.reverted
+    const callResult = vToken.bind(this.investmentAddress).try_underlying();
+    const vTokenAddress = callResult.reverted
       ? Address.zero()
       : callResult.value;
-    return cTokenAddress;
+    return vTokenAddress;
   }
 
   getUnderlyingAmount(owner:Address): BigInt{
-    const balanceResult = cToken.bind(this.investmentAddress).try_balanceOfUnderlying(owner)
+    const balanceResult = vToken.bind(this.investmentAddress).try_balanceOfUnderlying(owner)
     return balanceResult.reverted ? balanceResult.value : BigInt.fromI32(0);
   }
   getBorrowedAmount(owner: Address): BigInt {
-    return cToken.bind(this.investmentAddress).borrowBalanceStored(owner);
+    return vToken.bind(this.investmentAddress).borrowBalanceStored(owner);
   }
 }

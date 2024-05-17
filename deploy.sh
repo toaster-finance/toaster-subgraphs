@@ -71,7 +71,7 @@ graph_name="test-$protocol-$network"
 graph_name="${graph_name:0:30}" # 그래프 이름이 30자를 초과하면 초과하는 부분을 잘라냄
 
 # graph deploy --node https://api.studio.thegraph.com/deploy/ --studio "$graph_name"  --version-label="v$version"
-graph deploy --node https://api.studio.thegraph.com/deploy/ --studio "$graph_name" --version-label="v$version"
+# graph deploy --node https://api.studio.thegraph.com/deploy/ --studio "$graph_name" --version-label="v$version"
 deploy_output=$(graph deploy --node https://api.studio.thegraph.com/deploy/ --studio "$graph_name" --version-label="v$version")
 deploy_output=$(echo "$deploy_output" | sed 's/\x1b\[[0-9;]*m//g')
 # Check for error message

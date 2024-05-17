@@ -1,8 +1,9 @@
 {
+  "version": "0.0.1",
   "network": "mode-mainnet",
   "Core": "0x80980869D90A737aff47aBA6FbaA923012C1FF50",
-  "snapshotBatch": 2880,
-  "polling": 2,
-  "startBlock": 7710671,
-  "startSnapshotBlock": 18857295
+  "snapshotBatch": 4320,
+  "polling": 10,
+  "startBlock": 4122806,
+  "startSnapshotBlock": 7791538
 }

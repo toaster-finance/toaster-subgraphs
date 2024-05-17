@@ -35,8 +35,8 @@ dataSources:
       abis:
         - name: Comptroller
           file: ./abis/CompoundV2/Comptroller.json
-        - name: cToken
-          file: ./abis/CompoundV2/cToken.json
+        - name: vToken
+          file: ./abis/VenusProtocol/vToken.json
       eventHandlers:
         - event: MarketEntered(address,address)
           handler: handleMarketEntered
@@ -44,7 +44,7 @@ dataSources:
           handler: handleDistributedBorrower
         - event: DistributedSupplierComp(indexed address,indexed address,uint256,uint256)
           handler: handleDistributedSupplier
-      file: ./src/projects/compound-v2/index.ts
+      file: ./src/projects/venus-protocol/index.ts
       blockHandlers:
         - handler: handleBlock
           filter:
@@ -52,15 +52,15 @@ dataSources:
             every: {{polling}}
 templates:
   - kind: ethereum/contract
-    name: cToken
+    name: vToken
     network: {{network}}
     source:
-      abi: cToken
+      abi: vToken
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
       language: wasm/assemblyscript
-      file: ./src/projects/compound-v2/index.ts
+      file: ./src/projects/venus-protocol/index.ts
       entities:
         - Position
         - PositionSnapshot
@@ -69,8 +69,8 @@ templates:
         - Protocol
         - Holder
       abis:
-        - name: cToken
-          file: ./abis/CompoundV2/cToken.json
+        - name: vToken
+          file: ./abis/VenusProtocol/vToken.json
       eventHandlers:
         - event: Mint(address,uint256,uint256)
           handler: handleMint

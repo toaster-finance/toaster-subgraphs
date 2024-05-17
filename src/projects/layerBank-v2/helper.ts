@@ -6,41 +6,40 @@ import {
 import { Address, BigInt } from "@graphprotocol/graph-ts";
 
 /**
- * id: investment id  = "LayerBankV2{cTokenAddress}{UnderlyingToken}"
+ * id: investment id  = "LayerBankV2{lTokenAddress}{UnderlyingToken}"
  */
 export class LayerBankV2Helper extends InvestmentHelper {
-  static protocolName = "LayerBankV2";
+  static protocolName :string = "LayerBankV2";
   /**
    *
-   * @param cToken LayerBankV2 V2 cToken Contract Address
+   * @param lToken LayerBankV2 V2 lToken Contract Address
    * @param tag ""
    */
   constructor(
-    cToken: Address,
-    tag: string,
-    readonly comptroller: Address,
-    readonly compAddr: Address
+    lToken: Address,
+    readonly core: Address
   ) {
-    super(LayerBankV2Helper.protocolName, cToken, tag);
+    super(LayerBankV2Helper.protocolName, lToken, "");
   }
   getProtocolMeta(): string[] {
     return [];
   }
   getInfo(_invest: Address): InvestmentInfo {
     const underlying = this.getUnderlyingToken();
-    return new InvestmentInfo([underlying], [this.compAddr], []);
+    return new InvestmentInfo([underlying], [], []);
   }
 
   getUnderlyingToken(): Address {
     const callResult = lToken.bind(this.investmentAddress).try_underlying();
-    const cTokenAddress = callResult.reverted
+    const lTokenAddress = callResult.reverted
       ? Address.zero()
       : callResult.value;
-    return cTokenAddress;
+    return lTokenAddress;
   }
 
   getUnderlyingAmount(owner: Address): BigInt {
-    return lToken.bind(this.investmentAddress).underlyingBalanceOf(owner);
+    const callResult = lToken.bind(this.investmentAddress).try_underlyingBalanceOf(owner)
+    return callResult.reverted ? BigInt.fromI32(0) : callResult.value;
   }
   getBorrowedAmount(owner: Address): BigInt {
     return lToken.bind(this.investmentAddress).borrowBalanceOf(owner);

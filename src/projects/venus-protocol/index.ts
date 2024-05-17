@@ -17,39 +17,39 @@ import { savePositionChange } from "../../common/savePositionChange";
 import { PositionChangeAction } from "../../common/PositionChangeAction.enum";
 import { PositionParams } from "../../common/helpers/positionHelper";
 import { PositionType } from "../../common/PositionType.enum";
-import {
-  Borrow,
-  LiquidateBorrow,
-  Mint,
-  Redeem,
-  RepayBorrow,
-} from "../../../generated/templates/cToken/cToken";
 import { getContextAddress } from "../../common/helpers/contextHelper";
 import { getProtocolId } from "../../common/helpers/investmentHelper";
-import { cToken as cTokenTemplate } from "../../../generated/templates";
+import { vToken as vTokenTemplate } from "../../../generated/templates";
 import { savePositionSnapshot } from "../../common/savePositionSnapshot";
+import {
+  Borrow,
+  Mint,
+  Redeem,
+  LiquidateBorrow,
+  RepayBorrow,
+} from "../../../generated/templates/vToken/VToken";
 
 
 export function handleMarketEntered(event: MarketEntered): void {
   const comptroller = dataSource.address();
   const vTokenAddr = event.params.cToken;
-  const compAddr = getContextAddress("XVS");
-  const helper = new VenusHelper(vTokenAddr,"",comptroller,compAddr);
+  const xvsAddr = getContextAddress("XVS");
+  const helper = new VenusHelper(vTokenAddr,comptroller,xvsAddr);
   const investment = Investment.load(helper.id);
   if (investment) return;
   helper.getOrCreateInvestment(event.block);
   const cTokenContext = new DataSourceContext();
   cTokenContext.setString("Comptroller", comptroller.toHexString());
-  cTokenContext.setString("XVS", compAddr.toHexString());
-  cTokenTemplate.createWithContext(vTokenAddr, cTokenContext);
+  cTokenContext.setString("XVS", xvsAddr.toHexString());
+  vTokenTemplate.createWithContext(vTokenAddr, cTokenContext);
 }
 
 export function handleDistributedBorrower(event: DistributedBorrowerComp): void {
   const rewardAmount = event.params.compDelta;
-  const cTokenAddr = event.params.cToken;
+  const vTokenAddr = event.params.cToken;
   const owner = event.params.borrower;
-  const compAddr = getContextAddress("XVS");
-  const helper = new VenusHelper(cTokenAddr, "", event.address,compAddr);
+  const xvsAddr = getContextAddress("XVS");
+  const helper = new VenusHelper(vTokenAddr, event.address,xvsAddr);
   savePositionChange(
     event,
     PositionChangeAction.Harvest, // receive reward XVS token
@@ -70,10 +70,10 @@ export function handleDistributedBorrower(event: DistributedBorrowerComp): void 
 
 export function handleDistributedSupplier(event: DistributedSupplierComp): void {
   const rewardAmount = event.params.compDelta;
-  const cTokenAddr = event.params.cToken;
+  const vTokenAddr = event.params.cToken;
   const owner = event.params.supplier;
-  const compAddr = getContextAddress("XVS");
-  const helper = new VenusHelper(cTokenAddr, "", event.address,compAddr);
+  const xvsAddr = getContextAddress("XVS");
+  const helper = new VenusHelper(vTokenAddr,event.address,xvsAddr);
   savePositionChange(
     event,
     PositionChangeAction.Harvest, // receive reward XVS token
@@ -96,8 +96,8 @@ export function handleMint(event: Mint): void {
   const dInputAmount = event.params.mintTokens;
   const owner = event.params.minter;
   const comptrollerAddr = getContextAddress("Comptroller");
-  const compAddr = getContextAddress("XVS");
-  const helper = new VenusHelper(event.address, "", comptrollerAddr,compAddr);
+  const xvsAddr = getContextAddress("XVS");
+  const helper = new VenusHelper(event.address, comptrollerAddr,xvsAddr);
   const posId = helper.getPositionId(owner, "");
   const position = Position.load(posId);
   // get current underlying amount
@@ -131,8 +131,8 @@ export function handleRedeem(event: Redeem): void {
   const dInputAmount = event.params.redeemTokens;
   const owner = event.params.redeemer;
   const comptrollerAddr = getContextAddress("Comptroller");
-  const compAddr = getContextAddress("XVS");
-  const helper = new VenusHelper(event.address, "", comptrollerAddr,compAddr);
+  const xvsAddr = getContextAddress("XVS");
+  const helper = new VenusHelper(event.address, comptrollerAddr,xvsAddr);
   // get current underlying amount
   const inputAmount = helper.getUnderlyingAmount(owner);
 
@@ -159,8 +159,8 @@ export function handleBorrow(event: Borrow): void {
   const borrowAmount = event.params.accountBorrows;
   const owner = event.params.borrower;
   const comptrollerAddr = getContextAddress("Comptroller");
-  const compAddr = getContextAddress("XVS");
-  const helper = new VenusHelper(event.address, "", comptrollerAddr,compAddr);
+  const xvsAddr = getContextAddress("XVS");
+  const helper = new VenusHelper(event.address,comptrollerAddr,xvsAddr);
   savePositionChange(
     event,
     PositionChangeAction.Borrow,
@@ -184,8 +184,8 @@ export function handleRepayBorrow(event: RepayBorrow): void {
   const owner = event.params.borrower;
   const borrowAmount = event.params.accountBorrows;
   const comptrollerAddr = getContextAddress("Comptroller");
-  const compAddr = getContextAddress("XVS");
-  const helper = new VenusHelper(event.address, "", comptrollerAddr,compAddr);
+  const xvsAddr = getContextAddress("XVS");
+  const helper = new VenusHelper(event.address,comptrollerAddr,xvsAddr);
   savePositionChange(
     event,
     PositionChangeAction.Repay,
@@ -210,14 +210,13 @@ export function handleLiquidateBorrow(event: LiquidateBorrow): void {
   const collateralAddr = event.params.cTokenCollateral;
   const collateralSeizeAmount = event.params.seizeTokens;
   const comptrollerAddr = getContextAddress("Comptroller");
-  const compAddr = getContextAddress("XVS");
+  const xvsAddr = getContextAddress("XVS");
   const colletaralHelper = new VenusHelper(
     collateralAddr,
-    "",
     comptrollerAddr,
-    compAddr
+    xvsAddr
   );
-  const borrowHelper = new VenusHelper(event.address, "", comptrollerAddr,compAddr);
+  const borrowHelper = new VenusHelper(event.address,comptrollerAddr,xvsAddr);
   const currCollateralAmount = colletaralHelper.getUnderlyingAmount(owner);
   const currBorrowAmount = borrowHelper.getBorrowedAmount(owner);
   savePositionChange(
@@ -272,8 +271,8 @@ export function handleBlock(block: ethereum.Block):void {
       users.add(Address.fromBytes(positions[j].owner));
     }
     const userAddr = users.values();
-    const compAddr = getContextAddress("XVS");
-    const helper = new VenusHelper(Address.fromBytes(investment.address), "", comptroller,compAddr);
+    const xvsAddr = getContextAddress("XVS");
+    const helper = new VenusHelper(Address.fromBytes(investment.address),comptroller,xvsAddr);
     for (let u = 0; u < userAddr.length; u += 1) {
       const owner = userAddr[u];
       const borrowedAmount = helper.getBorrowedAmount(owner);
