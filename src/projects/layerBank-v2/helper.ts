@@ -1,4 +1,4 @@
-import { cToken } from './../../../generated/templates/cToken/cToken';
+import { lToken } from "./../../../generated/Core/lToken";
 import {
   InvestmentHelper,
   InvestmentInfo,
@@ -6,13 +6,13 @@ import {
 import { Address, BigInt } from "@graphprotocol/graph-ts";
 
 /**
- * id: investment id  = "Venus{cTokenAddress}{UnderlyingToken}"
+ * id: investment id  = "LayerBankV2{cTokenAddress}{UnderlyingToken}"
  */
-export class VenusHelper extends InvestmentHelper {
-  static protocolName = "Venus";
+export class LayerBankV2Helper extends InvestmentHelper {
+  static protocolName = "LayerBankV2";
   /**
    *
-   * @param cToken Venus V2 cToken Contract Address
+   * @param cToken LayerBankV2 V2 cToken Contract Address
    * @param tag ""
    */
   constructor(
@@ -21,7 +21,7 @@ export class VenusHelper extends InvestmentHelper {
     readonly comptroller: Address,
     readonly compAddr: Address
   ) {
-    super("Venus", cToken, tag);
+    super(LayerBankV2Helper.protocolName, cToken, tag);
   }
   getProtocolMeta(): string[] {
     return [];
@@ -32,18 +32,17 @@ export class VenusHelper extends InvestmentHelper {
   }
 
   getUnderlyingToken(): Address {
-    const callResult = cToken.bind(this.investmentAddress).try_underlying();
+    const callResult = lToken.bind(this.investmentAddress).try_underlying();
     const cTokenAddress = callResult.reverted
       ? Address.zero()
       : callResult.value;
     return cTokenAddress;
   }
 
-  getUnderlyingAmount(owner:Address): BigInt{
-    const balanceResult = cToken.bind(this.investmentAddress).try_balanceOfUnderlying(owner)
-    return balanceResult.reverted ? balanceResult.value : BigInt.fromI32(0);
+  getUnderlyingAmount(owner: Address): BigInt {
+    return lToken.bind(this.investmentAddress).underlyingBalanceOf(owner);
   }
   getBorrowedAmount(owner: Address): BigInt {
-    return cToken.bind(this.investmentAddress).borrowBalanceStored(owner);
+    return lToken.bind(this.investmentAddress).borrowBalanceOf(owner);
   }
 }

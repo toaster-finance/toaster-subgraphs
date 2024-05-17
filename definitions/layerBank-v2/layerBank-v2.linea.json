@@ -1,7 +1,6 @@
 {
   "network": "linea",
-  "Comptroller": "0x3d9819210A31b4961b30EF54bE2aeD79B9c9Cd3B",
-  "COMP": "0xc00e94Cb662C3520282E6f5717214004A7f26888",
+  "Core": "0x43Eac5BFEa14531B8DE0B334E123eA98325de866",
   "snapshotBatch": 2880,
   "polling": 2,
   "startBlock": 7710671,

@@ -1,0 +1,77 @@
+specVersion: 1.0.0
+indexerHints:
+  prune: auto
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: Core
+    network: {{network}}
+    source:
+      address: "{{Core}}"
+      abi: Core
+      startBlock: {{startBlock}}
+    context:
+      snapshotBatch:
+        type: Int
+        data: {{snapshotBatch}} 
+      startSnapshotBlock:
+        type: Int
+        data: {{startSnapshotBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - Position
+        - PositionSnapshot
+        - PositionChange
+        - Investment
+        - Protocol
+        - Holder
+      abis:
+        - name: Core
+          file: ./abis/LayerBankV2/Core.json
+        - name: lToken
+          file: ./abis/LayerBankV2/lToken.json
+      eventHandlers:
+        - event: MarketListed(address)
+          handler: handleMarketListed
+        - event: MarketRedeem(address,address,uint256)
+          handler: handleMarketRedeem
+        - event: MarketSupply(address,address,uint256)
+          handler: handleMarketSupply
+      file: ./src/projects/layerBank-v2/index.ts
+      blockHandlers:
+        - handler: handleBlock
+          filter:
+            kind: polling
+            every: {{polling}}
+templates:
+  - kind: ethereum/contract
+    name: lToken
+    network: {{network}}
+    source:
+      abi: lToken
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      file: ./src/projects/compound-v2/index.ts
+      entities:
+        - Position
+        - PositionSnapshot
+        - PositionChange
+        - Investment
+        - Protocol
+        - Holder
+      abis:
+        - name: lToken
+          file: ./abis/LayerBankV2/lToken.json
+      eventHandlers:
+        -Transfer(address,address,uint256)
+        
+
+
+    
+  

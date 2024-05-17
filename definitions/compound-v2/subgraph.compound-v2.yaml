@@ -82,5 +82,7 @@ templates:
           handler: handleRepayBorrow
         - event: LiquidateBorrow(address,address,uint256,address,uint256)
           handler: handleLiquidateBorrow
+        - event: Transfer(indexed address,indexed address,uint256)
+          handler: handleTransfer
     
   
