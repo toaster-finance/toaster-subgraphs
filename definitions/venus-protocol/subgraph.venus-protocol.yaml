@@ -1,0 +1,86 @@
+specVersion: 1.0.0
+indexerHints:
+  prune: auto
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: Comptroller
+    network: {{network}}
+    source:
+      address: "{{Comptroller}}"
+      abi: Comptroller
+      startBlock: {{startBlock}}
+    context:
+      XVS:
+        type: String
+        data: "{{XVS}}"
+      snapshotBatch:
+        type: Int
+        data: {{snapshotBatch}} 
+      startSnapshotBlock:
+        type: Int
+        data: {{startSnapshotBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - Position
+        - PositionSnapshot
+        - PositionChange
+        - Investment
+        - Protocol
+        - Holder
+      abis:
+        - name: Comptroller
+          file: ./abis/CompoundV2/Comptroller.json
+        - name: vToken
+          file: ./abis/VenusProtocol/vToken.json
+      eventHandlers:
+        - event: MarketEntered(address,address)
+          handler: handleMarketEntered
+        - event: DistributedBorrowerComp(indexed address,indexed address,uint256,uint256)
+          handler: handleDistributedBorrower
+        - event: DistributedSupplierComp(indexed address,indexed address,uint256,uint256)
+          handler: handleDistributedSupplier
+      file: ./src/projects/venus-protocol/index.ts
+      blockHandlers:
+        - handler: handleBlock
+          filter:
+            kind: polling
+            every: {{polling}}
+templates:
+  - kind: ethereum/contract
+    name: vToken
+    network: {{network}}
+    source:
+      abi: vToken
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      file: ./src/projects/venus-protocol/index.ts
+      entities:
+        - Position
+        - PositionSnapshot
+        - PositionChange
+        - Investment
+        - Protocol
+        - Holder
+      abis:
+        - name: vToken
+          file: ./abis/VenusProtocol/vToken.json
+      eventHandlers:
+        - event: Mint(address,uint256,uint256)
+          handler: handleMint
+        - event: Redeem(address,uint256,uint256)
+          handler: handleRedeem
+        - event: Borrow(address,uint256,uint256,uint256)
+          handler: handleBorrow
+        - event: RepayBorrow(address,address,uint256,uint256,uint256)
+          handler: handleRepayBorrow
+        - event: LiquidateBorrow(address,address,uint256,address,uint256)
+          handler: handleLiquidateBorrow
+    
+  

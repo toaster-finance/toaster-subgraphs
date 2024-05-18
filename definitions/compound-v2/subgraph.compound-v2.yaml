@@ -1,0 +1,88 @@
+specVersion: 1.0.0
+indexerHints:
+  prune: auto
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: Comptroller
+    network: {{network}}
+    source:
+      address: "{{Comptroller}}"
+      abi: Comptroller
+      startBlock: {{startBlock}}
+    context:
+      COMP:
+        type: String
+        data: "{{COMP}}"
+      snapshotBatch:
+        type: Int
+        data: {{snapshotBatch}} 
+      startSnapshotBlock:
+        type: Int
+        data: {{startSnapshotBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - Position
+        - PositionSnapshot
+        - PositionChange
+        - Investment
+        - Protocol
+        - Holder
+      abis:
+        - name: Comptroller
+          file: ./abis/CompoundV2/Comptroller.json
+        - name: cToken
+          file: ./abis/CompoundV2/cToken.json
+      eventHandlers:
+        - event: MarketEntered(address,address)
+          handler: handleMarketEntered
+        - event: DistributedBorrowerComp(indexed address,indexed address,uint256,uint256)
+          handler: handleDistributedBorrower
+        - event: DistributedSupplierComp(indexed address,indexed address,uint256,uint256)
+          handler: handleDistributedSupplier
+      file: ./src/projects/compound-v2/index.ts
+      blockHandlers:
+        - handler: handleBlock
+          filter:
+            kind: polling
+            every: {{polling}}
+templates:
+  - kind: ethereum/contract
+    name: cToken
+    network: {{network}}
+    source:
+      abi: cToken
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      file: ./src/projects/compound-v2/index.ts
+      entities:
+        - Position
+        - PositionSnapshot
+        - PositionChange
+        - Investment
+        - Protocol
+        - Holder
+      abis:
+        - name: cToken
+          file: ./abis/CompoundV2/cToken.json
+      eventHandlers:
+        - event: Mint(address,uint256,uint256)
+          handler: handleMint
+        - event: Redeem(address,uint256,uint256)
+          handler: handleRedeem
+        - event: Borrow(address,uint256,uint256,uint256)
+          handler: handleBorrow
+        - event: RepayBorrow(address,address,uint256,uint256,uint256)
+          handler: handleRepayBorrow
+        - event: LiquidateBorrow(address,address,uint256,address,uint256)
+          handler: handleLiquidateBorrow
+        - event: Transfer(indexed address,indexed address,uint256)
+          handler: handleTransfer
+    
+  

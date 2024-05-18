@@ -1,0 +1,9 @@
+{
+  "version" : "0.0.3",
+  "network": "linea",
+  "Core": "0x43Eac5BFEa14531B8DE0B334E123eA98325de866",
+  "snapshotBatch": 2880,
+  "polling": 10,
+  "startBlock": 2844117,
+  "startSnapshotBlock": 4431319
+}

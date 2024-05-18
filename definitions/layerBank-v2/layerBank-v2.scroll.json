@@ -1,0 +1,9 @@
+{
+  "version": "0.0.1",
+  "network": "scroll",
+  "Core": "0xEC53c830f4444a8A56455c6836b5D2aA794289Aa",
+  "snapshotBatch": 2880,
+  "polling": 10,
+  "startBlock": 152083,
+  "startSnapshotBlock": 5649483
+}
