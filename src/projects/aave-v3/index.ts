@@ -32,7 +32,6 @@ import { skipAddress } from "../../common/skipAddress";
 
 // Create aToken template by handling supply event
 // handle supply event will be handled by aToken contract transfer event
-export const AAVE_V3 = "aave-v3";
 export function handleSupply(event: Supply): void {
   const amount = event.params.amount;
   const underlying = event.params.reserve;
@@ -235,7 +234,7 @@ export function handleLiquidation(event: LiquidationCall): void {
 }
 
 export function handleBlock(block: ethereum.Block): void {
-  const protocol = Protocol.load(getProtocolId(AAVE_V3));
+  const protocol = Protocol.load(getProtocolId(AaveV3Helper.protocolName));
   if (!protocol) return;
   const investments = protocol.investments.load();
   const protocolInit = protocol._batchIterator.toI32();

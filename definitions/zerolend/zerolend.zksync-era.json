@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "network": "zksync-era",
+  "Pool": "0x4d9429246EA989C9CeE203B43F6d1C7D83e3B8F8",
+  "PoolDataProvider": "0xB73550bC1393207960A385fC8b34790e5133175E",
+  "UniPoolDataProvider": "0x8FE0ac76b634B7D343Bd32282B98E9f271B43367",
+  "snapshotBatch": 2880,
+  "startBlock": 11627411,
+  "polling": 10,
+  "startSnapshotBlock": 33345369
+}
