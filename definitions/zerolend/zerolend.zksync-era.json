@@ -1,5 +1,5 @@
 {
-  "version": "0.0.1",
+  "version": "0.0.4",
   "network": "zksync-era",
   "Pool": "0x4d9429246EA989C9CeE203B43F6d1C7D83e3B8F8",
   "PoolDataProvider": "0xB73550bC1393207960A385fC8b34790e5133175E",

@@ -1,4 +1,5 @@
 {
+  "version": "2.0.1",
   "network": "bsc",
   "Pool": "0x6807dc923806fE8Fd134338EABCA509979a7e0cB",
   "PoolDataProvider": "0x41585C50524fb8c3899B43D7D797d9486AAc94DB",

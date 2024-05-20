@@ -1,5 +1,5 @@
 {
-  "version": "0.0.1",
+  "version": "0.0.4",
   "network": "mainnet",
   "Pool": "0x3BC3D34C32cc98bf098D832364Df8A222bBaB4c0",
   "PoolDataProvider": "0x47223D4eA966a93b2cC96FFB4D42c22651FADFcf",

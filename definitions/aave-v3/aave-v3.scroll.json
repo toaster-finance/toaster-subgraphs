@@ -1,4 +1,5 @@
 {
+  "version": "2.0.1",
   "network": "scroll",
   "Pool": "0x11fCfe756c05AD438e312a7fd934381537D3cFfe",
   "PoolDataProvider": "0xa99F4E69acF23C6838DE90dD1B5c02EA928A53ee",

@@ -21,14 +21,12 @@ if [[ -z "$network" || -z "$protocol" || -z "$env" ]]; then
     exit 1
 fi
 
-if [[ "$env" != "prod" && "$env" != "local" ]]; then
-    echo "Error: Invalid environment specified. Environment must be 'prod' or 'local'."
-    exit 1
-fi
-
 # env 파일을 통한 graph key 가져오기
 if [[ -f ".env.$env" ]]; then
     source ".env.$env"
+else
+    echo "Error: .env.$env file not found."
+    exit 1
 fi
 
 # 파일의 존재 여부 확인
@@ -41,12 +39,12 @@ if [[ ! -f "definitions/$protocol/subgraph.$protocol.yaml" ]]; then
     echo "Error: definitions/$protocol/subgraph.$protocol.yaml file does not exist."
     exit 1
 fi
-version=$(jq -r '.version' definitions/"$protocol"/"$protocol"."$network".json)
 
+version=$(jq -r '.version' definitions/"$protocol"/"$protocol"."$network".json)
 if [ -z "$version" ] || [ "$version" == "null" ]; then
-    echo "The 'version' value is missing. Please input a 'version' value in definitions/${protocol}/${protocol}.${network}.json"
+  echo "The 'version' value is missing. Please input a 'version' value in definitions/${protocol}/${protocol}.${network}.json"
 else
-    echo "The subgraph version is: $version"
+  echo "The subgraph version is: $version"
 fi
 graphId=0
 totalGraphs=0
@@ -58,6 +56,7 @@ mustache temp.json definitions/"$protocol"/subgraph."$protocol".yaml >subgraph.y
 
 # temp.json 파일 삭제
 rm temp.json
+
 graph codegen
 
 if [[ -n "$GRAPH_AUTH_KEY" ]]; then
@@ -70,23 +69,33 @@ fi
 # Deploy할 그래프 이름 생성 (최대 30자)
 graph_name="stage-$protocol-$network"
 graph_name="${graph_name:0:30}" # 그래프 이름이 30자를 초과하면 초과하는 부분을 잘라냄
-
+# for deubgging
 # graph deploy --node https://api.studio.thegraph.com/deploy/ --studio "$graph_name" --version-label="v$version"
-# Check for error message
-if [ $? -eq 0 ]; then
-    echo -e "\033[0;33mIf Subgraph does not exist, please create it at: https://thegraph.com/studio/?show=Create\033[0m"
-    echo -e "\033[0;32mPlease create a subgraph named \033[0;92m$graph_name\033[0;32m\033[0m"
-fi
-
 deploy_output=$(graph deploy --node https://api.studio.thegraph.com/deploy/ --studio "$graph_name" --version-label="v$version")
+deploy_output=$(echo "$deploy_output" | sed 's/\x1b\[[0-9;]*m//g')
+# Check for error message
+if [ $? -ne 0 ]; then
+    echo "Error during deployment: $deploy_output"
+    exit 1
+else
+    echo "\033[0;33mIf Subgraph does not exist, please create it at: https://thegraph.com/studio/?show=Create\033[0m"
+    echo "\033[0;32mPlease create a subgraph named \033[0;92m$graph_name\033[0;32m\033[0m"
+fi
 # 출력에서 URL 추출
-query_url=$(echo "$deploy_output" | grep -o "https://api.studio.thegraph.com/query/[^\s]*")
+query_url=$(echo "$deploy_output" | awk '/Queries \(HTTP\):/{print $NF}')
+# netwok2ChainId 에서 network에 대응하는 chainId를 가져옴.
+chainId=$(jq -r --arg network "$network" '.[$network]' network2ChainId.json)
+# 하이픈을 공백으로 변경
+protocol=$(echo "$protocol" | sed -e 's/-/ /g')
+
+# 각 단어의 첫 글자를 대문자로 변경
+protocol=$(echo "$protocol" | awk '{for(i=1;i<=NF;i++) $i=toupper(substr($i,1,1)) tolower(substr($i,2))}1')
+
+key="$chainId"_"$protocol"
 
 # URL이 유효한지 확인하고 파일에 저장
 if [[ -n "$query_url" ]]; then
     echo "Saving query URL to file: $query_url"
-    echo "$query_url" >>query_urls.txt
+    jq -r --arg key "$key" --arg query_url "$query_url" '.[$key] = $query_url' subgraphs.json > temp.json && mv temp.json subgraphs.json
 fi
-
-
 rm subgraph.yaml

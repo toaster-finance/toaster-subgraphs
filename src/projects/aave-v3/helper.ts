@@ -9,7 +9,7 @@ import { getContextAddress } from "../../common/helpers/contextHelper";
  * id: investment id  = "AaveV3{PoolAddress}{UnderlyingToken}"
  */
 export class AaveV3Helper extends InvestmentHelper {
-  static protocolName: string = "ZeroLend";
+  static protocolName: string = "AaveV3";
   /**
    *
    * @param pool Aave V3 Pool Contract Address

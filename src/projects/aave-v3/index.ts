@@ -250,11 +250,10 @@ export function handleBlock(block: ethereum.Block): void {
   // gather all users of all positions of all investments
   for (let i = 0; i < investments.length; i += 1) {
     const investment = investments[i];
-    const aTokenAddr = investment.tag;
     const positions = investment.positions.load();
     for (let j = 0; j < positions.length; j += 1) {
       if (positions[j].closed) continue;
-      if (BigInt.fromString(aTokenAddr).mod(BigInt.fromI32(batch)).equals(BigInt.fromI32(protocolInit)))
+      if (positions[j].owner.toI64() % batch === protocolInit)
         users.add(Address.fromBytes(positions[j].owner));
     }
   }
