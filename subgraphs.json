@@ -34,7 +34,7 @@
   ],
   "1_Aave V3": "https://api.studio.thegraph.com/query/70792/test-aave-v3-mainnet/v2.0.0",
   "534352_Aave V3": "https://api.studio.thegraph.com/query/70792/stage-aave-v3-scroll/v2.0.1",
-  "null_Aave V3": "https://api.studio.thegraph.com/query/70792/stage-aave-v3-base/v2.0.1",
+  "8453_Aave V3": "https://api.studio.thegraph.com/query/70792/stage-aave-v3-base/v2.0.1",
   "137_Aave V3": "https://api.studio.thegraph.com/query/70792/stage-aave-v3-matic/v2.0.1",
   "56_Aave V3": "https://api.studio.thegraph.com/query/70792/stage-aave-v3-bsc/v2.0.1",
   "1_Spark Protocol": "https://api.studio.thegraph.com/query/70792/test-spark-protocol-mainnet/v0.0.4",
