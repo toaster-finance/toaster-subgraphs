@@ -26,6 +26,7 @@ import { getContextAddress } from "../../common/helpers/contextHelper";
 import { AaveV3Helper } from "./helper";
 import { aToken } from "../../../generated/templates";
 import { skipAddress } from "../../common/skipAddress";
+import { calcMod } from "../../common/calcMod";
 
 //PositionType.Invest: it means deposit (deposit amount is positive, withdraw amount is negative)
 //PositionType.Borrow: it means borrow (borrow amount is positive, repay amount is negative)
@@ -253,7 +254,7 @@ export function handleBlock(block: ethereum.Block): void {
     const positions = investment.positions.load();
     for (let j = 0; j < positions.length; j += 1) {
       if (positions[j].closed) continue;
-      if (positions[j].owner.toI64() % batch === protocolInit)
+      if (calcMod(positions[j].owner,batch) === protocolInit)
         users.add(Address.fromBytes(positions[j].owner));
     }
   }
