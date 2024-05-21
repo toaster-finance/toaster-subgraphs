@@ -1,0 +1,11 @@
+{
+  "version": "0.0.4",
+  "network": "mainnet",
+  "Pool": "0x3BC3D34C32cc98bf098D832364Df8A222bBaB4c0",
+  "PoolDataProvider": "0x47223D4eA966a93b2cC96FFB4D42c22651FADFcf",
+  "UniPoolDataProvider": "0xa6EA08D16d47feE408505fda73520EbefC68Ef01",
+  "snapshotBatch": 2880,
+  "startBlock": 19356922,
+  "polling": 2,
+  "startSnapshotBlock": 19700837
+}

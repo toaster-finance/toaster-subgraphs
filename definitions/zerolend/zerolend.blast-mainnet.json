@@ -1,0 +1,11 @@
+{
+  "version": "0.0.4",
+  "network": "blast-mainnet",
+  "Pool": "0xa70B0F3C2470AbBE104BdB3F3aaa9C7C54BEA7A8",
+  "PoolDataProvider": "0xc6DF4ddDBFaCb866e78Dcc01b813A41C15A08C10",
+  "UniPoolDataProvider": "0x8FE0ac76b634B7D343Bd32282B98E9f271B43367",
+  "snapshotBatch": 2880,
+  "startBlock": 192053,
+  "polling": 10,
+  "startSnapshotBlock": 3437800
+}

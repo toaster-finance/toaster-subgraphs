@@ -1,4 +1,5 @@
 import { Address, BigInt, dataSource } from "@graphprotocol/graph-ts";
+import { calcMod } from "./calcMod";
 /**
  * Filter address by divide number
  * @dev totalGraphNum divide number of the graph, if totalGraphNum is 0, return false
@@ -11,7 +12,6 @@ export function skipAddress(owner: Address): boolean {
   if (!totalGraphs) return false;
   if (!graphId) return false;
   return (
-    graphId - 1 !==
-    BigInt.fromByteArray(owner).mod(BigInt.fromI32(totalGraphs)).toI32()
+    graphId - 1 !== calcMod(owner, totalGraphs)
   );
 }

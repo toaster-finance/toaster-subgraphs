@@ -26,13 +26,13 @@ import { getContextAddress } from "../../common/helpers/contextHelper";
 import { AaveV3Helper } from "./helper";
 import { aToken } from "../../../generated/templates";
 import { skipAddress } from "../../common/skipAddress";
+import { calcMod } from "../../common/calcMod";
 
 //PositionType.Invest: it means deposit (deposit amount is positive, withdraw amount is negative)
 //PositionType.Borrow: it means borrow (borrow amount is positive, repay amount is negative)
 
 // Create aToken template by handling supply event
 // handle supply event will be handled by aToken contract transfer event
-export const AAVE_V3 = "aave-v3";
 export function handleSupply(event: Supply): void {
   const amount = event.params.amount;
   const underlying = event.params.reserve;
@@ -235,7 +235,7 @@ export function handleLiquidation(event: LiquidationCall): void {
 }
 
 export function handleBlock(block: ethereum.Block): void {
-  const protocol = Protocol.load(getProtocolId(AAVE_V3));
+  const protocol = Protocol.load(getProtocolId(AaveV3Helper.protocolName));
   if (!protocol) return;
   const investments = protocol.investments.load();
   const protocolInit = protocol._batchIterator.toI32();
@@ -251,11 +251,10 @@ export function handleBlock(block: ethereum.Block): void {
   // gather all users of all positions of all investments
   for (let i = 0; i < investments.length; i += 1) {
     const investment = investments[i];
-    const aTokenAddr = investment.tag;
     const positions = investment.positions.load();
     for (let j = 0; j < positions.length; j += 1) {
       if (positions[j].closed) continue;
-      if (BigInt.fromString(aTokenAddr).mod(BigInt.fromI32(batch)).equals(BigInt.fromI32(protocolInit)))
+      if (calcMod(positions[j].owner,batch) === protocolInit)
         users.add(Address.fromBytes(positions[j].owner));
     }
   }

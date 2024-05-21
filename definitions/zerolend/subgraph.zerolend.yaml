@@ -1,0 +1,98 @@
+specVersion: 1.0.0
+indexerHints:
+  prune: auto
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: Pool
+    network: {{network}}
+    source:
+      address: "{{Pool}}"
+      abi: Pool
+      startBlock: {{startBlock}}
+    context:
+      graphId:
+        type: Int
+        data: {{graphId}} 
+      totalGraphs:
+        type: Int
+        data: {{totalGraphs}}
+      dataProvider:
+        type: String
+        data: "{{PoolDataProvider}}"
+      uniDataProvider:
+        type: String
+        data: "{{UniPoolDataProvider}}"
+      snapshotBatch:
+        type: Int
+        data: {{snapshotBatch}} 
+      startSnapshotBlock:
+        type: Int
+        data: {{startSnapshotBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - Position
+        - PositionSnapshot
+        - PositionChange
+        - Investment
+        - Protocol
+        - Holder
+      abis:
+        - name: Pool
+          file: ./abis/AaveV3/Pool.json
+        - name: PoolDataProvider
+          file: ./abis/AaveV3/PoolDataProvider.json
+        - name: UniPoolDataProvider
+          file: ./abis/AaveV3/UniPoolDataProvider.json
+        - name: aToken
+          file: ./abis/AaveV3/aToken.json
+      eventHandlers:
+        - event: Supply(indexed address,address,indexed address,uint256,indexed uint16)
+          handler: handleSupply
+        - event: Withdraw(indexed address,indexed address,indexed address,uint256)
+          handler: handleWithdraw
+        - event: Borrow(indexed address,address,indexed address,uint256,uint8,uint256,indexed uint16)
+          handler: handleBorrow
+        - event: Repay(indexed address,indexed address,indexed address,uint256,bool)
+          handler: handleRepay
+        - event: LiquidationCall(indexed address,indexed address,indexed address,uint256,uint256,address,bool)
+          handler: handleLiquidation
+      file: ./src/projects/aave-v3/index.ts
+      blockHandlers:
+        - handler: handleBlock
+          filter:
+            kind: polling
+            every: {{polling}}
+templates:
+  - kind: ethereum/contract
+    name: aToken
+    network: {{network}}
+    source:
+      abi: aToken
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      file: ./src/projects/aave-v3/index.ts
+      entities:
+        - Position
+        - PositionSnapshot
+        - PositionChange
+        - Investment
+        - Protocol
+        - Holder
+      abis:
+        - name: aToken
+          file: ./abis/AaveV3/aToken.json
+        - name: PoolDataProvider
+          file: ./abis/AaveV3/PoolDataProvider.json
+      eventHandlers:
+        - event: Transfer(indexed address,indexed address,uint256)
+          handler: handleTransfer
+          receipt: true
+    
+  

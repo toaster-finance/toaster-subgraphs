@@ -9,13 +9,14 @@ import { getContextAddress } from "../../common/helpers/contextHelper";
  * id: investment id  = "AaveV3{PoolAddress}{UnderlyingToken}"
  */
 export class AaveV3Helper extends InvestmentHelper {
+  static protocolName: string = "AaveV3";
   /**
    *
    * @param pool Aave V3 Pool Contract Address
    * @param tag Underlying Token Address
    */
   constructor(pool: Address, tag: string) {
-    super("AaveV3", pool, tag);
+    super(AaveV3Helper.protocolName, pool, tag);
   }
   getProtocolMeta(): string[] {
     return [];
