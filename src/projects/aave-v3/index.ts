@@ -246,7 +246,7 @@ export function handleBlock(block: ethereum.Block): void {
   const uniDataProvider = UniPoolDataProvider.bind(
     getContextAddress("uniDataProvider")
   );
-  const dataProviderAddr = getContextAddress("dataProvider");
+  const poolAddressProvider = getContextAddress("poolAddressProvider");
   const users = new Set<Address>();
   // gather all users of all positions of all investments
   for (let i = 0; i < investments.length; i += 1) {
@@ -262,7 +262,7 @@ export function handleBlock(block: ethereum.Block): void {
   for (let u = 0; u < userAddr.length; u += 1) {
     const user = userAddr[u];
     const reserveDatas = uniDataProvider
-      .getUserReservesData(dataProviderAddr, user)
+      .getUserReservesData(poolAddressProvider, user)
       .getValue0();
     for (let d = 0; d < reserveDatas.length; d += 1) {
       const reserveData = reserveDatas[d];

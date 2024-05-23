@@ -4,6 +4,7 @@
   "Pool": "0x6807dc923806fE8Fd134338EABCA509979a7e0cB",
   "PoolDataProvider": "0x41585C50524fb8c3899B43D7D797d9486AAc94DB",
   "UniPoolDataProvider": "0x952F938949F965C70c83853e7ff28aa7af91005b",
+  "PoolAddressProvider": "0xff75B6da14FfbbfD355Daf7a2731456b3562Ba6D",
   "snapshotBatch": 5,
   "startBlock": 33571625,
   "polling": 20160,

@@ -1,9 +1,10 @@
 {
-  "version": "0.0.4",
+  "version": "0.0.5",
   "network": "linea",
   "Pool": "0x2f9bB73a8e98793e26Cb2F6C4ad037BDf1C6B269",
   "PoolDataProvider": "0x67f93d36792c49a4493652B91ad4bD59f428AD15",
   "UniPoolDataProvider": "0x81b3184A3B5d4612F2c26A53Da8D99474B91B2D2",
+  "PoolAddressProvider": "0xC44827C51d00381ed4C52646aeAB45b455d200eB",
   "snapshotBatch": 2880,
   "startBlock": 2786948,
   "polling": 10,

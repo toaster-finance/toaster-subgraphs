@@ -24,6 +24,9 @@ dataSources:
       uniDataProvider:
         type: String
         data: "{{UniPoolDataProvider}}"
+      poolAddressProvider:
+        type: String
+        data: "{{PoolAddressProvider}}"
       snapshotBatch:
         type: Int
         data: {{snapshotBatch}} 
