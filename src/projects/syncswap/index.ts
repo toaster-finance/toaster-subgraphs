@@ -14,6 +14,7 @@ import { PositionChangeAction } from "../../common/PositionChangeAction.enum";
 import { filterLogs, logAt, logFindFirst } from "../../common/filterEventLogs";
 import { hash2Address } from "../../common/helpers/hashHelper";
 import { SyncSwapHelper } from "./helper";
+import { skipAddress } from "../../common/skipAddress";
 
 function lp2Amounts(
   reserve0: BigInt,
@@ -83,12 +84,13 @@ const TRANSFER_TOPIC =
 
 export function handleMint(event: Mint): void {
   if (event.params.liquidity.equals(BigInt.zero())) return;
-
+  
   const pool = SyncSwapPool.bind(dataSource.address());
   const helper = new SyncSwapHelper(pool._address);
   const l = helper.getLiquidityInfo(event.block);
 
   const owner = event.params.to;
+  skipAddress(owner);
   // 최초블록부터 트래킹한 경우, dbPosition이 없으면 처음 투자하는 것
   const dbPosition = helper.findPosition(owner, "");
   let ownerBalance = event.params.liquidity;
@@ -150,7 +152,7 @@ export function handleBurn(event: Burn): void {
   if (!lpToPool) throw new Error("handleBurn: lpToPool not found");
 
   const owner = hash2Address(lpToPool.topics[1]);
-
+  skipAddress(owner);
   let ownerBalance: BigInt;
   let dbPosition = helper.findPosition(owner, "");
   if (dbPosition) {
@@ -199,7 +201,6 @@ export function handleTransfer(event: Transfer): void {
     event.params.to.equals(router)
   )
     return;
-
   const receipt = event.receipt;
   if (receipt == null) return;
   // Mint -> not in case
