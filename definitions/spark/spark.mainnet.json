@@ -1,9 +1,10 @@
 {
-  "version": "0.0.5",
+  "version": "0.0.2",
   "network": "mainnet",
+  "protocolName": "Spark",
   "Pool": "0xC13e21B648A5Ee794902342038FF3aDAB66BE987",
   "PoolDataProvider": "0xFc21d6d146E6086B8359705C8b28512a983db0cb",
-  "UniPoolDataProvider": "0xF028c2F4b19898718fD0F77b9b881CbfdAa5e8Bb",
+  "UiPoolDataProvider": "0xF028c2F4b19898718fD0F77b9b881CbfdAa5e8Bb",
   "PoolAddressProvider": "0x02C3eA4e34C0cBd694D2adFa2c690EECbC1793eE",
   "snapshotBatch": 2880,
   "startBlock": 16776391,

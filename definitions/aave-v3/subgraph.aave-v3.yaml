@@ -12,6 +12,9 @@ dataSources:
       abi: Pool
       startBlock: {{startBlock}}
     context:
+      protocolName:
+        type: String
+        data: "{{protocolName}}"
       graphId:
         type: Int
         data: {{graphId}} 
@@ -21,9 +24,9 @@ dataSources:
       dataProvider:
         type: String
         data: "{{PoolDataProvider}}"
-      uniDataProvider:
+      uiDataProvider:
         type: String
-        data: "{{UniPoolDataProvider}}"
+        data: "{{UiPoolDataProvider}}"
       poolAddressProvider:
         type: String
         data: "{{PoolAddressProvider}}"
@@ -49,8 +52,8 @@ dataSources:
           file: ./abis/AaveV3/Pool.json
         - name: PoolDataProvider
           file: ./abis/AaveV3/PoolDataProvider.json
-        - name: UniPoolDataProvider
-          file: ./abis/AaveV3/UniPoolDataProvider.json
+        - name: UiPoolDataProvider
+          file: ./abis/AaveV3/UiPoolDataProvider.json
         - name: aToken
           file: ./abis/AaveV3/aToken.json
       eventHandlers:

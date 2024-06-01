@@ -1,10 +1,9 @@
-import { cToken } from './../../../generated/templates/cToken/cToken';
+import { cToken as cTokenContract } from './../../../generated/templates/cToken/cToken';
 import {
   InvestmentHelper,
   InvestmentInfo,
 } from "../../common/helpers/investmentHelper";
-import { Address, BigInt, log } from "@graphprotocol/graph-ts";
-import { Comptroller } from "../../../generated/Comptroller/Comptroller";
+import { Address, BigInt } from "@graphprotocol/graph-ts";
 
 /**
  * id: investment id  = "CompoundV2{cTokenAddress}{UnderlyingToken}"
@@ -15,10 +14,14 @@ export class CompoundV2Helper extends InvestmentHelper {
   /**
    *
    * @param cToken Compound V2 cToken Contract Address
-   * @param tag ""
+   * @param tag underlying token address
    */
   constructor(cToken: Address, readonly comptroller:Address,readonly compAddr: Address) {
-    super(CompoundV2Helper.protocolName, cToken, "");
+    const callResult = cTokenContract.bind(cToken).try_underlying();
+    const cTokenAddress = callResult.reverted
+      ? Address.zero()
+      : callResult.value;
+    super(CompoundV2Helper.protocolName, cToken, cTokenAddress.toHexString());
   }
   getProtocolMeta(): string[] {
     return [];
@@ -33,18 +36,16 @@ export class CompoundV2Helper extends InvestmentHelper {
   }
 
   getUnderlyingToken(): Address {
-
-    const callResult = cToken.bind(this.investmentAddress).try_underlying();
-    const cTokenAddress = callResult.reverted ? Address.zero() : callResult.value;
-    return cTokenAddress;
+    return Address.fromString(this.tag)
+    
   }
 
   getUnderlyingAmount(owner:Address): BigInt{
-    const balanceResult = cToken.bind(this.investmentAddress).try_balanceOfUnderlying(owner)
+    const balanceResult = cTokenContract.bind(this.investmentAddress).try_balanceOfUnderlying(owner)
     return balanceResult.reverted ?  BigInt.fromI32(0) : balanceResult.value;
   }
   getBorrowedAmount(owner:Address): BigInt{
-    return cToken.bind(this.investmentAddress).borrowBalanceStored(owner);
+    return cTokenContract.bind(this.investmentAddress).borrowBalanceStored(owner);
   }
 
 }

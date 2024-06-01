@@ -45,12 +45,15 @@ export class SyncSwapHelper extends InvestmentHelper {
       investment.save();
 
       // Create Template
-      const context = new DataSourceContext();
-      context.setString("router", dataSource.context().getString("router"));
-      context.setI32(
-        "snapshotBatch",
-        dataSource.context().getI32("snapshotBatch")
-      );
+       const context = new DataSourceContext();
+       context.setString("router", dataSource.context().getString("router"));
+       context.setI32(
+         "snapshotBatch",
+         dataSource.context().getI32("snapshotBatch")
+       );
+       context.setI32("totalGraphs", dataSource.context().getI32("totalGraphs"));
+       context.setI32("graphId",dataSource.context().getI32("graphId"));
+
       SyncSwapPoolTemplate.createWithContext(this.investmentAddress, context);
     }
 
