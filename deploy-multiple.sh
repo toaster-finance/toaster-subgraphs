@@ -48,7 +48,16 @@ version=$(jq -r '.version' definitions/"$protocol"/"$protocol"."$network".json)
 protocolName=$(echo "$protocol" | sed -e 's/-/ /g')
 
 # 각 단어의 첫 글자를 대문자로 변경
-protocolName=$(echo "$protocolName" | awk '{for(i=1;i<=NF;i++) $i=toupper(substr($i,1,1)) tolower(substr($i,2))}1')
+protocolName=$(echo "$protocolName" | awk '{
+    for(i=1; i<=NF; i++) {
+        firstChar = substr($i, 1, 1)
+        rest = substr($i, 2)
+        if (firstChar ~ /[a-z]/) {
+            $i = toupper(firstChar) rest
+        }
+    }
+    print
+}')
 # netwok2ChainId 에서 network에 대응하는 chainId를 가져옴.
 chainId=$(jq -r --arg network "$network" '.[$network]' network2ChainId.json)
 key="$chainId"_"$protocolName"
@@ -78,8 +87,9 @@ for ((i = 0; i < totalGraphs; i++)); do
     # Deploy할 그래프 이름 생성 (최대 30자)
     graph_name="id-$graphId-$protocol-$network"
     graph_name="${graph_name:0:30}" # 그래프 이름이 30자를 초과하면 초과하는 부분을 잘라냄
+    graph_name_l=$(echo "$graph_name" | tr '[:upper:]' '[:lower:]')
 
-    deploy_output=$(graph deploy --node https://api.studio.thegraph.com/deploy/ --studio "$graph_name" --version-label="v$version")
+    deploy_output=$(graph deploy --node https://api.studio.thegraph.com/deploy/ --studio "$graph_name_l" --version-label="v$version")
     deploy_output=$(echo "$deploy_output" | sed 's/\x1b\[[0-9;]*m//g')
     # 출력에서 URL 추출
     query_url=$(echo "$deploy_output" | awk '/Queries \(HTTP\):/{print $NF}')
@@ -87,7 +97,7 @@ for ((i = 0; i < totalGraphs; i++)); do
     # Check for error message
     if [ $? -eq 0 ]; then
         echo -e "\033[0;33mIf Subgraph does not exist, please create it at: https://thegraph.com/studio/?show=Create\033[0m"
-        echo -e "\033[0;32mPlease create a subgraph named \033[0;92m$graph_name\033[0;32m\033[0m"
+        echo -e "\033[0;32mPlease create a subgraph named \033[0;92m$graph_name_l\033[0;32m\033[0m"
     fi
     if [[ -n "$query_url" ]]; then
         echo "Saving query URL to file: $query_url"

@@ -69,6 +69,7 @@ fi
 # Deploy할 그래프 이름 생성 (최대 30자)
 graph_name="test-$protocol-$network"
 graph_name="${graph_name:0:30}" # 그래프 이름이 30자를 초과하면 초과하는 부분을 잘라냄
+graph_name=$(echo "$graph_name" | tr '[:upper:]' '[:lower:]')
 # for deubgging
 # graph deploy --node https://api.studio.thegraph.com/deploy/ --studio "$graph_name" --version-label="v$version"
 deploy_output=$(graph deploy --node https://api.studio.thegraph.com/deploy/ --studio "$graph_name" --version-label="v$version")
@@ -89,7 +90,16 @@ chainId=$(jq -r --arg network "$network" '.[$network]' network2ChainId.json)
 protocol=$(echo "$protocol" | sed -e 's/-/ /g')
 
 # 각 단어의 첫 글자를 대문자로 변경
-protocol=$(echo "$protocol" | awk '{for(i=1;i<=NF;i++) $i=toupper(substr($i,1,1)) tolower(substr($i,2))}1')
+protocol=$(echo "$protocol" | awk '{
+    for(i=1; i<=NF; i++) {
+        firstChar = substr($i, 1, 1)
+        rest = substr($i, 2)
+        if (firstChar ~ /[a-z]/) {
+            $i = toupper(firstChar) rest
+        }
+    }
+    print
+}')
 
 key="$chainId"_"$protocol"
 

@@ -1,10 +1,11 @@
-import { UniPoolDataProvider } from "./../../../generated/Pool/UniPoolDataProvider";
+import { UiPoolDataProvider } from "./../../../generated/Pool/UiPoolDataProvider";
 import {
   Address,
   BigInt,
   DataSourceContext,
   dataSource,
   ethereum,
+  log,
 } from "@graphprotocol/graph-ts";
 import { savePositionChange } from "../../common/savePositionChange";
 import {
@@ -54,9 +55,9 @@ export function handleSupply(event: Supply): void {
       [data.stableDebt.toString(), data.variavbleDebt.toString()] // stable debt / variable debt
     ),
     [event.params.amount], // + : deposit, - :withdraw
-    [BigInt.zero()]
+    []
   );
- createATokenTemplate(underlying, event.address); 
+  createATokenTemplate(underlying, event.address);
 }
 
 export function handleWithdraw(event: Withdraw): void {
@@ -80,7 +81,7 @@ export function handleWithdraw(event: Withdraw): void {
       [data.stableDebt.toString(), data.variavbleDebt.toString()] // stable debt / variable debt
     ),
     [event.params.amount.neg()], // + : deposit, - :withdraw
-    [BigInt.zero()]
+    []
   );
 }
 
@@ -93,48 +94,54 @@ export function handleTransfer(event: Transfer): void {
   if (event.params.to.equals(Address.zero())) return; // Withdraw
   action = PositionChangeAction.Send;
   sender = event.params.from; // aToken amount decrease
-  if (skipAddress(sender)) return;
   receiver = event.params.to; // aToken amount increase
   const underlying = getContextAddress("underlying");
   const sendingAmount = event.params.value;
-  const senderData = new InvestUserData(sender, underlying, BigInt.zero());
-  const receiverData = new InvestUserData(receiver, underlying, BigInt.zero());
-  savePositionChange(
-    event,
-    action,
-    senderData.helper,
-    new PositionParams(
-      sender,
-      "",
-      PositionType.Invest,
-      [senderData.underlyingAmount],
-      [],
-      BigInt.zero(),
-      [senderData.stableDebt.toString(), senderData.variavbleDebt.toString()] // stable debt / variable debt
-    ),
-    [sendingAmount.neg()], // + : deposit, - :withdraw
-    [BigInt.zero()]
-  );
-
-  savePositionChange(
-    event,
-    action,
-    receiverData.helper,
-    new PositionParams(
+  if (!skipAddress(sender)) {
+    const senderData = new InvestUserData(sender, underlying, BigInt.zero());
+    savePositionChange(
+      event,
+      action,
+      senderData.helper,
+      new PositionParams(
+        sender,
+        "",
+        PositionType.Invest,
+        [senderData.underlyingAmount],
+        [],
+        BigInt.zero(),
+        [senderData.stableDebt.toString(), senderData.variavbleDebt.toString()] // stable debt / variable debt
+      ),
+      [sendingAmount.neg()], // + : deposit, - :withdraw
+      []
+    );
+  }
+  if (!skipAddress(receiver)) {
+    const receiverData = new InvestUserData(
       receiver,
-      "",
-      PositionType.Invest,
-      [receiverData.underlyingAmount],
-      [],
-      BigInt.zero(),
-      [
-        receiverData.stableDebt.toString(),
-        receiverData.variavbleDebt.toString(),
-      ] // stable debt / variable debt
-    ),
-    [sendingAmount],
-    [BigInt.zero()]
-  );
+      underlying,
+      BigInt.zero()
+    );
+    savePositionChange(
+      event,
+      action,
+      receiverData.helper,
+      new PositionParams(
+        receiver,
+        "",
+        PositionType.Invest,
+        [receiverData.underlyingAmount],
+        [],
+        BigInt.zero(),
+        [
+          receiverData.stableDebt.toString(),
+          receiverData.variavbleDebt.toString(),
+        ] // stable debt / variable debt
+      ),
+      [sendingAmount],
+      [BigInt.zero()]
+    );
+  }
 }
 export function handleBorrow(event: Borrow): void {
   const underlying = event.params.reserve;
@@ -156,7 +163,7 @@ export function handleBorrow(event: Borrow): void {
       [data.stableDebt.toString(), data.variavbleDebt.toString()] // stable debt / variable debt
     ),
     [event.params.amount.neg()], // + : repay, - : borrow
-    [BigInt.zero()]
+    []
   );
 }
 export function handleRepay(event: Repay): void {
@@ -179,7 +186,7 @@ export function handleRepay(event: Repay): void {
       [data.stableDebt.toString(), data.variavbleDebt.toString()] // stable debt / variable debt
     ),
     [event.params.amount], // + : repay, - : borrow
-    [BigInt.zero()]
+    []
   );
 }
 // Actually, Liquidation Event makes positions to withdraw collateral and repay debt
@@ -210,7 +217,7 @@ export function handleLiquidation(event: LiquidationCall): void {
       [debtData.stableDebt.toString(), debtData.variavbleDebt.toString()] // stable debt / variable debt
     ),
     [event.params.debtToCover], // + : repay, - : borrow
-    [BigInt.zero()]
+    []
   );
   // for collateral
   savePositionChange(
@@ -230,23 +237,31 @@ export function handleLiquidation(event: LiquidationCall): void {
       ] // stable debt / variable debt
     ),
     [event.params.liquidatedCollateralAmount.neg()], // + : deposit, - : withdraw
-    [BigInt.zero()]
+    []
   );
 }
 
 export function handleBlock(block: ethereum.Block): void {
   const protocol = Protocol.load(getProtocolId(AaveV3Helper.protocolName));
+  log.debug("Protocol Name={}", [AaveV3Helper.protocolName.toString()]);
   if (!protocol) return;
   const investments = protocol.investments.load();
   const protocolInit = protocol._batchIterator.toI32();
   const batch = dataSource.context().getI32("snapshotBatch");
   const startSnapshotBlock = dataSource.context().getI32("startSnapshotBlock");
+  log.debug("{},{},{}",[batch.toString(),protocolInit.toString(),startSnapshotBlock.toString()])
   if (block.number < BigInt.fromI32(startSnapshotBlock)) return;
   const pool = dataSource.address();
-  const uniDataProvider = UniPoolDataProvider.bind(
-    getContextAddress("uniDataProvider")
+  const uiDataProvider = UiPoolDataProvider.bind(
+    getContextAddress("uiDataProvider")
   );
   const poolAddressProvider = getContextAddress("poolAddressProvider");
+
+  log.debug("{} {} {}", [
+    pool.toHexString(),
+    getContextAddress("uiDataProvider").toString(),
+    getContextAddress("poolAddressProvider").toString(),
+  ]);
   const users = new Set<Address>();
   // gather all users of all positions of all investments
   for (let i = 0; i < investments.length; i += 1) {
@@ -254,16 +269,17 @@ export function handleBlock(block: ethereum.Block): void {
     const positions = investment.positions.load();
     for (let j = 0; j < positions.length; j += 1) {
       if (positions[j].closed) continue;
-      if (calcMod(positions[j].owner,batch) === protocolInit)
+      if (calcMod(positions[j].owner, batch) === protocolInit)
         users.add(Address.fromBytes(positions[j].owner));
     }
   }
   const userAddr = users.values();
   for (let u = 0; u < userAddr.length; u += 1) {
     const user = userAddr[u];
-    const reserveDatas = uniDataProvider
-      .getUserReservesData(poolAddressProvider, user)
-      .getValue0();
+    const reserveData = uiDataProvider
+      .try_getUserReservesData(poolAddressProvider, user)
+    if (reserveData.reverted) continue;
+    const reserveDatas = reserveData.value.getValue0();
     for (let d = 0; d < reserveDatas.length; d += 1) {
       const reserveData = reserveDatas[d];
 
@@ -317,14 +333,21 @@ export function handleBlock(block: ethereum.Block): void {
 }
 
 // create atoken template
-function createATokenTemplate(underlying: Address, aTokenAddress: Address):void {
+function createATokenTemplate(
+  underlying: Address,
+  aTokenAddress: Address
+): void {
   const aTokenContext = new DataSourceContext();
+  // TODO: const aTokenContext = inheritContexstData();
   aTokenContext.setString("underlying", underlying.toHexString());
   aTokenContext.setString(
     "dataProvider",
     getContextAddress("dataProvider").toHexString()
   );
   aTokenContext.setI32("graphId", dataSource.context().getI32("graphId"));
-  aTokenContext.setI32("totalGraphs", dataSource.context().getI32("totalGraphs"));
+  aTokenContext.setI32(
+    "totalGraphs",
+    dataSource.context().getI32("totalGraphs")
+  );
   aToken.createWithContext(aTokenAddress, aTokenContext);
 }
