@@ -1,4 +1,4 @@
-import { Address, dataSource, ethereum } from "@graphprotocol/graph-ts";
+import { Address, dataSource} from "@graphprotocol/graph-ts";
 import {
   InvestmentHelper,
   InvestmentInfo,
@@ -9,7 +9,7 @@ import { getContextAddress } from "../../common/helpers/contextHelper";
  * id: investment id  = "AaveV3{PoolAddress}{UnderlyingToken}"
  */
 export class AaveV3Helper extends InvestmentHelper {
-  static protocolName: string = "AaveV3";
+  static protocolName: string = dataSource.context().getString("protocolName");
   /**
    *
    * @param pool Aave V3 Pool Contract Address

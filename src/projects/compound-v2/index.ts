@@ -29,13 +29,13 @@ import { getContextAddress } from "../../common/helpers/contextHelper";
 import { getProtocolId } from "../../common/helpers/investmentHelper";
 import { cToken as cTokenTemplate } from "../../../generated/templates";
 import { savePositionSnapshot } from "../../common/savePositionSnapshot";
-
+import { skipAddress } from "../../common/skipAddress";
 
 export function handleMarketEntered(event: MarketEntered): void {
   const comptroller = dataSource.address();
   const cTokenAddr = event.params.cToken;
   const compAddr = getContextAddress("COMP");
-  const helper = new CompoundV2Helper(cTokenAddr,comptroller,compAddr);
+  const helper = new CompoundV2Helper(cTokenAddr, comptroller, compAddr);
   const investment = Investment.load(helper.id);
   if (investment) return;
   helper.getOrCreateInvestment(event.block);
@@ -45,12 +45,15 @@ export function handleMarketEntered(event: MarketEntered): void {
   cTokenTemplate.createWithContext(cTokenAddr, cTokenContext);
 }
 //Q? COMP Token 을 어떻게 표시하지?
-export function handleDistributedBorrower(event: DistributedBorrowerComp): void {
+export function handleDistributedBorrower(
+  event: DistributedBorrowerComp
+): void {
   const rewardAmount = event.params.compDelta;
   const cTokenAddr = event.params.cToken;
   const owner = event.params.borrower;
   const compAddr = getContextAddress("COMP");
-  const helper = new CompoundV2Helper(cTokenAddr,  event.address,compAddr);
+  const helper = new CompoundV2Helper(cTokenAddr, event.address, compAddr);
+  if (skipAddress(owner)) return;
   savePositionChange(
     event,
     PositionChangeAction.Harvest, // receive reward COMP token
@@ -69,12 +72,15 @@ export function handleDistributedBorrower(event: DistributedBorrowerComp): void 
   );
 }
 
-export function handleDistributedSupplier(event: DistributedSupplierComp): void {
+export function handleDistributedSupplier(
+  event: DistributedSupplierComp
+): void {
   const rewardAmount = event.params.compDelta;
   const cTokenAddr = event.params.cToken;
   const owner = event.params.supplier;
   const compAddr = getContextAddress("COMP");
-  const helper = new CompoundV2Helper(cTokenAddr, event.address,compAddr);
+  const helper = new CompoundV2Helper(cTokenAddr, event.address, compAddr);
+  if (skipAddress(owner)) return;
   savePositionChange(
     event,
     PositionChangeAction.Harvest, // receive reward COMP token
@@ -98,7 +104,8 @@ export function handleMint(event: Mint): void {
   const owner = event.params.minter;
   const comptrollerAddr = getContextAddress("Comptroller");
   const compAddr = getContextAddress("COMP");
-  const helper = new CompoundV2Helper(event.address,  comptrollerAddr,compAddr);
+  if (skipAddress(owner)) return;
+  const helper = new CompoundV2Helper(event.address, comptrollerAddr, compAddr);
   const posId = helper.getPositionId(owner, "");
   const position = Position.load(posId);
   // get current underlying amount
@@ -131,9 +138,10 @@ export function handleMint(event: Mint): void {
 export function handleRedeem(event: Redeem): void {
   const dInputAmount = event.params.redeemTokens;
   const owner = event.params.redeemer;
+  if (skipAddress(owner)) return;
   const comptrollerAddr = getContextAddress("Comptroller");
   const compAddr = getContextAddress("COMP");
-  const helper = new CompoundV2Helper(event.address, comptrollerAddr,compAddr);
+  const helper = new CompoundV2Helper(event.address, comptrollerAddr, compAddr);
   // get current underlying amount
   const inputAmount = helper.getUnderlyingAmount(owner);
 
@@ -159,9 +167,10 @@ export function handleBorrow(event: Borrow): void {
   const dBorrowAmount = event.params.borrowAmount; // underlying amount
   const borrowAmount = event.params.accountBorrows;
   const owner = event.params.borrower;
+  if (skipAddress(owner)) return;
   const comptrollerAddr = getContextAddress("Comptroller");
   const compAddr = getContextAddress("COMP");
-  const helper = new CompoundV2Helper(event.address, comptrollerAddr,compAddr);
+  const helper = new CompoundV2Helper(event.address, comptrollerAddr, compAddr);
   savePositionChange(
     event,
     PositionChangeAction.Borrow,
@@ -183,10 +192,11 @@ export function handleBorrow(event: Borrow): void {
 export function handleRepayBorrow(event: RepayBorrow): void {
   const dRepayAmount = event.params.repayAmount; // underlying amount
   const owner = event.params.borrower;
+  if (skipAddress(owner)) return;
   const borrowAmount = event.params.accountBorrows;
   const comptrollerAddr = getContextAddress("Comptroller");
   const compAddr = getContextAddress("COMP");
-  const helper = new CompoundV2Helper(event.address, comptrollerAddr,compAddr);
+  const helper = new CompoundV2Helper(event.address, comptrollerAddr, compAddr);
   savePositionChange(
     event,
     PositionChangeAction.Repay,
@@ -208,6 +218,7 @@ export function handleRepayBorrow(event: RepayBorrow): void {
 export function handleLiquidateBorrow(event: LiquidateBorrow): void {
   const dRepayAmount = event.params.repayAmount; // underlying amount
   const owner = event.params.borrower;
+  if (skipAddress(owner)) return;
   const collateralAddr = event.params.cTokenCollateral;
   const collateralSeizeAmount = event.params.seizeTokens;
   const comptrollerAddr = getContextAddress("Comptroller");
@@ -217,7 +228,11 @@ export function handleLiquidateBorrow(event: LiquidateBorrow): void {
     comptrollerAddr,
     compAddr
   );
-  const borrowHelper = new CompoundV2Helper(event.address, comptrollerAddr,compAddr);
+  const borrowHelper = new CompoundV2Helper(
+    event.address,
+    comptrollerAddr,
+    compAddr
+  );
   const currCollateralAmount = colletaralHelper.getUnderlyingAmount(owner);
   const currBorrowAmount = borrowHelper.getBorrowedAmount(owner);
   savePositionChange(
@@ -253,7 +268,7 @@ export function handleLiquidateBorrow(event: LiquidateBorrow): void {
     []
   );
 }
-export function handleBlock(block: ethereum.Block):void {
+export function handleBlock(block: ethereum.Block): void {
   const protocol = Protocol.load(getProtocolId(CompoundV2Helper.protocolName));
   if (!protocol) return;
   const investments = protocol.investments.load();
@@ -273,7 +288,11 @@ export function handleBlock(block: ethereum.Block):void {
     }
     const userAddr = users.values();
     const compAddr = getContextAddress("COMP");
-    const helper = new CompoundV2Helper(Address.fromBytes(investment.address),comptroller,compAddr);
+    const helper = new CompoundV2Helper(
+      Address.fromBytes(investment.address),
+      comptroller,
+      compAddr
+    );
     for (let u = 0; u < userAddr.length; u += 1) {
       const owner = userAddr[u];
       const borrowedAmount = helper.getBorrowedAmount(owner);
@@ -322,41 +341,49 @@ export function handleTransfer(event: Transfer): void {
   action = PositionChangeAction.Send;
   sender = event.params.from; // aToken amount decrease
   receiver = event.params.to; // aToken amount increase
-  const helper = new CompoundV2Helper(event.address,getContextAddress("Comptroller"),getContextAddress("COMP"));
-  const senderUnderlyingAmount = helper.getUnderlyingAmount(sender);
-  const receiverUnderlyingAmount = helper.getUnderlyingAmount(receiver);
+  const helper = new CompoundV2Helper(
+    event.address,
+    getContextAddress("Comptroller"),
+    getContextAddress("COMP")
+  );
   const sendingAmount = event.params.value;
-  savePositionChange(
-    event,
-    action,
-    helper,
-    new PositionParams(
-      sender,
-      "",
-      PositionType.Invest,
-      [senderUnderlyingAmount],
-      [],
-      BigInt.zero(),
-      []
-    ),
-    [sendingAmount.neg()], // + : deposit, - :withdraw
-    [BigInt.zero()]
-  );
+  if (!skipAddress(sender)) {
+    const senderUnderlyingAmount = helper.getUnderlyingAmount(sender);
 
-  savePositionChange(
-    event,
-    action,
-    helper,
-    new PositionParams(
-      receiver,
-      "",
-      PositionType.Invest,
-      [receiverUnderlyingAmount],
-      [],
-      BigInt.zero(),
-      [] 
-    ),
-    [sendingAmount],
-    [BigInt.zero()]
-  );
+    savePositionChange(
+      event,
+      action,
+      helper,
+      new PositionParams(
+        sender,
+        "",
+        PositionType.Invest,
+        [senderUnderlyingAmount],
+        [],
+        BigInt.zero(),
+        []
+      ),
+      [sendingAmount.neg()], // + : deposit, - :withdraw
+      [BigInt.zero()]
+    );
+  }
+  if (!skipAddress(receiver)) {
+    const receiverUnderlyingAmount = helper.getUnderlyingAmount(receiver);
+    savePositionChange(
+      event,
+      action,
+      helper,
+      new PositionParams(
+        receiver,
+        "",
+        PositionType.Invest,
+        [receiverUnderlyingAmount],
+        [],
+        BigInt.zero(),
+        []
+      ),
+      [sendingAmount],
+      [BigInt.zero()]
+    );
+  }
 }
