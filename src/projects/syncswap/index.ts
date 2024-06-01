@@ -90,7 +90,7 @@ export function handleMint(event: Mint): void {
   const l = helper.getLiquidityInfo(event.block);
 
   const owner = event.params.to;
-  skipAddress(owner);
+  if (skipAddress(owner)) return;
   // 최초블록부터 트래킹한 경우, dbPosition이 없으면 처음 투자하는 것
   const dbPosition = helper.findPosition(owner, "");
   let ownerBalance = event.params.liquidity;
@@ -152,7 +152,7 @@ export function handleBurn(event: Burn): void {
   if (!lpToPool) throw new Error("handleBurn: lpToPool not found");
 
   const owner = hash2Address(lpToPool.topics[1]);
-  skipAddress(owner);
+  if (skipAddress(owner)) return;
   let ownerBalance: BigInt;
   let dbPosition = helper.findPosition(owner, "");
   if (dbPosition) {
@@ -237,39 +237,41 @@ export function handleTransfer(event: Transfer): void {
     l.totalSupply
   );
 
-  savePositionChange(
-    event,
-    PositionChangeAction.Send,
-    helper,
-    new PositionParams(
-      event.params.from,
-      "",
-      PositionType.Invest,
-      lp2Amounts(l.reserve0, l.reserve1, senderBalance, l.totalSupply),
-      [],
-      senderBalance,
+  if (!skipAddress(event.params.from))
+    savePositionChange(
+      event,
+      PositionChangeAction.Send,
+      helper,
+      new PositionParams(
+        event.params.from,
+        "",
+        PositionType.Invest,
+        lp2Amounts(l.reserve0, l.reserve1, senderBalance, l.totalSupply),
+        [],
+        senderBalance,
+        []
+      ),
+      [dInput[0].neg(), dInput[1].neg()], // dInput: BigInt[],
       []
-    ),
-    [dInput[0].neg(), dInput[1].neg()], // dInput: BigInt[],
-    []
-  );
+    );
 
-  savePositionChange(
-    event,
-    PositionChangeAction.Receive,
-    helper,
-    new PositionParams(
-      event.params.to,
-      "",
-      PositionType.Invest,
-      lp2Amounts(l.reserve0, l.reserve1, receiverBalance, l.totalSupply),
-      [],
-      receiverBalance,
+  if (!skipAddress(event.params.to))
+    savePositionChange(
+      event,
+      PositionChangeAction.Receive,
+      helper,
+      new PositionParams(
+        event.params.to,
+        "",
+        PositionType.Invest,
+        lp2Amounts(l.reserve0, l.reserve1, receiverBalance, l.totalSupply),
+        [],
+        receiverBalance,
+        []
+      ),
+      dInput,
       []
-    ),
-    dInput,
-    []
-  );
+    );
 }
 
 export function handleSync(event: Sync): void {
