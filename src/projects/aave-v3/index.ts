@@ -243,25 +243,17 @@ export function handleLiquidation(event: LiquidationCall): void {
 
 export function handleBlock(block: ethereum.Block): void {
   const protocol = Protocol.load(getProtocolId(AaveV3Helper.protocolName));
-  log.debug("Protocol Name={}", [AaveV3Helper.protocolName.toString()]);
   if (!protocol) return;
   const investments = protocol.investments.load();
   const protocolInit = protocol._batchIterator.toI32();
   const batch = dataSource.context().getI32("snapshotBatch");
   const startSnapshotBlock = dataSource.context().getI32("startSnapshotBlock");
-  log.debug("{},{},{}",[batch.toString(),protocolInit.toString(),startSnapshotBlock.toString()])
   if (block.number < BigInt.fromI32(startSnapshotBlock)) return;
   const pool = dataSource.address();
   const uiDataProvider = UiPoolDataProvider.bind(
     getContextAddress("uiDataProvider")
   );
   const poolAddressProvider = getContextAddress("poolAddressProvider");
-
-  log.debug("{} {} {}", [
-    pool.toHexString(),
-    getContextAddress("uiDataProvider").toString(),
-    getContextAddress("poolAddressProvider").toString(),
-  ]);
   const users = new Set<Address>();
   // gather all users of all positions of all investments
   for (let i = 0; i < investments.length; i += 1) {
@@ -328,7 +320,9 @@ export function handleBlock(block: ethereum.Block): void {
         );
     }
   }
-  protocol._batchIterator = BigInt.fromI32((protocolInit + 1) % batch);
+  const totalGraphs = dataSource.context().getI32("totalGraphs");
+  const increament = totalGraphs ? totalGraphs : 1 ;
+  protocol._batchIterator = BigInt.fromI32((protocolInit + increament) % batch);
   protocol.save();
 }
 
@@ -338,7 +332,7 @@ function createATokenTemplate(
   aTokenAddress: Address
 ): void {
   const aTokenContext = new DataSourceContext();
-  // TODO: const aTokenContext = inheritContexstData();
+  aTokenContext.setString("protocolName", dataSource.context().getString("protocolName"));
   aTokenContext.setString("underlying", underlying.toHexString());
   aTokenContext.setString(
     "dataProvider",

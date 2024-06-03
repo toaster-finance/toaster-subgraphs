@@ -5,6 +5,7 @@ import {
   DataSourceContext,
   dataSource,
   ethereum,
+  log,
 } from "@graphprotocol/graph-ts";
 import {
   InvestmentHelper,
@@ -43,7 +44,9 @@ export class SyncSwapHelper extends InvestmentHelper {
       investment.blockNumber = block.number;
       investment.blockTimestamp = block.timestamp;
       investment.save();
-
+      const graphId = dataSource.context().getI32("graphId");
+      const totalGraphs = dataSource.context().getI32("totalGraphs");
+      log.error("graphId: {}, totalGraphs: {}", [graphId.toString(), totalGraphs.toString()]);
       // Create Template
        const context = new DataSourceContext();
        context.setString("router", dataSource.context().getString("router"));
@@ -51,9 +54,10 @@ export class SyncSwapHelper extends InvestmentHelper {
          "snapshotBatch",
          dataSource.context().getI32("snapshotBatch")
        );
-       context.setI32("totalGraphs", dataSource.context().getI32("totalGraphs"));
-       context.setI32("graphId",dataSource.context().getI32("graphId"));
-
+       
+       context.setI32("graphId",graphId);
+       context.setI32("totalGraphs", totalGraphs);
+       
       SyncSwapPoolTemplate.createWithContext(this.investmentAddress, context);
     }
 

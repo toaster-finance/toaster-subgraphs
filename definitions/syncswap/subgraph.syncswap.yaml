@@ -45,6 +45,12 @@ dataSources:
       address: "{{stableFactory}}"
       abi: SyncSwapFactory
     context:
+      graphId:
+        type: Int
+        data: {{graphId}} 
+      totalGraphs:
+        type: Int
+        data: {{totalGraphs}}
       router:
         type: String
         data: "{{router}}"

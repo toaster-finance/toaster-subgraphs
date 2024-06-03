@@ -42,6 +42,10 @@ export function handleMarketEntered(event: MarketEntered): void {
   const cTokenContext = new DataSourceContext();
   cTokenContext.setString("Comptroller", comptroller.toHexString());
   cTokenContext.setString("COMP", compAddr.toHexString());
+  cTokenContext.setI32("totalGraphs", dataSource.context().getI32("totalGraphs")); 
+  cTokenContext.setI32("snapshotBatch", dataSource.context().getI32("snapshotBatch"));
+  cTokenContext.setI32("startSnapshotBlock", dataSource.context().getI32("startSnapshotBlock"));
+  cTokenContext.setI32("graphId", dataSource.context().getI32("graphId"));
   cTokenTemplate.createWithContext(cTokenAddr, cTokenContext);
 }
 //Q? COMP Token 을 어떻게 표시하지?
@@ -51,6 +55,7 @@ export function handleDistributedBorrower(
   const rewardAmount = event.params.compDelta;
   const cTokenAddr = event.params.cToken;
   const owner = event.params.borrower;
+  if(!skipAddress(owner)) return;
   const compAddr = getContextAddress("COMP");
   const helper = new CompoundV2Helper(cTokenAddr, event.address, compAddr);
   if (skipAddress(owner)) return;
@@ -78,6 +83,7 @@ export function handleDistributedSupplier(
   const rewardAmount = event.params.compDelta;
   const cTokenAddr = event.params.cToken;
   const owner = event.params.supplier;
+  if (!skipAddress(owner)) return;
   const compAddr = getContextAddress("COMP");
   const helper = new CompoundV2Helper(cTokenAddr, event.address, compAddr);
   if (skipAddress(owner)) return;
@@ -102,9 +108,9 @@ export function handleDistributedSupplier(
 export function handleMint(event: Mint): void {
   const dInputAmount = event.params.mintTokens;
   const owner = event.params.minter;
+  if (!skipAddress(owner)) return;
   const comptrollerAddr = getContextAddress("Comptroller");
   const compAddr = getContextAddress("COMP");
-  if (skipAddress(owner)) return;
   const helper = new CompoundV2Helper(event.address, comptrollerAddr, compAddr);
   const posId = helper.getPositionId(owner, "");
   const position = Position.load(posId);
@@ -341,13 +347,14 @@ export function handleTransfer(event: Transfer): void {
   action = PositionChangeAction.Send;
   sender = event.params.from; // aToken amount decrease
   receiver = event.params.to; // aToken amount increase
-  const helper = new CompoundV2Helper(
-    event.address,
-    getContextAddress("Comptroller"),
-    getContextAddress("COMP")
-  );
+  
   const sendingAmount = event.params.value;
   if (!skipAddress(sender)) {
+    const helper = new CompoundV2Helper(
+      event.address,
+      getContextAddress("Comptroller"),
+      getContextAddress("COMP")
+    );
     const senderUnderlyingAmount = helper.getUnderlyingAmount(sender);
 
     savePositionChange(
@@ -368,6 +375,11 @@ export function handleTransfer(event: Transfer): void {
     );
   }
   if (!skipAddress(receiver)) {
+    const helper = new CompoundV2Helper(
+      event.address,
+      getContextAddress("Comptroller"),
+      getContextAddress("COMP")
+    );
     const receiverUnderlyingAmount = helper.getUnderlyingAmount(receiver);
     savePositionChange(
       event,

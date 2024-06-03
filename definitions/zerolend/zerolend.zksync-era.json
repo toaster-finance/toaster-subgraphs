@@ -1,5 +1,5 @@
 {
-  "version": "0.0.8",
+  "version": "0.0.10",
   "network": "zksync-era",
   "protocolName": "ZeroLend",
   "Pool": "0x4d9429246EA989C9CeE203B43F6d1C7D83e3B8F8",
