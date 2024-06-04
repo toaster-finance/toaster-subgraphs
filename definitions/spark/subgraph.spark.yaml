@@ -27,6 +27,9 @@ dataSources:
       uiDataProvider:
         type: String
         data: "{{UiPoolDataProvider}}"
+      poolAddressProvider:
+        type: String
+        data: "{{PoolAddressProvider}}"
       snapshotBatch:
         type: Int
         data: {{snapshotBatch}} 

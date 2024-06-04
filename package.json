@@ -4,11 +4,12 @@
   "scripts": {
     "_codegen": "graph codegen",
     "build": "graph build",
-    "deploy": "sh deploy.sh --",
+    "deploy": "sh scripts/deploy.sh --",
     "codegen": "sh codegen.sh --",
     "test": "graph test",
-    "deploy-stage": "sh deploy-stage.sh --stage",
-    "deploy-multiple": "sh deploy-multiple.sh --multiple"
+    "deploy-stage": "sh scripts/deploy-stage.sh --stage",
+    "deploy-multiple": "sh scripts/deploy-multiple.sh --multiple",
+    "deploy-id": "sh scripts/deploy-id.sh --id"
   },
   "dependencies": {
     "@graphprotocol/graph-ts": "0.32.0",

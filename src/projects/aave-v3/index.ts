@@ -250,9 +250,13 @@ export function handleBlock(block: ethereum.Block): void {
   const startSnapshotBlock = dataSource.context().getI32("startSnapshotBlock");
   if (block.number < BigInt.fromI32(startSnapshotBlock)) return;
   const pool = dataSource.address();
+  log.warning("uiDataProvider debug: {}", [getContextAddress("uiDataProvider").toString()]);
   const uiDataProvider = UiPoolDataProvider.bind(
     getContextAddress("uiDataProvider")
   );
+  log.warning("poolAddressProvider debug: {}", [
+    getContextAddress("poolAddressProvider").toString(),
+  ]);
   const poolAddressProvider = getContextAddress("poolAddressProvider");
   const users = new Set<Address>();
   // gather all users of all positions of all investments
@@ -322,6 +326,7 @@ export function handleBlock(block: ethereum.Block): void {
   }
   const totalGraphs = dataSource.context().getI32("totalGraphs");
   const increament = totalGraphs ? totalGraphs : 1 ;
+  log.warning("increament: {}", [increament.toString()]);
   protocol._batchIterator = BigInt.fromI32((protocolInit + increament) % batch);
   protocol.save();
 }
@@ -332,7 +337,13 @@ function createATokenTemplate(
   aTokenAddress: Address
 ): void {
   const aTokenContext = new DataSourceContext();
-  aTokenContext.setString("protocolName", dataSource.context().getString("protocolName"));
+  log.debug("protocolName: {}", [
+    dataSource.context().getString("protocolName"),
+  ]);
+  aTokenContext.setString(
+    "protocolName",
+    dataSource.context().getString("protocolName")
+  );
   aTokenContext.setString("underlying", underlying.toHexString());
   aTokenContext.setString(
     "dataProvider",

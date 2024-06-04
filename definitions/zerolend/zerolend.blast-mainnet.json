@@ -1,5 +1,5 @@
 {
-  "version": "0.0.10",
+  "version": "0.0.15",
   "network": "blast-mainnet",
   "protocolName": "ZeroLend",
   "Pool": "0xa70B0F3C2470AbBE104BdB3F3aaa9C7C54BEA7A8",
@@ -9,5 +9,5 @@
   "snapshotBatch": 2880,
   "startBlock": 192053,
   "polling": 10,
-  "startSnapshotBlock": 3437800
+  "startSnapshotBlock": 192053
 }

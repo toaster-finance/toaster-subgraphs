@@ -42,7 +42,6 @@ export class BorrowUserData {
       getContextAddress("dataProvider")
     );
     this.helper = new AaveV3Helper(pool, underlying.toHexString());
-    const posId = this.helper.getPositionId(owner, "");
 
     const userData = poolDataProvider.getUserReserveData(underlying, owner);
     this.underlyingAmount = userData.getCurrentATokenBalance();
