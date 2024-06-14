@@ -27,7 +27,7 @@ import { getContextAddress } from "../../common/helpers/contextHelper";
 import { AaveV3Helper } from "./helper";
 import { aToken } from "../../../generated/templates";
 import { matchAddress } from "../../common/matchAddress";
-import { calcGraphId, calcProtoInitFromAddress } from "../../common/calcGraphId";
+import { calcGraphId, calcBatchIdFromAddress } from "../../common/calcGraphId";
 
 //PositionType.Invest: it means deposit (deposit amount is positive, withdraw amount is negative)
 //PositionType.Borrow: it means borrow (borrow amount is positive, repay amount is negative)
@@ -247,7 +247,7 @@ export function handleBlock(block: ethereum.Block): void {
   if (block.number < BigInt.fromI32(startSnapshotBlock)) return;
 
   const investments = protocol.investments.load();
-  const protocolInit = protocol._batchIterator.toI32();
+  const targetBatchId = protocol._batchIterator.toI32();
   const batch = dataSource.context().getI32("snapshotBatch");
   const pool = dataSource.address();
   const uiDataProvider = UiPoolDataProvider.bind(
@@ -255,75 +255,88 @@ export function handleBlock(block: ethereum.Block): void {
   );
   const poolAddressProvider = getContextAddress("poolAddressProvider");
 
-  const users = new Set<Address>();
+  let users: Address[];
+
+  // userSet is used to prevent duplicate users
+  // After being converted to an array, userSet is no longer needed
+  // So we unallocated memory by setting it to null
+  let userSet: Set<Address> | null = new Set<Address>();
   // gather all users of all positions of all investments
   for (let i = 0; i < investments.length; i += 1) {
     const investment = investments[i];
     const positions = investment.positions.load();
     for (let j = 0; j < positions.length; j += 1) {
       if (positions[j].closed) continue;
-      if (calcProtoInitFromAddress(positions[j].owner) === protocolInit)
-        users.add(Address.fromBytes(positions[j].owner));
+      const batchId = calcBatchIdFromAddress(positions[j].owner);
+      if (batchId === targetBatchId)
+        userSet.add(Address.fromBytes(positions[j].owner));
     }
   }
-  const userAddr = users.values();
-  for (let u = 0; u < userAddr.length; u += 1) {
-    const user = userAddr[u];
-    const reserveData = uiDataProvider
-      .try_getUserReservesData(poolAddressProvider, user)
-    if (reserveData.reverted) continue;
-    const reserveDatas = reserveData.value.getValue0();
-    for (let d = 0; d < reserveDatas.length; d += 1) {
-      const reserveData = reserveDatas[d];
+  users = userSet.values();
+  userSet = null;
 
-      const totalDebt = reserveData.principalStableDebt.plus(
-        reserveData.scaledVariableDebt
-      );
+  const reserveData_try =
+    uiDataProvider.try_getReservesData(poolAddressProvider);
+  if (reserveData_try.reverted) return;
+  const reserveData = reserveData_try.value.getValue0();
+
+  for (let u = 0; u < users.length; u += 1) {
+    const user = users[u];
+    const userReserve_try = uiDataProvider.try_getUserReservesData(
+      poolAddressProvider,
+      user
+    );
+    if (userReserve_try.reverted) continue;
+    const userReserves = userReserve_try.value.getValue0();
+    for (let d = 0; d < userReserves.length; d += 1) {
+      const userReserve = userReserves[d];
+
+      const variableDebt = userReserve.scaledVariableDebt
+        .times(reserveData[d].variableBorrowIndex)
+        .div(BigInt.fromI32(10).pow(27));
+      const totalDebt = userReserve.principalStableDebt.plus(variableDebt);
+
       // for debt
-      if (totalDebt.notEqual(BigInt.zero()))
+      if (totalDebt.gt(BigInt.zero()))
         savePositionSnapshot(
           block,
-          new AaveV3Helper(pool, reserveData.underlyingAsset.toHexString()),
+          new AaveV3Helper(pool, userReserve.underlyingAsset.toHexString()),
           new PositionParams(
             user,
             "",
             PositionType.Borrow,
-            [
-              reserveData.principalStableDebt
-                .plus(reserveData.scaledVariableDebt)
-                .neg(),
-            ],
+            [totalDebt.neg()],
             [],
             BigInt.zero(),
             [
-              reserveData.principalStableDebt.toString(),
-              reserveData.scaledVariableDebt.toString(),
+              userReserve.principalStableDebt.toString(),
+              variableDebt.toString(),
             ] // stable debt / variable debt
           )
         );
       // for collateral
-      if (reserveData.scaledATokenBalance.notEqual(BigInt.zero()))
+      if (userReserve.scaledATokenBalance.notEqual(BigInt.zero())) {
+        const liquidity = userReserve.scaledATokenBalance;
+        const balance = userReserve.scaledATokenBalance
+          .times(reserveData[d].liquidityIndex)
+          .div(BigInt.fromI32(10).pow(27));
         savePositionSnapshot(
           block,
-          new AaveV3Helper(pool, reserveData.underlyingAsset.toHexString()),
+          new AaveV3Helper(pool, userReserve.underlyingAsset.toHexString()),
           new PositionParams(
             user,
             "",
             PositionType.Invest,
-            [reserveData.scaledATokenBalance],
+            [balance],
             [],
-            BigInt.zero(),
-            [
-              reserveData.principalStableDebt.toString(),
-              reserveData.scaledVariableDebt.toString(),
-            ] // stable debt / variable debt
+            userReserve.scaledATokenBalance,
+            [] // stable debt / variable debt
           )
         );
+      }
     }
   }
-  const totalGraphs = dataSource.context().getI32("totalGraphs");
-  const increament = totalGraphs ? totalGraphs : 1 ;
-  protocol._batchIterator = BigInt.fromI32((protocolInit + increament) % batch);
+  protocol._batchIterator = BigInt.fromI32((targetBatchId + 1) % batch);
   protocol.save();
 }
 
