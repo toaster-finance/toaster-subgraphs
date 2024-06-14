@@ -260,7 +260,7 @@ export function handleBlock(block: ethereum.Block): void {
   // userSet is used to prevent duplicate users
   // After being converted to an array, userSet is no longer needed
   // So we unallocated memory by setting it to null
-  let userSet: Set<Address> | null = new Set<Address>();
+  let userSet = new Set<Address>();
   // gather all users of all positions of all investments
   for (let i = 0; i < investments.length; i += 1) {
     const investment = investments[i];
@@ -273,7 +273,7 @@ export function handleBlock(block: ethereum.Block): void {
     }
   }
   users = userSet.values();
-  userSet = null;
+  userSet = new Set()
 
   const reserveData_try =
     uiDataProvider.try_getReservesData(poolAddressProvider);
