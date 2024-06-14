@@ -29,7 +29,7 @@ import { getContextAddress } from "../../common/helpers/contextHelper";
 import { getProtocolId } from "../../common/helpers/investmentHelper";
 import { cToken as cTokenTemplate } from "../../../generated/templates";
 import { savePositionSnapshot } from "../../common/savePositionSnapshot";
-import { skipAddress } from "../../common/skipAddress";
+import { matchAddress } from "../../common/matchAddress";
 
 export function handleMarketEntered(event: MarketEntered): void {
   const comptroller = dataSource.address();
@@ -55,10 +55,9 @@ export function handleDistributedBorrower(
   const rewardAmount = event.params.compDelta;
   const cTokenAddr = event.params.cToken;
   const owner = event.params.borrower;
-  if(!skipAddress(owner)) return;
+  if(!matchAddress(owner)) return;
   const compAddr = getContextAddress("COMP");
   const helper = new CompoundV2Helper(cTokenAddr, event.address, compAddr);
-  if (skipAddress(owner)) return;
   savePositionChange(
     event,
     PositionChangeAction.Harvest, // receive reward COMP token
@@ -83,10 +82,10 @@ export function handleDistributedSupplier(
   const rewardAmount = event.params.compDelta;
   const cTokenAddr = event.params.cToken;
   const owner = event.params.supplier;
-  if (!skipAddress(owner)) return;
+  if (!matchAddress(owner)) return;
   const compAddr = getContextAddress("COMP");
   const helper = new CompoundV2Helper(cTokenAddr, event.address, compAddr);
-  if (skipAddress(owner)) return;
+
   savePositionChange(
     event,
     PositionChangeAction.Harvest, // receive reward COMP token
@@ -108,11 +107,11 @@ export function handleDistributedSupplier(
 export function handleMint(event: Mint): void {
   const dInputAmount = event.params.mintTokens;
   const owner = event.params.minter;
-  if (!skipAddress(owner)) return;
+  if (!matchAddress(owner)) return;
   const comptrollerAddr = getContextAddress("Comptroller");
   const compAddr = getContextAddress("COMP");
   const helper = new CompoundV2Helper(event.address, comptrollerAddr, compAddr);
-  const posId = helper.getPositionId(owner, "");
+  const posId = helper.getInvestPositionId(owner, "");
   const position = Position.load(posId);
   // get current underlying amount
   let inputAmount: BigInt;
@@ -144,7 +143,7 @@ export function handleMint(event: Mint): void {
 export function handleRedeem(event: Redeem): void {
   const dInputAmount = event.params.redeemTokens;
   const owner = event.params.redeemer;
-  if (skipAddress(owner)) return;
+  if (!matchAddress(owner)) return;
   const comptrollerAddr = getContextAddress("Comptroller");
   const compAddr = getContextAddress("COMP");
   const helper = new CompoundV2Helper(event.address, comptrollerAddr, compAddr);
@@ -173,7 +172,7 @@ export function handleBorrow(event: Borrow): void {
   const dBorrowAmount = event.params.borrowAmount; // underlying amount
   const borrowAmount = event.params.accountBorrows;
   const owner = event.params.borrower;
-  if (skipAddress(owner)) return;
+  if (!matchAddress(owner)) return;
   const comptrollerAddr = getContextAddress("Comptroller");
   const compAddr = getContextAddress("COMP");
   const helper = new CompoundV2Helper(event.address, comptrollerAddr, compAddr);
@@ -198,7 +197,7 @@ export function handleBorrow(event: Borrow): void {
 export function handleRepayBorrow(event: RepayBorrow): void {
   const dRepayAmount = event.params.repayAmount; // underlying amount
   const owner = event.params.borrower;
-  if (skipAddress(owner)) return;
+  if (!matchAddress(owner)) return;
   const borrowAmount = event.params.accountBorrows;
   const comptrollerAddr = getContextAddress("Comptroller");
   const compAddr = getContextAddress("COMP");
@@ -224,7 +223,7 @@ export function handleRepayBorrow(event: RepayBorrow): void {
 export function handleLiquidateBorrow(event: LiquidateBorrow): void {
   const dRepayAmount = event.params.repayAmount; // underlying amount
   const owner = event.params.borrower;
-  if (skipAddress(owner)) return;
+  if (!matchAddress(owner)) return;
   const collateralAddr = event.params.cTokenCollateral;
   const collateralSeizeAmount = event.params.seizeTokens;
   const comptrollerAddr = getContextAddress("Comptroller");
@@ -349,7 +348,7 @@ export function handleTransfer(event: Transfer): void {
   receiver = event.params.to; // aToken amount increase
   
   const sendingAmount = event.params.value;
-  if (!skipAddress(sender)) {
+  if (!matchAddress(sender)) {
     const helper = new CompoundV2Helper(
       event.address,
       getContextAddress("Comptroller"),
@@ -374,7 +373,7 @@ export function handleTransfer(event: Transfer): void {
       [BigInt.zero()]
     );
   }
-  if (!skipAddress(receiver)) {
+  if (!matchAddress(receiver)) {
     const helper = new CompoundV2Helper(
       event.address,
       getContextAddress("Comptroller"),

@@ -80,10 +80,12 @@ export class SyncSwapHelper extends InvestmentHelper {
   }
 
   getLiquidityInfo(block: ethereum.Block): LiquidityInfo {
+    const pool = SyncSwapPool.bind(this.investmentAddress);
     const investment = this.getOrCreateInvestment(block);
-    const reserve0 = BigInt.fromString(investment.meta[1]);
-    const reserve1 = BigInt.fromString(investment.meta[2]);
-    const totalSupply = BigInt.fromString(investment.meta[3]);
+    const reserves = pool.getReserves();
+    const reserve0 = reserves.get_reserve0();
+    const reserve1 = reserves.get_reserve1();
+    const totalSupply = pool.totalSupply();
 
     return new LiquidityInfo(investment, reserve0, reserve1, totalSupply);
   }
@@ -97,13 +99,4 @@ class LiquidityInfo {
     readonly totalSupply: BigInt
   ) {}
 
-  saveTotalSupply(ts: BigInt): void {
-    this.investment.meta = [
-      this.investment.meta[0],
-      this.investment.meta[1],
-      this.investment.meta[2],
-      ts.toString(),
-    ]
-    this.investment.save();
-  }
 }

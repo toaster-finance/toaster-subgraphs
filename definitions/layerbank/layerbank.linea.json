@@ -1,5 +1,5 @@
 {
-  "version" : "0.0.3",
+  "version" : "0.0.1",
   "network": "linea",
   "Core": "0x43Eac5BFEa14531B8DE0B334E123eA98325de866",
   "snapshotBatch": 2880,

@@ -108,4 +108,4 @@ if [[ -n "$query_url" ]]; then
     echo "Saving query URL to file: $query_url"
     jq -r --arg key "$key" --arg query_url "$query_url" '.[$key] = $query_url' subgraphs.json > temp.json && mv temp.json subgraphs.json
 fi
-# rm subgraph.yaml
+rm subgraph.yaml

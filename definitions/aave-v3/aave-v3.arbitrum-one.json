@@ -1,12 +1,12 @@
 {
-  "version": "2.0.5",
+  "version": "2.0.8",
   "network": "arbitrum-one",
   "protocolName": "AaveV3",
   "Pool": "0x794a61358D6845594F94dc1DB02A252b5b4814aD",
   "PoolDataProvider": "0x69FA688f1Dc47d4B5d8029D5a35FB7a548310654",
   "UiPoolDataProvider": "0x145dE30c929a065582da84Cf96F88460dB9745A7",
   "PoolAddressProvider": "0xa97684ead0e402dC232d5A977953DF7ECBaB3CDb",
-  "snapshotBatch": 5,
+  "snapshotBatch": 256,
   "startBlock": 178141080,
   "polling": 21600,
   "startSnapshotBlock": 208141080

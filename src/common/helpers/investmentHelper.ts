@@ -58,17 +58,19 @@ export abstract class InvestmentHelper {
 
   // used at : upsertPosition, positionSnapshot
   // this.id = investmentId
-  getPositionId(owner: Address, tag: string): Bytes {
+  getInvestPositionId(owner: Address, tag: string): Bytes {
     return this.id.concat(owner).concat(Bytes.fromUTF8(tag));
   }
-
+  getBorrowPositionId(owner: Address, tag: string): Bytes {
+    return this.getInvestPositionId(owner, tag).concat(Bytes.fromUTF8("borrow"));
+  }
   /**
    * @param owner owner address of the position
    * @param tag : tag of the position, for differentiating the positions of the investment that has same pool address
    * @returns
    */
   findPosition(owner: Address, tag: string): Position | null {
-    const positionId = this.getPositionId(owner, tag);
+    const positionId = this.getInvestPositionId(owner, tag);
     return Position.load(positionId);
   }
   // ethcall 줄이기 위해서 저장하고 싶은 프로토콜 메타. ex. syncswap: ethcall 줄이기 위해서 totalSupply 저장

@@ -49,7 +49,7 @@ export function handleMint(event: Mint): void {
   const comptrollerAddr = getContextAddress("Comptroller");
   const compAddr = getContextAddress("COMP");
   const helper = new CompoundV2Helper(event.address,  comptrollerAddr,compAddr);
-  const posId = helper.getPositionId(owner, "");
+  const posId = helper.getInvestPositionId(owner, "");
   const position = Position.load(posId);
   // get current underlying amount
   let inputAmount: BigInt;

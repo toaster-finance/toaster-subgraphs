@@ -39,7 +39,7 @@ export function handleMarketRedeem(event: MarketRedeem):void {
   const owner = event.params.user;
   const coreAddr = dataSource.address();
   const helper = new LayerBankV2Helper(event.address, coreAddr);
-  const posId = helper.getPositionId(owner, "");
+  const posId = helper.getInvestPositionId(owner, "");
   const position = Position.load(posId);
   // get current underlying amount
   let inputAmount: BigInt;
@@ -70,7 +70,7 @@ export function handleMarketSupply(event: MarketSupply):void{
   const owner = event.params.user;
   const coreAddr = dataSource.address();
   const helper = new LayerBankV2Helper(event.address, coreAddr);
-  const posId = helper.getPositionId(owner, "");
+  const posId = helper.getInvestPositionId(owner, "");
   const position = Position.load(posId);
   // get current underlying amount
   let inputAmount: BigInt;

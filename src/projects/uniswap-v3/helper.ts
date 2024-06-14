@@ -36,7 +36,7 @@ export class UniswapV3Helper extends InvestmentHelper {
   }
 
   // the way how to get the position id is different from other protocols
-  getPositionId(_owner: Address, tag: string): Bytes {
+  getInvestPositionId(_owner: Address, tag: string): Bytes {
     return UniswapV3Helper.getUniV3PosId(BigInt.fromString(tag));
   }
 

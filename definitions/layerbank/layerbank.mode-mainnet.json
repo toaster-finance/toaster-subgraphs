@@ -1,5 +1,5 @@
 {
-  "version": "0.0.1",
+  "version": "0.0.2",
   "network": "mode-mainnet",
   "Core": "0x80980869D90A737aff47aBA6FbaA923012C1FF50",
   "snapshotBatch": 4320,

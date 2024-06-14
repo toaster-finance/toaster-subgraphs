@@ -36,7 +36,7 @@ export class PancakeSwapV3Helper extends InvestmentHelper {
     return [totalSupply.toString()];
   }
   // how to get the position id is different from other protocols
-  getPositionId(_owner: Address, tag: string): Bytes {
+  getInvestPositionId(_owner: Address, tag: string): Bytes {
     return PancakeSwapV3Helper.getPcsV3PosId(BigInt.fromString(tag));
   }
 

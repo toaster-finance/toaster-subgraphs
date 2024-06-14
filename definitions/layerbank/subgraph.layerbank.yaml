@@ -41,7 +41,7 @@ dataSources:
           handler: handleMarketRedeem
         - event: MarketSupply(address,address,uint256)
           handler: handleMarketSupply
-      file: ./src/projects/layerBank-v2/index.ts
+      file: ./src/projects/layerbank/index.ts
       blockHandlers:
         - handler: handleBlock
           filter:
@@ -57,7 +57,7 @@ templates:
       kind: ethereum/events
       apiVersion: 0.0.7
       language: wasm/assemblyscript
-      file: ./src/projects/layerbank-v2/index.ts
+      file: ./src/projects/layerbank/index.ts
       entities:
         - Position
         - PositionSnapshot

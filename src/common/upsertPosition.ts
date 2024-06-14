@@ -1,7 +1,7 @@
 import { BigInt, ethereum } from "@graphprotocol/graph-ts";
 import { Holder, Position } from "../../generated/schema";
 import { getHolderId } from "./helpers/holderHelper";
-import { getPosType } from "./PositionType.enum";
+import { PositionType, getPosType } from "./PositionType.enum";
 import { PositionParams } from "./helpers/positionHelper";
 import { InvestmentHelper } from "./helpers/investmentHelper";
 
@@ -11,7 +11,8 @@ export function upsertPosition(
   p: PositionParams
 ): Position {
   const investment = helper.getOrCreateInvestment(block);
-  const positionId = helper.getPositionId(p.owner, p.tag);
+
+  const positionId = p.type === PositionType.Borrow ? helper.getBorrowPositionId(p.owner, p.tag): helper.getInvestPositionId(p.owner, p.tag);
 
   let position = Position.load(positionId);
 

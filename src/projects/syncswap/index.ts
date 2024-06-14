@@ -14,7 +14,7 @@ import { PositionChangeAction } from "../../common/PositionChangeAction.enum";
 import { filterLogs, logAt, logFindFirst } from "../../common/filterEventLogs";
 import { hash2Address } from "../../common/helpers/hashHelper";
 import { SyncSwapHelper } from "./helper";
-import { skipAddress } from "../../common/skipAddress";
+import { matchAddress } from "../../common/matchAddress";
 
 function lp2Amounts(
   reserve0: BigInt,
@@ -40,7 +40,6 @@ export function handleBlock(block: ethereum.Block): void {
   const init = i32(parseInt(l.investment.meta[0]));
   const batch = dataSource.context().getI32("snapshotBatch");
   const positions = l.investment.positions.load();
-
   for (let i = init; i < positions.length; i += batch) {
     const position = positions[i];
     if (position.closed) continue;
@@ -63,7 +62,6 @@ export function handleBlock(block: ethereum.Block): void {
     ((init + 1) % batch).toString(),
     l.investment.meta[1],
     l.investment.meta[2],
-    l.investment.meta[3],
   ];
   l.investment.save();
 }
@@ -90,7 +88,7 @@ export function handleMint(event: Mint): void {
   const l = helper.getLiquidityInfo(event.block);
 
   const owner = event.params.to;
-  if (skipAddress(owner)) return;
+  if (!matchAddress(owner)) return;
   // 최초블록부터 트래킹한 경우, dbPosition이 없으면 처음 투자하는 것
   const dbPosition = helper.findPosition(owner, "");
   let ownerBalance = event.params.liquidity;
@@ -109,7 +107,7 @@ export function handleMint(event: Mint): void {
   //   ownerBalance = pool.balanceOf(owner);
   // }
 
-  const totalSupply = l.totalSupply.plus(event.params.liquidity);
+  const totalSupply = pool.totalSupply();
   savePositionChange(
     event,
     PositionChangeAction.Deposit,
@@ -131,8 +129,6 @@ export function handleMint(event: Mint): void {
     [event.params.amount0, event.params.amount1],
     []
   );
-
-  l.saveTotalSupply(totalSupply);
 }
 
 export function handleBurn(event: Burn): void {
@@ -152,7 +148,7 @@ export function handleBurn(event: Burn): void {
   if (!lpToPool) throw new Error("handleBurn: lpToPool not found");
 
   const owner = hash2Address(lpToPool.topics[1]);
-  if (skipAddress(owner)) return;
+  if (!matchAddress(owner)) return;
   let ownerBalance: BigInt;
   let dbPosition = helper.findPosition(owner, "");
   if (dbPosition) {
@@ -162,7 +158,7 @@ export function handleBurn(event: Burn): void {
     ownerBalance = pool.balanceOf(owner);
   }
 
-  const totalSupply = l.totalSupply.minus(event.params.liquidity);
+  const totalSupply = pool.totalSupply();
   savePositionChange(
     event,
     PositionChangeAction.Withdraw,
@@ -184,8 +180,6 @@ export function handleBurn(event: Burn): void {
     [event.params.amount0.neg(), event.params.amount1.neg()],
     []
   );
-
-  l.saveTotalSupply(totalSupply);
 }
 
 export function handleTransfer(event: Transfer): void {
@@ -236,8 +230,8 @@ export function handleTransfer(event: Transfer): void {
     event.params.value,
     l.totalSupply
   );
-
-  if (!skipAddress(event.params.from))
+  const totalSupply = pool.totalSupply();
+  if (!matchAddress(event.params.from))
     savePositionChange(
       event,
       PositionChangeAction.Send,
@@ -246,7 +240,7 @@ export function handleTransfer(event: Transfer): void {
         event.params.from,
         "",
         PositionType.Invest,
-        lp2Amounts(l.reserve0, l.reserve1, senderBalance, l.totalSupply),
+        lp2Amounts(l.reserve0, l.reserve1, senderBalance, totalSupply),
         [],
         senderBalance,
         []
@@ -255,7 +249,7 @@ export function handleTransfer(event: Transfer): void {
       []
     );
 
-  if (!skipAddress(event.params.to))
+  if (!matchAddress(event.params.to))
     savePositionChange(
       event,
       PositionChangeAction.Receive,
@@ -264,7 +258,7 @@ export function handleTransfer(event: Transfer): void {
         event.params.to,
         "",
         PositionType.Invest,
-        lp2Amounts(l.reserve0, l.reserve1, receiverBalance, l.totalSupply),
+        lp2Amounts(l.reserve0, l.reserve1, receiverBalance, totalSupply),
         [],
         receiverBalance,
         []
@@ -285,7 +279,6 @@ export function handleSync(event: Sync): void {
     i.meta[0],
     event.params.reserve0.toString(),
     event.params.reserve1.toString(),
-    i.meta[3],
   ]
   i.save();
 }

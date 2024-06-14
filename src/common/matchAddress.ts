@@ -1,17 +1,18 @@
-import { Address, dataSource } from "@graphprotocol/graph-ts";
-import { calcMod } from "./calcMod";
+import { Address, dataSource, log } from "@graphprotocol/graph-ts";
+import { calcGraphId } from "./calcGraphId";
 /**
  * Filter address by divide number
  * @dev totalGraphNum divide number of the graph, if totalGraphNum is 0, return false
  * @dev graphId current graph id
- * @returns if true , skip the address
+ * @returns if true , owner address is under the conditions
  */
-export function skipAddress(owner: Address): boolean {
+export function matchAddress(owner: Address): boolean {
   const graphId = dataSource.context().getI32("graphId");
   const totalGraphs = dataSource.context().getI32("totalGraphs");
   if (!totalGraphs) return false;
   if (!graphId) return false;
+  const _graphId= calcGraphId(owner);
   return (
-    graphId - 1 !== calcMod(owner, totalGraphs)
+    graphId === _graphId
   );
 }

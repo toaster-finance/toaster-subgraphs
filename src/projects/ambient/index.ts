@@ -55,7 +55,7 @@ export function handleWarmCmd(event: CrocWarmCmd): void {
     ? event.transaction.from
     : event.transaction.to;
 
-  const positionId = data.helper.getPositionId(owner!, positionTag);
+  const positionId = data.helper.getInvestPositionId(owner!, positionTag);
   const position = Position.load(positionId);
   let principals: AmbientPrincipal;
   let rewards: AmbientReward;
