@@ -15,7 +15,7 @@ export class InvestUserData {
       getContextAddress("dataProvider")
     );
     this.helper = new AaveV3Helper(pool, underlying.toHexString());
-    const posId = this.helper.getPositionId(owner, "");
+    const posId = this.helper.getInvestPositionId(owner, "");
     const position = Position.load(posId);
 
     if (!position) {

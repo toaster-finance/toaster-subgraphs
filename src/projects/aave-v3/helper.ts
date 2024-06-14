@@ -22,15 +22,15 @@ export class AaveV3Helper extends InvestmentHelper {
     return [];
   }
   getInfo(_invest: Address): InvestmentInfo {
-    const underlying = Address.fromBytes(Address.fromHexString(this.tag));
-    return new InvestmentInfo([underlying], [],[this.getAtokenAddress(underlying).toHexString()]);// [underlyingTokenAddr], [ ], [aTokenAddr]
+    const underlyingAddr = Address.fromBytes(Address.fromHexString(this.tag));
+    return new InvestmentInfo([underlyingAddr], [],[this.getAtokenAddress(underlyingAddr).toHexString()]);// [underlyingTokenAddr], [ ], [aTokenAddr]
   }
 
-  getAtokenAddress(underlying: Address): Address {
+  getAtokenAddress(underlyingAddr: Address): Address {
     const dataProviderAddr = getContextAddress("dataProvider");
     const poolDataProvider = PoolDataProvider.bind(dataProviderAddr);
     const aTokenAddress = poolDataProvider
-      .getReserveTokensAddresses(underlying)
+      .getReserveTokensAddresses(underlyingAddr)
       .getATokenAddress();
     return aTokenAddress;
   }

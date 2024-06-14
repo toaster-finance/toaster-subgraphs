@@ -26,8 +26,8 @@ import { getProtocolId } from "../../common/helpers/investmentHelper";
 import { getContextAddress } from "../../common/helpers/contextHelper";
 import { AaveV3Helper } from "./helper";
 import { aToken } from "../../../generated/templates";
-import { skipAddress } from "../../common/skipAddress";
-import { calcMod } from "../../common/calcMod";
+import { matchAddress } from "../../common/matchAddress";
+import { calcGraphId, calcProtoInitFromAddress } from "../../common/calcGraphId";
 
 //PositionType.Invest: it means deposit (deposit amount is positive, withdraw amount is negative)
 //PositionType.Borrow: it means borrow (borrow amount is positive, repay amount is negative)
@@ -38,9 +38,8 @@ export function handleSupply(event: Supply): void {
   const amount = event.params.amount;
   const underlying = event.params.reserve;
   const owner = event.params.onBehalfOf;
-  if (skipAddress(owner)) return;
+  if (!matchAddress(owner)) return;
   const data = new InvestUserData(owner, underlying, amount);
-  if (data.underlyingAmount.equals(BigInt.zero())) return;
   savePositionChange(
     event,
     PositionChangeAction.Deposit,
@@ -64,9 +63,8 @@ export function handleWithdraw(event: Withdraw): void {
   const amount = event.params.amount;
   const underlying = event.params.reserve;
   const owner = event.params.user;
-  if (skipAddress(owner)) return;
+  if (!matchAddress(owner)) return;
   const data = new InvestUserData(owner, underlying, amount);
-  if (data.underlyingAmount.equals(BigInt.zero())) return;
   savePositionChange(
     event,
     PositionChangeAction.Withdraw,
@@ -97,7 +95,7 @@ export function handleTransfer(event: Transfer): void {
   receiver = event.params.to; // aToken amount increase
   const underlying = getContextAddress("underlying");
   const sendingAmount = event.params.value;
-  if (!skipAddress(sender)) {
+  if (matchAddress(sender)) {
     const senderData = new InvestUserData(sender, underlying, BigInt.zero());
     savePositionChange(
       event,
@@ -116,7 +114,7 @@ export function handleTransfer(event: Transfer): void {
       []
     );
   }
-  if (!skipAddress(receiver)) {
+  if (matchAddress(receiver)) {
     const receiverData = new InvestUserData(
       receiver,
       underlying,
@@ -146,7 +144,7 @@ export function handleTransfer(event: Transfer): void {
 export function handleBorrow(event: Borrow): void {
   const underlying = event.params.reserve;
   const owner = event.params.onBehalfOf;
-  if (skipAddress(owner)) return;
+  if (!matchAddress(owner)) return;
   const data = new BorrowUserData(owner, underlying);
   if (data.underlyingAmount.equals(BigInt.zero())) return;
   savePositionChange(
@@ -169,7 +167,7 @@ export function handleBorrow(event: Borrow): void {
 export function handleRepay(event: Repay): void {
   const underlying = event.params.reserve;
   const owner = event.params.user;
-  if (skipAddress(owner)) return;
+  if (!matchAddress(owner)) return;
   const data = new BorrowUserData(owner, underlying);
   if (data.underlyingAmount.equals(BigInt.zero())) return;
   savePositionChange(
@@ -194,7 +192,7 @@ export function handleLiquidation(event: LiquidationCall): void {
   const collateralAsset = event.params.collateralAsset;
   const debtAsset = event.params.debtAsset;
   const owner = event.params.user;
-  if (skipAddress(owner)) return;
+  if (!matchAddress(owner)) return;
   const debtData = new BorrowUserData(owner, debtAsset);
   const collateralData = new InvestUserData(
     owner,
@@ -250,13 +248,9 @@ export function handleBlock(block: ethereum.Block): void {
   const startSnapshotBlock = dataSource.context().getI32("startSnapshotBlock");
   if (block.number < BigInt.fromI32(startSnapshotBlock)) return;
   const pool = dataSource.address();
-  log.warning("uiDataProvider debug: {}", [getContextAddress("uiDataProvider").toString()]);
   const uiDataProvider = UiPoolDataProvider.bind(
     getContextAddress("uiDataProvider")
   );
-  log.warning("poolAddressProvider debug: {}", [
-    getContextAddress("poolAddressProvider").toString(),
-  ]);
   const poolAddressProvider = getContextAddress("poolAddressProvider");
   const users = new Set<Address>();
   // gather all users of all positions of all investments
@@ -265,7 +259,7 @@ export function handleBlock(block: ethereum.Block): void {
     const positions = investment.positions.load();
     for (let j = 0; j < positions.length; j += 1) {
       if (positions[j].closed) continue;
-      if (calcMod(positions[j].owner, batch) === protocolInit)
+      if (calcProtoInitFromAddress(positions[j].owner) === protocolInit)
         users.add(Address.fromBytes(positions[j].owner));
     }
   }
@@ -326,7 +320,6 @@ export function handleBlock(block: ethereum.Block): void {
   }
   const totalGraphs = dataSource.context().getI32("totalGraphs");
   const increament = totalGraphs ? totalGraphs : 1 ;
-  log.warning("increament: {}", [increament.toString()]);
   protocol._batchIterator = BigInt.fromI32((protocolInit + increament) % batch);
   protocol.save();
 }
@@ -337,9 +330,6 @@ function createATokenTemplate(
   aTokenAddress: Address
 ): void {
   const aTokenContext = new DataSourceContext();
-  log.debug("protocolName: {}", [
-    dataSource.context().getString("protocolName"),
-  ]);
   aTokenContext.setString(
     "protocolName",
     dataSource.context().getString("protocolName")
