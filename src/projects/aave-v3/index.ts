@@ -242,16 +242,19 @@ export function handleLiquidation(event: LiquidationCall): void {
 export function handleBlock(block: ethereum.Block): void {
   const protocol = Protocol.load(getProtocolId(AaveV3Helper.protocolName));
   if (!protocol) return;
+
+  const startSnapshotBlock = dataSource.context().getI32("startSnapshotBlock");
+  if (block.number < BigInt.fromI32(startSnapshotBlock)) return;
+
   const investments = protocol.investments.load();
   const protocolInit = protocol._batchIterator.toI32();
   const batch = dataSource.context().getI32("snapshotBatch");
-  const startSnapshotBlock = dataSource.context().getI32("startSnapshotBlock");
-  if (block.number < BigInt.fromI32(startSnapshotBlock)) return;
   const pool = dataSource.address();
   const uiDataProvider = UiPoolDataProvider.bind(
     getContextAddress("uiDataProvider")
   );
   const poolAddressProvider = getContextAddress("poolAddressProvider");
+
   const users = new Set<Address>();
   // gather all users of all positions of all investments
   for (let i = 0; i < investments.length; i += 1) {
@@ -284,7 +287,7 @@ export function handleBlock(block: ethereum.Block): void {
           new PositionParams(
             user,
             "",
-            PositionType.Invest,
+            PositionType.Borrow,
             [
               reserveData.principalStableDebt
                 .plus(reserveData.scaledVariableDebt)
