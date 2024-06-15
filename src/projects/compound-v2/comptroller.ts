@@ -18,7 +18,7 @@ export function handleMarketEntered(event: MarketEntered): void {
   const comptroller = dataSource.address();
   const cTokenAddr = event.params.cToken;
   const compAddr = getContextAddress("COMP");
-  const helper = new CompoundV2Helper(cTokenAddr, comptroller, compAddr);
+  const helper = new CompoundV2Helper(cTokenAddr);
   const investment = Investment.load(helper.id);
   if (investment) return;
   helper.getOrCreateInvestment(event.block);
@@ -49,8 +49,8 @@ export function handleDistributedBorrower(
   const cTokenAddr = event.params.cToken;
   const owner = event.params.borrower;
   if (!matchAddress(owner)) return;
-  const compAddr = getContextAddress("COMP");
-  const helper = new CompoundV2Helper(cTokenAddr, event.address, compAddr);
+
+  const helper = new CompoundV2Helper(cTokenAddr);
   savePositionChange(
     event,
     PositionChangeAction.Harvest, // receive reward COMP token
@@ -76,8 +76,7 @@ export function handleDistributedSupplier(
   const cTokenAddr = event.params.cToken;
   const owner = event.params.supplier;
   if (!matchAddress(owner)) return;
-  const compAddr = getContextAddress("COMP");
-  const helper = new CompoundV2Helper(cTokenAddr, event.address, compAddr);
+  const helper = new CompoundV2Helper(cTokenAddr);
 
   savePositionChange(
     event,

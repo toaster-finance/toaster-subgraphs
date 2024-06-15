@@ -1,5 +1,5 @@
 {
-  "version": "2.1.0",
+  "version": "2.1.1",
   "network": "arbitrum-one",
   "protocolName": "AaveV3",
   "Pool": "0x794a61358D6845594F94dc1DB02A252b5b4814aD",

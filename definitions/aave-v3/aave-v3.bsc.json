@@ -1,5 +1,5 @@
 {
-  "version": "2.1.0",
+  "version": "2.1.1",
   "network": "bsc",
   "protocolName": "AaveV3",
   "Pool": "0x6807dc923806fE8Fd134338EABCA509979a7e0cB",
