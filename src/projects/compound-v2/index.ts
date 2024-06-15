@@ -254,6 +254,9 @@ export function handleBlock(block: ethereum.Block) {
   protocol.save();
 }
 
+/**
+ * Also handle liquidateBorrow seizeTokens transfer event
+ */
 export function handleTransfer(event: Transfer): void {
   if (event.params.value.equals(BigInt.zero())) return;
   if (event.params.from.equals(event.address)) return; // Supply
