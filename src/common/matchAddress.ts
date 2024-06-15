@@ -12,5 +12,5 @@ export function matchAddress(owner: Address): boolean {
   if (!totalGraphs) return false;
   if (!graphId) return false;
   const userGraphId = calcGraphId(owner);
-  return graphId === userGraphId;
+  return graphId == userGraphId;
 }

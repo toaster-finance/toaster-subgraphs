@@ -12,7 +12,7 @@ export function upsertPosition(
 ): Position {
   const investment = helper.getOrCreateInvestment(block);
 
-  const positionId = p.type === PositionType.Borrow ? helper.getBorrowPositionId(p.owner, p.tag): helper.getInvestPositionId(p.owner, p.tag);
+  const positionId = p.type == PositionType.Borrow ? helper.getBorrowPositionId(p.owner, p.tag): helper.getInvestPositionId(p.owner, p.tag);
 
   let position = Position.load(positionId);
 

@@ -292,7 +292,7 @@ export function handleColdCmd(event: CrocColdCmd): void {
   const initPoolCode = 71;
   const inputs = event.params.input;
   const cmdCode = inputs[31];
-  if (cmdCode === initPoolCode) {
+  if (cmdCode == initPoolCode) {
     const params = ethereum
       .decode("(uint8,address,address,uint256,uint128)", inputs)!
       .toTuple();

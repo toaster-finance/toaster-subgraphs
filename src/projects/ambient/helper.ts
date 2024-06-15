@@ -98,7 +98,7 @@ export class AmbientHelper extends InvestmentHelper {
     const query = AmbientQuery.bind(getContextAddress("ambientQuery"));
     const ticks = this.tagToTicks(tag);
 
-    if (ticks[0] === 0 && ticks[1] === 0) {
+    if (ticks[0] == 0 && ticks[1] == 0) {
       const principals = query.queryAmbientTokens(
         owner,
         this.details.token0,
@@ -129,7 +129,7 @@ export class AmbientHelper extends InvestmentHelper {
   getRewardInfo(owner: Address, tag: string): AmbientReward {
     const query = AmbientQuery.bind(getContextAddress("ambientQuery"));
 
-    if (tag === AmbientHelper.AMBIENT_POSITION) {
+    if (tag == AmbientHelper.AMBIENT_POSITION) {
       return new AmbientReward(BigInt.zero(), BigInt.zero()); //amount0,amount1
     } else {
       const ticks = this.tagToTicks(tag);

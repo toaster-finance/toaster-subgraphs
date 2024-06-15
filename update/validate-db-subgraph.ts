@@ -14,8 +14,8 @@ config();
 
 function arraysEqual(a: string[], b: string[]) {
   return (
-    a.length === b.length &&
-    a.every((v, i) => v.toLowerCase() === b[i].toLowerCase())
+    a.length == b.length &&
+    a.every((v, i) => v.toLowerCase() == b[i].toLowerCase())
   );
 }
 
@@ -72,7 +72,7 @@ async function validateDbSubgraph() {
 
       r.data.investments.forEach((subgraphInvestment) => {
         const dbInvestment = dbInvestments.find(
-          (i) => i.idAtSubgraph === subgraphInvestment.id
+          (i) => i.idAtSubgraph == subgraphInvestment.id
         );
 
         if (!dbInvestment) {

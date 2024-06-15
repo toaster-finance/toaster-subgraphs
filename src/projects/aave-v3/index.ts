@@ -269,7 +269,7 @@ export function handleBlock(block: ethereum.Block): void {
     for (let j = 0; j < positions.length; j += 1) {
       if (positions[j].closed) continue;
       const batchId = calcBatchIdFromAddr(positions[j].owner);
-      if (batchId === targetBatchId)
+      if (batchId == targetBatchId)
         userSet.add(Address.fromBytes(positions[j].owner));
     }
   }
