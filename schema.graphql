@@ -80,6 +80,7 @@ enum PositionChangeAction {
   Borrow
   Repay
   Liquidate
+  LiquidateReward
   Send
   Receive
   Stake

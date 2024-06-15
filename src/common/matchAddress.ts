@@ -11,8 +11,6 @@ export function matchAddress(owner: Address): boolean {
   const totalGraphs = dataSource.context().getI32("totalGraphs");
   if (!totalGraphs) return false;
   if (!graphId) return false;
-  const _graphId= calcGraphId(owner);
-  return (
-    graphId === _graphId
-  );
+  const userGraphId = calcGraphId(owner);
+  return graphId === userGraphId;
 }

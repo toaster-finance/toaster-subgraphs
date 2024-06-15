@@ -50,12 +50,8 @@ dataSources:
           handler: handleDistributedBorrower
         - event: DistributedSupplierComp(indexed address,indexed address,uint256,uint256)
           handler: handleDistributedSupplier
-      file: ./src/projects/compound-v2/index.ts
-      blockHandlers:
-        - handler: handleBlock
-          filter:
-            kind: polling
-            every: {{polling}}
+      file: ./src/projects/compound-v2/comptroller.ts
+
 templates:
   - kind: ethereum/contract
     name: cToken
@@ -90,5 +86,11 @@ templates:
           handler: handleLiquidateBorrow
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTransfer
+          receipt: true
+      blockHandlers:
+        - handler: handleBlock
+          filter:
+            kind: polling
+            every: {{polling}}
     
   
