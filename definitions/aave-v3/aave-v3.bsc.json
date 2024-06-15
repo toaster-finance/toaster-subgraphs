@@ -1,5 +1,5 @@
 {
-  "version": "2.0.3",
+  "version": "2.1.0",
   "network": "bsc",
   "protocolName": "AaveV3",
   "Pool": "0x6807dc923806fE8Fd134338EABCA509979a7e0cB",
@@ -8,6 +8,6 @@
   "PoolAddressProvider": "0xff75B6da14FfbbfD355Daf7a2731456b3562Ba6D",
   "snapshotBatch": 256,
   "startBlock": 33571625,
-  "polling": 20160,
-  "startSnapshotBlock": 37460679
+  "polling": 112,
+  "startSnapshotBlock": 39450000
 }

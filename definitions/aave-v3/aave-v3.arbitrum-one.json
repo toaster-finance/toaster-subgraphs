@@ -1,5 +1,5 @@
 {
-  "version": "2.0.8",
+  "version": "2.1.0",
   "network": "arbitrum-one",
   "protocolName": "AaveV3",
   "Pool": "0x794a61358D6845594F94dc1DB02A252b5b4814aD",
@@ -7,7 +7,7 @@
   "UiPoolDataProvider": "0x145dE30c929a065582da84Cf96F88460dB9745A7",
   "PoolAddressProvider": "0xa97684ead0e402dC232d5A977953DF7ECBaB3CDb",
   "snapshotBatch": 256,
-  "startBlock": 178141080,
-  "polling": 21600,
-  "startSnapshotBlock": 208141080
+  "startBlock": 7742429,
+  "polling": 1125,
+  "startSnapshotBlock": 222000000
 }
