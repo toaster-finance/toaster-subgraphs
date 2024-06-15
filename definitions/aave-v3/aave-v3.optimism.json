@@ -1,5 +1,5 @@
 {
-  "version": "0.0.7",
+  "version": "2.1.0",
   "network": "optimism",
   "protocolName": "AaveV3",
   "Pool": "0x794a61358D6845594F94dc1DB02A252b5b4814aD",
@@ -8,6 +8,6 @@
   "PoolAddressProvider": "0xa97684ead0e402dC232d5A977953DF7ECBaB3CDb",
   "snapshotBatch": 256,
   "startBlock": 4365693,
-  "polling": 1350,
-  "startSnapshotBlock": 109663187
+  "polling": 168,
+  "startSnapshotBlock": 121000000
 }
