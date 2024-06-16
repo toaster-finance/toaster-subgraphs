@@ -10,7 +10,7 @@ export enum PositionChangeAction {
   Receive,
   Stake,
   Unstake,
-  Compound
+  Compound,
 }
 
 const actions = [

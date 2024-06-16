@@ -1,5 +1,5 @@
 {
-  "version": "0.0.8",
+  "version": "0.0.9",
   "network": "mainnet",
   "protocolName": "ZeroLend",
   "Pool": "0x3BC3D34C32cc98bf098D832364Df8A222bBaB4c0",

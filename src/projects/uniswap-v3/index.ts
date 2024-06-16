@@ -17,7 +17,7 @@ import { UniswapV3Pool } from "../../../generated/UniswapV3/UniswapV3Pool";
 import { PositionParams } from "../../common/helpers/positionHelper";
 import { LogData, filterAndDecodeLogs } from "../../common/filterEventLogs";
 import { feesOf, principalOf } from "./utils/positionAmount";
-import { PositionInfo, getLog, getPositionInfo } from "./utils/getPositionInfo";
+import { PositionInfo,getPositionInfo } from "./utils/getPositionInfo";
 import { UniswapV3Factory } from "../../../generated/UniswapV3/UniswapV3Factory";
 import { savePositionSnapshot } from "../../common/savePositionSnapshot";
 import { hex2Uint } from "../../common/helpers/bigintHelper";
@@ -25,6 +25,7 @@ import { hash2Address } from "../../common/helpers/hashHelper";
 import { Investment, Protocol } from "../../../generated/schema";
 import { getContextAddress } from "../../common/helpers/contextHelper";
 import { UniswapV3Helper } from "./helper";
+import { getLog } from "../../common/getLog";
 
 export const UNISWAP_V3_PROTOCOL = "UniswapV3";
 

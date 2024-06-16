@@ -1,6 +1,5 @@
 import { Position, Protocol } from "./../../../generated/schema";
 import {
-  Address,
   BigInt,
   Bytes,
   dataSource,
@@ -25,7 +24,6 @@ import { savePositionSnapshot } from "../../common/savePositionSnapshot";
 import { matchAddress } from "../../common/matchAddress";
 import { logFindFirst } from "../../common/filterEventLogs";
 import { calcBatchIdFromAddr } from "../../common/calcGraphId";
-
 // handleMint start
 export function handleMint(event: Mint): void {
   const owner = event.params.minter;
@@ -89,7 +87,6 @@ export function handleRedeem(event: Redeem): void {
     inputAmount = helper.getUnderlyingAmount(owner);
     liquidity = inputAmount.times(dCToken).div(dInputAmount);
   }
-
   savePositionChange(
     event,
     PositionChangeAction.Withdraw,
@@ -99,7 +96,7 @@ export function handleRedeem(event: Redeem): void {
       "",
       PositionType.Invest,
       [inputAmount],
-      [BigInt.zero()], // TODO: acc reward amount
+      [BigInt.zero()],
       liquidity,
       []
     ),
@@ -117,7 +114,6 @@ export function handleBorrow(event: Borrow): void {
   const dBorrowAmount = event.params.borrowAmount; // underlying amount
   const borrowAmount = event.params.accountBorrows;
   const helper = new CompoundV2Helper(event.address);
-
   savePositionChange(
     event,
     PositionChangeAction.Borrow,
@@ -127,7 +123,7 @@ export function handleBorrow(event: Borrow): void {
       "",
       PositionType.Borrow,
       [borrowAmount.neg()],
-      [BigInt.zero()], // TODO: acc reward amount
+      [BigInt.zero()],
       BigInt.zero(),
       []
     ),
@@ -144,9 +140,9 @@ export function handleRepayBorrow(event: RepayBorrow): void {
 
   const dRepayAmount = event.params.repayAmount; // underlying amount
   const borrowAmount = event.params.accountBorrows;
-  const comptrollerAddr = getContextAddress("Comptroller");
-  const compAddr = getContextAddress("COMP");
+  
   const helper = new CompoundV2Helper(event.address);
+
   savePositionChange(
     event,
     PositionChangeAction.Repay,
@@ -156,7 +152,7 @@ export function handleRepayBorrow(event: RepayBorrow): void {
       "",
       PositionType.Borrow,
       [borrowAmount.neg()],
-      [BigInt.zero()], // TODO: acc reward amount
+      [BigInt.zero()],
       BigInt.zero(),
       []
     ),
@@ -184,7 +180,7 @@ export function handleLiquidateBorrow(event: LiquidateBorrow): void {
       "",
       PositionType.Borrow,
       [currBorrowAmount],
-      [BigInt.zero()], // TODO: acc reward amount
+      [BigInt.zero()],
       BigInt.zero(),
       []
     ),
@@ -216,7 +212,7 @@ export function handleBlock(block: ethereum.Block) {
       const underlyingAmount = liquidity
         .times(snapshot.getValue3())
         .div(expScale);
-
+      const investReward = helper.getSupplyRewardAmount(pos.owner, liquidity);
       savePositionSnapshot(
         block,
         helper,
@@ -225,7 +221,7 @@ export function handleBlock(block: ethereum.Block) {
           "",
           PositionType.Invest,
           [underlyingAmount],
-          [BigInt.zero()], // TODO: acc reward amount
+          [investReward],
           pos.liquidity,
           []
         )
@@ -234,6 +230,7 @@ export function handleBlock(block: ethereum.Block) {
 
     const borrowAmount = snapshot.getValue2();
     if (borrowAmount.gt(BigInt.zero())) {
+      const borrowReward = helper.getSupplyRewardAmount(pos.owner, liquidity);
       savePositionSnapshot(
         block,
         helper,
@@ -242,7 +239,7 @@ export function handleBlock(block: ethereum.Block) {
           "",
           PositionType.Borrow,
           [borrowAmount],
-          [BigInt.zero()], // TODO: acc reward amount
+          [borrowReward],
           BigInt.zero(),
           []
         )
@@ -258,6 +255,7 @@ export function handleBlock(block: ethereum.Block) {
  * Also handle liquidateBorrow seizeTokens transfer event
  */
 export function handleTransfer(event: Transfer): void {
+
   if (event.params.value.equals(BigInt.zero())) return;
   if (event.params.from.equals(event.address)) return; // Supply
   if (event.params.to.equals(event.address)) return; // Withdraw

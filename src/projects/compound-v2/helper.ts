@@ -8,6 +8,7 @@ import {
 } from "../../common/helpers/investmentHelper";
 import { Address, BigInt } from "@graphprotocol/graph-ts";
 import { getContextAddress } from "../../common/helpers/contextHelper";
+import { Comptroller as ComptrollerContract } from "../../../generated/Comptroller/Comptroller";
 
 /**
  * id: investment id  = "CompoundV2{cTokenAddress}"
@@ -37,6 +38,10 @@ export class CompoundV2Helper extends InvestmentHelper {
     return cTokenContract.bind(this.investmentAddress);
   }
 
+  Comptroller(): ComptrollerContract {
+    return ComptrollerContract.bind(this.comptroller);
+  }
+
   getInfo(_invest: Address): InvestmentInfo {
     const underlying = this.cToken().underlying();
     return new InvestmentInfo([underlying], [this.compAddr], []);
@@ -54,15 +59,42 @@ export class CompoundV2Helper extends InvestmentHelper {
   getBorrowedAmount(owner: Address): BigInt {
     return this.cToken().borrowBalanceStored(owner);
   }
+  // ref: https://github.com/compound-finance/compound-protocol/blob/a3214f67b73310d547e00fc578e8355911c9d376/contracts/Comptroller.sol#L1269
+  getBorrowRewardAmount(owner: Address, borrowAmount: BigInt): BigInt {
+    // Calculate COMP accrued: cTokenAmount * accruedPerBorrowedUnit
+    // uint borrowIndex = borrowState.index;
+    // uint borrowerIndex = compBorrowerIndex[cToken][borrower];
+    // uint borrowerAmount = div_(CToken(cToken).borrowBalanceStored(borrower), cToken.borrowIndex());
+    // uint borrowerDelta = mul_(borrowerAmount, deltaIndex);
+    const borrowIndex = this.Comptroller()
+      .compBorrowState(this.investmentAddress)
+      .getIndex();
+    const borrowerIndex = this.Comptroller().compBorrowerIndex(
+      this.investmentAddress,
+      owner
+    );
+    return borrowIndex.minus(borrowerIndex).times(borrowAmount);
+  }
+
+  getSupplyRewardAmount(owner: Address, mintAmount: BigInt): BigInt {
+    const supplyIndex = this.Comptroller()
+      .compSupplyState(this.investmentAddress)
+      .getIndex();
+    const supplierIndex = this.Comptroller().compSupplierIndex(
+      this.investmentAddress,
+      owner
+    );
+    return supplyIndex.minus(supplierIndex).times(mintAmount);
+  }
 
   /**
-   * 
+   *
    * @param owner position owner
-   * @returns 
-   * NO_ERROR  
-   * accountTokens[account] -> cToken balance  
-   * borrowBalanceStoredInternal(account) -> borrowed amount  
-   * exchangeRateStoredInternal() -> exchange rate  
+   * @returns
+   * NO_ERROR
+   * accountTokens[account] -> cToken balance
+   * borrowBalanceStoredInternal(account) -> borrowed amount
+   * exchangeRateStoredInternal() -> exchange rate
    */
   getAccountSnapshot(owner: Address): cToken__getAccountSnapshotResult {
     return this.cToken().getAccountSnapshot(owner);
