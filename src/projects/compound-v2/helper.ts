@@ -59,34 +59,50 @@ export class CompoundV2Helper extends InvestmentHelper {
   getBorrowedAmount(owner: Address): BigInt {
     return this.cToken().borrowBalanceStored(owner);
   }
-  // ref: https://github.com/compound-finance/compound-protocol/blob/a3214f67b73310d547e00fc578e8355911c9d376/contracts/Comptroller.sol#L1269
-  getBorrowRewardAmount(owner: Address, borrowAmount: BigInt): BigInt {
-    // Calculate COMP accrued: cTokenAmount * accruedPerBorrowedUnit
-    // uint borrowIndex = borrowState.index;
-    // uint borrowerIndex = compBorrowerIndex[cToken][borrower];
-    // uint borrowerAmount = div_(CToken(cToken).borrowBalanceStored(borrower), cToken.borrowIndex());
-    // uint borrowerDelta = mul_(borrowerAmount, deltaIndex);
-    const borrowIndex = this.Comptroller()
+
+  getBorrowIndex(): BigInt {
+    return this.Comptroller()
       .compBorrowState(this.investmentAddress)
       .getIndex();
-    const borrowerIndex = this.Comptroller().compBorrowerIndex(
-      this.investmentAddress,
-      owner
-    );
-    return borrowIndex.minus(borrowerIndex).times(borrowAmount);
   }
-
-  getSupplyRewardAmount(owner: Address, mintAmount: BigInt): BigInt {
-    const supplyIndex = this.Comptroller()
+  getSupplyIndex(): BigInt {
+    return this.Comptroller()
       .compSupplyState(this.investmentAddress)
       .getIndex();
-    const supplierIndex = this.Comptroller().compSupplierIndex(
-      this.investmentAddress,
-      owner
-    );
-    return supplyIndex.minus(supplierIndex).times(mintAmount);
   }
 
+  // ref: https://github.com/compound-finance/compound-protocol/blob/a3214f67b73310d547e00fc578e8355911c9d376/contracts/Comptroller.sol#L1269
+  // Calculate COMP accrued: cTokenAmount * accruedPerBorrowedUnit
+  // uint borrowIndex = borrowState.index;
+  // uint borrowerIndex = compBorrowerIndex[cToken][borrower];
+  // uint borrowerAmount = div_(CToken(cToken).borrowBalanceStored(borrower), cToken.borrowIndex());
+  // uint borrowerDelta = mul_(borrowerAmount, deltaIndex);
+  getBorrowRewardDelta(
+    borrowAmount: BigInt,
+    borrowStateIndex: BigInt,
+    borrowerIndex: BigInt
+  ): BigInt {
+    return borrowStateIndex.minus(borrowerIndex).times(borrowAmount);
+  }
+
+  getSupplyRewardDelta(
+    mintAmount: BigInt,
+    suppyStateIndex: BigInt,
+    supplierIndex: BigInt
+  ): BigInt {
+    return suppyStateIndex.minus(supplierIndex).times(mintAmount);
+  }
+
+  getBorrowerIndex(owner: Address): BigInt {
+    return this.Comptroller().compBorrowerIndex(this.investmentAddress, owner);
+  }
+
+  getSupplierIndex(owner: Address): BigInt {
+    return this.Comptroller().compSupplierIndex(this.investmentAddress, owner);
+  }
+  getRewardAmountStored(owner: Address): BigInt {
+    return this.Comptroller().compAccrued(owner);
+  }
   /**
    *
    * @param owner position owner
@@ -98,5 +114,29 @@ export class CompoundV2Helper extends InvestmentHelper {
    */
   getAccountSnapshot(owner: Address): cToken__getAccountSnapshotResult {
     return this.cToken().getAccountSnapshot(owner);
+  }
+
+  getRewardAmount(
+    owner: Address,
+    supplyIdx: BigInt,
+    borrowIdx: BigInt,
+    supplierIdx: BigInt,
+    borrowerIdx: BigInt
+  ): BigInt {
+    return this.getRewardAmountStored(owner)
+      .plus(
+        this.getBorrowRewardDelta(
+          this.getBorrowedAmount(owner),
+          borrowIdx,
+          borrowerIdx
+        )
+      )
+      .plus(
+        this.getSupplyRewardDelta(
+          this.getCTokenAmount(owner),
+          supplyIdx,
+          supplierIdx
+        )
+      );
   }
 }

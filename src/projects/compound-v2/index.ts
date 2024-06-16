@@ -18,7 +18,6 @@ import {
   RepayBorrow,
   Transfer,
 } from "../../../generated/templates/cToken/cToken";
-import { getContextAddress } from "../../common/helpers/contextHelper";
 import { getProtocolId } from "../../common/helpers/investmentHelper";
 import { savePositionSnapshot } from "../../common/savePositionSnapshot";
 import { matchAddress } from "../../common/matchAddress";
@@ -171,6 +170,7 @@ export function handleLiquidateBorrow(event: LiquidateBorrow): void {
 
   const borrowHelper = new CompoundV2Helper(event.address);
   const currBorrowAmount = borrowHelper.getBorrowedAmount(owner);
+  const position = Position.load(borrowHelper.getInvestPositionId(owner, ""));
   savePositionChange(
     event,
     PositionChangeAction.Liquidate,
@@ -198,7 +198,8 @@ export function handleBlock(block: ethereum.Block) {
 
   const batch = dataSource.context().getI32("snapshotBatch");
   const targetBatchId = protocol._batchIterator.toI32();
-
+  const supplyIdx = helper.getSupplyIndex();
+  const borrowIdx = helper.getBorrowIndex(); 
   const expScale = BigInt.fromI32(10).pow(18);
   for (let i = 0; i < positions.length; i++) {
     const pos = positions[i];
@@ -212,7 +213,7 @@ export function handleBlock(block: ethereum.Block) {
       const underlyingAmount = liquidity
         .times(snapshot.getValue3())
         .div(expScale);
-      const investReward = helper.getSupplyRewardAmount(pos.owner, liquidity);
+      const investReward = helper.getSupplyRewardDelta(pos.owner, liquidity, supplyIdx);
       savePositionSnapshot(
         block,
         helper,
@@ -223,14 +224,14 @@ export function handleBlock(block: ethereum.Block) {
           [underlyingAmount],
           [investReward],
           pos.liquidity,
-          []
+          [underlyingAmount.toString()]
         )
       );
     }
 
     const borrowAmount = snapshot.getValue2();
     if (borrowAmount.gt(BigInt.zero())) {
-      const borrowReward = helper.getSupplyRewardAmount(pos.owner, liquidity);
+      const borrowReward = helper.getBorrowRewardDelta(pos.owner, borrowAmount, borrowIdx);
       savePositionSnapshot(
         block,
         helper,
@@ -241,7 +242,7 @@ export function handleBlock(block: ethereum.Block) {
           [borrowAmount],
           [borrowReward],
           BigInt.zero(),
-          []
+          [borrowReward.toString()]
         )
       );
     }
@@ -289,7 +290,7 @@ export function handleTransfer(event: Transfer): void {
         []
       ),
       [sendingAmount.neg()], // + : deposit, - :withdraw
-      [BigInt.zero()]
+      [BigInt.zero(),]
     );
   }
 
