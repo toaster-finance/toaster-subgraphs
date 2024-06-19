@@ -24,10 +24,10 @@ export class CompoundV2Helper extends InvestmentHelper {
    * @param cToken Compound V2 cToken Contract Address
    * @param tag underlying token address
    */
-  constructor(cToken: Address) {
+  constructor(cToken: Address, comptroller: Address, compAddr: Address) {
     super(CompoundV2Helper.protocolName, cToken, "");
-    this.comptroller = getContextAddress("Comptroller");
-    this.compAddr = getContextAddress("COMP");
+    this.comptroller = comptroller;
+    this.compAddr = compAddr;
   }
 
   getProtocolMeta(): string[] {

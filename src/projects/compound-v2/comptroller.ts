@@ -27,7 +27,7 @@ export function handleMarketEntered(event: MarketEntered): void {
   const comptroller = dataSource.address();
   const cTokenAddr = event.params.cToken;
   const compAddr = getContextAddress("COMP");
-  const helper = new CompoundV2Helper(cTokenAddr);
+  const helper = new CompoundV2Helper(cTokenAddr, comptroller, compAddr);
   const investment = Investment.load(helper.id);
   if (investment) return;
   helper.getOrCreateInvestment(event.block);
@@ -58,25 +58,40 @@ export function handleDistributedBorrower(
   const cTokenAddr = event.params.cToken;
   const owner = event.params.borrower;
   if (!matchAddress(owner)) return;
-  const helper = new CompoundV2Helper(cTokenAddr);
+  const helper = new CompoundV2Helper(
+    cTokenAddr,
+    getContextAddress("Comptroller"),
+    getContextAddress("COMP")
+  );
   const investPos = Position.load(helper.getInvestPositionId(owner, ""));
   if (!investPos) throw new Error("Invest position not found");
+  const investPosAmt = investPos.amounts[0];
+  const investPosReward = investPos.amounts[1];
+  const investPosLiquidity = investPos.liquidity;
   const borrowPos = Position.load(helper.getBorrowPositionId(owner, ""));
   if (!borrowPos) throw new Error("Borrow position not found");
-  const investPosInput = investPos.amounts[0];
-  const investPosLiquidity = investPos.liquidity;
+  const borrowPosAmt = borrowPos.amounts[0];
+  const borrowPosReward = borrowPos.amounts[1];
+
   const supplyIdx = helper.getSupplyIndex();
   const borrowIdx = helper.getBorrowIndex();
   const supplierIdx = BigInt.fromString(investPos.meta[0]);
   const borrowerIdx = helper.getBorrowerIndex(owner);
-  const totalReward = helper.getRewardAmount(
-    owner,
-    supplyIdx,
+
+  const borrowDelta = helper.getBorrowRewardDelta(
+    borrowPosAmt,
     borrowIdx,
-    supplierIdx,
     borrowerIdx
   );
-  if (!rewardAmount.equals(BigInt.zero())) { // make snapshot & update borrower index 
+  const supplyDelta = helper.getSupplyRewardDelta(
+    investPosAmt,
+    supplyIdx,
+    supplierIdx
+  );
+  const newBorrowReward = borrowPosReward.plus(borrowDelta);
+  const newSupplyReward = investPosReward.plus(supplyDelta);
+  if (!rewardAmount.equals(BigInt.zero())) {
+    // make snapshot & update borrower index
     savePositionSnapshot(
       event.block,
       helper,
@@ -84,13 +99,27 @@ export function handleDistributedBorrower(
         owner,
         "",
         PositionType.Invest,
-        [investPosInput],
-        [totalReward],
+        [investPosAmt],
+        [newSupplyReward],
         investPosLiquidity,
-        [supplierIdx.toString(), borrowIdx.toString()] // supplierIdx, borrowerIdx
+        [supplierIdx.toString()] // supplierIdx
+      )
+    );
+    savePositionSnapshot(
+      event.block,
+      helper,
+      new PositionParams(
+        owner,
+        "",
+        PositionType.Borrow,
+        [borrowPosAmt],
+        [newBorrowReward],
+        BigInt.zero(),
+        [borrowIdx.toString()] // borrowerIdx
       )
     );
   }
+
   const claimLog = getLog(
     event,
     TRANSFER_TOPIC,
@@ -98,7 +127,7 @@ export function handleDistributedBorrower(
     function (log: LogData, event: DistributedBorrowerComp): boolean {
       return (
         log.data[2].toBigInt().notEqual(BigInt.zero()) &&
-        log.data[0].toAddress() == helper.compAddr
+        log.data[0].toAddress() == event.address
       );
     }
   );
@@ -112,13 +141,30 @@ export function handleDistributedBorrower(
         owner,
         "",
         PositionType.Invest,
-        [investPosInput],
+        [investPosAmt],
         [BigInt.zero()],
         investPosLiquidity,
-        [supplierIdx.toString(), borrowIdx.toString()] //supplierIdx, borrowerIdx
+        [supplierIdx.toString()] //supplierIdx
       ),
       [BigInt.zero()],
-      [totalReward.neg()]
+      [investPosReward.neg()]
+    );
+
+    savePositionChange(
+      event,
+      PositionChangeAction.Harvest, // receive reward COMP token
+      helper,
+      new PositionParams(
+        owner,
+        "",
+        PositionType.Borrow,
+        [borrowPosAmt],
+        [BigInt.zero()],
+        BigInt.zero(),
+        [borrowIdx.toString()] // borrowerIdx
+      ),
+      [BigInt.zero()],
+      [borrowPosReward.neg()]
     );
   }
 }
@@ -130,26 +176,42 @@ export function handleDistributedSupplier(
   const cTokenAddr = event.params.cToken;
   const owner = event.params.supplier;
   if (!matchAddress(owner)) return;
-  const helper = new CompoundV2Helper(cTokenAddr);
-  const underlyingAmt = helper.getUnderlyingAmount(owner);
+  const helper = new CompoundV2Helper(
+    cTokenAddr,
+    getContextAddress("Comptroller"),
+    getContextAddress("COMP")
+  );
+
   const investPos = Position.load(helper.getInvestPositionId(owner, ""));
   if (!investPos) throw new Error("Invest position not found");
+  const investPosAmt = investPos.amounts[0];
+  const investPosReward = investPos.amounts[1];
+  const investPosLiquidity = investPos.liquidity;
   const borrowPos = Position.load(helper.getBorrowPositionId(owner, ""));
   if (!borrowPos) throw new Error("Borrow position not found");
-  const investPosInput = investPos.amounts[0];
-  const investPosLiquidity = investPos.liquidity;
+  const borrowPosAmt = borrowPos.amounts[0];
+  const borrowPosReward = borrowPos.amounts[1];
+
   const supplyIdx = helper.getSupplyIndex();
   const borrowIdx = helper.getBorrowIndex();
   const supplierIdx = helper.getSupplierIndex(owner);
-  const borrowerIdx = BigInt.fromString(investPos.meta[1]);
-  const totalReward = helper.getRewardAmount(
-    owner,
-    supplyIdx,
+  const borrowerIdx = BigInt.fromString(borrowPos.meta[0]);
+
+  const borrowDelta = helper.getBorrowRewardDelta(
+    borrowPosAmt,
     borrowIdx,
-    supplierIdx,
     borrowerIdx
   );
-  if (!deltaReward.equals(BigInt.zero())) { // make snapshot & update supplier index
+  const supplyDelta = helper.getSupplyRewardDelta(
+    investPosAmt,
+    supplyIdx,
+    supplierIdx
+  );
+  const newBorrowReward = borrowPosReward.plus(borrowDelta);
+  const newSupplyReward = investPosReward.plus(supplyDelta);
+
+  if (!deltaReward.equals(BigInt.zero())) {
+    // make snapshot & update supplier index
     savePositionSnapshot(
       event.block,
       helper,
@@ -157,10 +219,23 @@ export function handleDistributedSupplier(
         owner,
         "",
         PositionType.Invest,
-        [investPosInput],
-        [totalReward],
+        [investPosAmt],
+        [newSupplyReward],
         investPosLiquidity,
-        [supplierIdx.toString(), borrowIdx.toString()] //supplierIdx, borrowerIdx
+        [supplierIdx.toString()] //supplierIdx
+      )
+    );
+    savePositionSnapshot(
+      event.block,
+      helper,
+      new PositionParams(
+        owner,
+        "",
+        PositionType.Borrow,
+        [borrowPosAmt],
+        [newBorrowReward],
+        BigInt.zero(),
+        [borrowIdx.toString()] // borrowerIdx
       )
     );
   }
@@ -173,7 +248,7 @@ export function handleDistributedSupplier(
       return log.data[2].toBigInt().notEqual(BigInt.zero());
     }
   );
-  
+
   const claimLog = getLog(
     event,
     TRANSFER_TOPIC,
@@ -181,7 +256,7 @@ export function handleDistributedSupplier(
     function (log: LogData, event: DistributedSupplierComp): boolean {
       return (
         BigInt.fromByteArray(log.topics[2]).notEqual(BigInt.zero()) &&
-        log.data[0].toAddress() == helper.compAddr 
+        log.data[0].toAddress() == event.address // from comptroller
       );
     }
   );
@@ -195,13 +270,30 @@ export function handleDistributedSupplier(
         owner,
         "",
         PositionType.Invest,
-        [underlyingAmt],
+        [investPosAmt],
         [BigInt.zero()],
         investPosLiquidity,
-        [supplierIdx.toString(), borrowIdx.toString()] //supplierIdx, borrowerIdx
+        [supplierIdx.toString()] //supplierIdx
       ),
       [BigInt.zero()],
-      [totalReward.neg()]
+      [investPosReward.neg()]
+    );
+
+    savePositionChange(
+      event,
+      PositionChangeAction.Harvest, // receive reward COMP token
+      helper,
+      new PositionParams(
+        owner,
+        "",
+        PositionType.Borrow,
+        [borrowPosAmt],
+        [BigInt.zero()],
+        BigInt.zero(),
+        [borrowIdx.toString()] //borrowerIdx
+      ),
+      [BigInt.zero()],
+      [borrowPosReward.neg()]
     );
   }
 }

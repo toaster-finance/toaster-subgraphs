@@ -1,10 +1,5 @@
 import { Position, Protocol } from "./../../../generated/schema";
-import {
-  BigInt,
-  Bytes,
-  dataSource,
-  ethereum,
-} from "@graphprotocol/graph-ts";
+import { Address, BigInt, Bytes, dataSource, ethereum } from "@graphprotocol/graph-ts";
 import { CompoundV2Helper } from "./helper";
 import { savePositionChange } from "../../common/savePositionChange";
 import { PositionChangeAction } from "../../common/PositionChangeAction.enum";
@@ -23,6 +18,7 @@ import { savePositionSnapshot } from "../../common/savePositionSnapshot";
 import { matchAddress } from "../../common/matchAddress";
 import { logFindFirst } from "../../common/filterEventLogs";
 import { calcBatchIdFromAddr } from "../../common/calcGraphId";
+import { getContextAddress } from "../../common/helpers/contextHelper";
 // handleMint start
 export function handleMint(event: Mint): void {
   const owner = event.params.minter;
@@ -31,7 +27,7 @@ export function handleMint(event: Mint): void {
   const dInputAmount = event.params.mintAmount;
   const dCToken = event.params.mintTokens;
 
-  const helper = new CompoundV2Helper(event.address);
+  const helper = new CompoundV2Helper(event.address,getContextAddress("Comptroller"),getContextAddress("COMP"));
   const posId = helper.getInvestPositionId(owner, "");
   const position = Position.load(posId);
 
@@ -41,26 +37,44 @@ export function handleMint(event: Mint): void {
   if (position) {
     liquidity = position.liquidity.plus(dCToken);
     inputAmount = liquidity.times(dInputAmount).div(dCToken);
+    savePositionChange(
+      event,
+      PositionChangeAction.Deposit,
+      helper,
+      new PositionParams(
+        owner,
+        "",
+        PositionType.Invest,
+        [inputAmount],
+        [BigInt.zero()], // no change in reward amount
+        liquidity, // cToken amount
+        [position.meta[0]]
+      ),
+      [dInputAmount],
+      [BigInt.zero()]
+    );
   } else {
     liquidity = dCToken;
-    inputAmount = BigInt.zero();
+    inputAmount = dInputAmount;
+    const supplierIdx = helper.getSupplierIndex(owner);
+    savePositionChange(
+      event,
+      PositionChangeAction.Deposit,
+      helper,
+      new PositionParams(
+        owner,
+        "",
+        PositionType.Invest,
+        [inputAmount],//?
+        [BigInt.zero()], // no change in reward amount
+        liquidity, // cToken amount
+        [supplierIdx.toString()]
+      ),
+      [dInputAmount],
+      [BigInt.zero()]
+    );
   }
-  savePositionChange(
-    event,
-    PositionChangeAction.Deposit,
-    helper,
-    new PositionParams(
-      owner,
-      "",
-      PositionType.Invest,
-      [inputAmount],
-      [BigInt.zero()], // no change in reward amount
-      liquidity, // cToken amount
-      []
-    ),
-    [dInputAmount],
-    [BigInt.zero()]
-  );
+  
 }
 // handleMint end
 
@@ -72,20 +86,17 @@ export function handleRedeem(event: Redeem): void {
   const dInputAmount = event.params.redeemAmount;
   const dCToken = event.params.redeemTokens;
 
-  const helper = new CompoundV2Helper(event.address);
+  const helper = new CompoundV2Helper(event.address,getContextAddress("Comptroller"),getContextAddress("COMP"));
   const posId = helper.getInvestPositionId(owner, "");
   const position = Position.load(posId);
 
   // get current underlying amount
   let inputAmount: BigInt;
   let liquidity: BigInt;
-  if (position) {
-    liquidity = position.liquidity.minus(dCToken);
-    inputAmount = liquidity.times(dInputAmount).div(dCToken);
-  } else {
-    inputAmount = helper.getUnderlyingAmount(owner);
-    liquidity = inputAmount.times(dCToken).div(dInputAmount);
-  }
+  if (!position) throw new Error("Invest position not found");
+
+  liquidity = position.liquidity.minus(dCToken);
+  inputAmount = liquidity.times(dInputAmount).div(dCToken);
   savePositionChange(
     event,
     PositionChangeAction.Withdraw,
@@ -97,7 +108,7 @@ export function handleRedeem(event: Redeem): void {
       [inputAmount],
       [BigInt.zero()],
       liquidity,
-      []
+      [position.meta[0]]
     ),
     [dInputAmount.neg()],
     [BigInt.zero()]
@@ -112,23 +123,44 @@ export function handleBorrow(event: Borrow): void {
 
   const dBorrowAmount = event.params.borrowAmount; // underlying amount
   const borrowAmount = event.params.accountBorrows;
-  const helper = new CompoundV2Helper(event.address);
-  savePositionChange(
-    event,
-    PositionChangeAction.Borrow,
-    helper,
-    new PositionParams(
-      owner,
-      "",
-      PositionType.Borrow,
-      [borrowAmount.neg()],
-      [BigInt.zero()],
-      BigInt.zero(),
-      []
-    ),
-    [dBorrowAmount.neg()],
-    []
-  );
+  const borrowHelper = new CompoundV2Helper(event.address,getContextAddress("Comptroller"),getContextAddress("COMP"));
+  const position = Position.load(borrowHelper.getBorrowPositionId(owner, ""));
+  if (position) {
+    savePositionChange(
+      event,
+      PositionChangeAction.Borrow,
+      borrowHelper,
+      new PositionParams(
+        owner,
+        "",
+        PositionType.Borrow,
+        [borrowAmount.neg()],
+        [BigInt.zero()],
+        BigInt.zero(),
+        [position.meta[0]]
+      ),
+      [dBorrowAmount],
+      [BigInt.zero()]
+    );
+  } else {
+    const borrowerIdx = borrowHelper.getBorrowerIndex(owner);
+    savePositionChange(
+      event,
+      PositionChangeAction.Borrow,
+      borrowHelper,
+      new PositionParams(
+        owner,
+        "",
+        PositionType.Borrow,
+        [borrowAmount.neg()],
+        [BigInt.zero()],
+        BigInt.zero(),
+        [borrowerIdx.toString()]
+      ),
+      [dBorrowAmount],
+      [BigInt.zero()]
+    );
+  }
 }
 // handleBorrow end
 
@@ -139,13 +171,14 @@ export function handleRepayBorrow(event: RepayBorrow): void {
 
   const dRepayAmount = event.params.repayAmount; // underlying amount
   const borrowAmount = event.params.accountBorrows;
-  
-  const helper = new CompoundV2Helper(event.address);
 
+  const borrowHelper = new CompoundV2Helper(event.address,getContextAddress("Comptroller"),getContextAddress("COMP"));
+  const position = Position.load(borrowHelper.getBorrowPositionId(owner, ""));
+  if (!position) throw new Error("Borrow position not found");
   savePositionChange(
     event,
     PositionChangeAction.Repay,
-    helper,
+    borrowHelper,
     new PositionParams(
       owner,
       "",
@@ -153,10 +186,10 @@ export function handleRepayBorrow(event: RepayBorrow): void {
       [borrowAmount.neg()],
       [BigInt.zero()],
       BigInt.zero(),
-      []
+      [position.meta[0]]
     ),
     [dRepayAmount],
-    []
+    [BigInt.zero()]
   );
 }
 
@@ -168,9 +201,10 @@ export function handleLiquidateBorrow(event: LiquidateBorrow): void {
   if (!matchAddress(owner)) return;
   const dRepayAmount = event.params.repayAmount; // underlying amount
 
-  const borrowHelper = new CompoundV2Helper(event.address);
+  const borrowHelper = new CompoundV2Helper(event.address,getContextAddress("Comptroller"),getContextAddress("COMP"));
   const currBorrowAmount = borrowHelper.getBorrowedAmount(owner);
-  const position = Position.load(borrowHelper.getInvestPositionId(owner, ""));
+  const position = Position.load(borrowHelper.getBorrowPositionId(owner, ""));
+  if (!position) throw new Error("Borrow position not found");
   savePositionChange(
     event,
     PositionChangeAction.Liquidate,
@@ -179,27 +213,31 @@ export function handleLiquidateBorrow(event: LiquidateBorrow): void {
       owner,
       "",
       PositionType.Borrow,
-      [currBorrowAmount],
+      [currBorrowAmount.neg()],
       [BigInt.zero()],
       BigInt.zero(),
-      []
+      [position.meta[0]]
     ),
     [dRepayAmount],
     [BigInt.zero()]
   );
 }
 
-export function handleBlock(block: ethereum.Block) {
+export function handleBlock(block: ethereum.Block):void {
   const protocol = Protocol.load(getProtocolId(CompoundV2Helper.protocolName));
   if (!protocol) return;
-  const helper = new CompoundV2Helper(dataSource.address());
+  const helper = new CompoundV2Helper(
+    dataSource.address(),
+    getContextAddress("Comptroller"),
+    getContextAddress("COMP")
+  );
   const investment = helper.getOrCreateInvestment(block);
   const positions = investment.positions.load();
 
   const batch = dataSource.context().getI32("snapshotBatch");
   const targetBatchId = protocol._batchIterator.toI32();
   const supplyIdx = helper.getSupplyIndex();
-  const borrowIdx = helper.getBorrowIndex(); 
+  const borrowIdx = helper.getBorrowIndex();
   const expScale = BigInt.fromI32(10).pow(18);
   for (let i = 0; i < positions.length; i++) {
     const pos = positions[i];
@@ -207,42 +245,48 @@ export function handleBlock(block: ethereum.Block) {
     const batchId = calcBatchIdFromAddr(pos.owner);
     if (batchId != targetBatchId) continue;
 
-    const snapshot = helper.getAccountSnapshot(pos.owner);
+    const snapshot = helper.getAccountSnapshot(Address.fromBytes(pos.owner));
     const liquidity = snapshot.getValue1();
     if (liquidity.gt(BigInt.zero())) {
       const underlyingAmount = liquidity
         .times(snapshot.getValue3())
         .div(expScale);
-      const investReward = helper.getSupplyRewardDelta(pos.owner, liquidity, supplyIdx);
+      const supplierIdx = helper.getSupplierIndex(Address.fromBytes(pos.owner));
+      const investReward = pos.amounts[1].plus(
+        helper.getSupplyRewardDelta(pos.liquidity, supplyIdx, supplierIdx)
+      );
       savePositionSnapshot(
         block,
         helper,
         new PositionParams(
-          pos.owner,
+          Address.fromBytes(pos.owner),
           "",
           PositionType.Invest,
           [underlyingAmount],
           [investReward],
           pos.liquidity,
-          [underlyingAmount.toString()]
+          [supplierIdx.toString()]
         )
       );
     }
 
     const borrowAmount = snapshot.getValue2();
     if (borrowAmount.gt(BigInt.zero())) {
-      const borrowReward = helper.getBorrowRewardDelta(pos.owner, borrowAmount, borrowIdx);
+      const borrowerIdx = helper.getBorrowerIndex(Address.fromBytes(pos.owner));
+      const borrowReward = pos.amounts[1].plus(
+        helper.getBorrowRewardDelta(borrowAmount, borrowerIdx, borrowIdx)
+      );
       savePositionSnapshot(
         block,
         helper,
         new PositionParams(
-          pos.owner,
+          Address.fromBytes(pos.owner),
           "",
           PositionType.Borrow,
-          [borrowAmount],
+          [borrowAmount.neg()],
           [borrowReward],
           BigInt.zero(),
-          [borrowReward.toString()]
+          [borrowIdx.toString()]
         )
       );
     }
@@ -256,7 +300,6 @@ export function handleBlock(block: ethereum.Block) {
  * Also handle liquidateBorrow seizeTokens transfer event
  */
 export function handleTransfer(event: Transfer): void {
-
   if (event.params.value.equals(BigInt.zero())) return;
   if (event.params.from.equals(event.address)) return; // Supply
   if (event.params.to.equals(event.address)) return; // Withdraw
@@ -268,10 +311,11 @@ export function handleTransfer(event: Transfer): void {
   const sender = event.params.from; // aToken amount decrease
   const receiver = event.params.to; // aToken amount increase
   const isLiq = isLiquidateBorrow(event);
-
+  
   const sendingAmount = event.params.value;
-  const helper = new CompoundV2Helper(event.address);
-
+  const helper = new CompoundV2Helper(event.address,getContextAddress("Comptroller"),getContextAddress("COMP"));
+  const investPos = Position.load(helper.getInvestPositionId(sender, ""));
+  if (!investPos) throw new Error("Invest position not found");
   if (matchAddress(sender)) {
     const senderUnderlyingAmount = helper.getUnderlyingAmount(sender);
     const senderCTokenAmount = helper.getCTokenAmount(sender);
@@ -287,10 +331,10 @@ export function handleTransfer(event: Transfer): void {
         [senderUnderlyingAmount],
         [BigInt.zero()],
         senderCTokenAmount,
-        []
+        [investPos.meta[0]]
       ),
       [sendingAmount.neg()], // + : deposit, - :withdraw
-      [BigInt.zero(),]
+      [BigInt.zero()]
     );
   }
 
@@ -310,7 +354,7 @@ export function handleTransfer(event: Transfer): void {
         [receiverUnderlyingAmount],
         [BigInt.zero()],
         receiverCTokenAmount,
-        []
+        [investPos.meta[0]]
       ),
       [sendingAmount],
       [BigInt.zero()]
@@ -324,10 +368,10 @@ const LIQUIDATE_BORROW_TOPIC =
 const LIQUIDATE_BORROW_ABI = "(address,address,uint256,address,uint256)";
 
 function isLiquidateBorrow(event: Transfer): boolean {
-  if (event.receipt == null) return false;
-
+  const receipt = event.receipt;
+  if (!receipt) return false;
   // find liquidateBorrow event log
-  const liqLog = logFindFirst(event.receipt.logs, event, (log, event) => {
+  const liqLog = logFindFirst(receipt.logs, event, (log, event) => {
     if (log.topics[0].notEqual(Bytes.fromHexString(LIQUIDATE_BORROW_TOPIC)))
       return false;
 
