@@ -1,13 +1,13 @@
 {
-  "version": "0.1.3",
+  "version": "0.2.0",
   "network": "blast-mainnet",
   "protocolName": "ZeroLend",
   "Pool": "0xa70B0F3C2470AbBE104BdB3F3aaa9C7C54BEA7A8",
   "PoolDataProvider": "0xc6DF4ddDBFaCb866e78Dcc01b813A41C15A08C10",
-  "UiPoolDataProvider": "0x8FE0ac76b634B7D343Bd32282B98E9f271B43367",
+  "UiPoolDataProvider": "0xE230cF9Cee7b299F69778EF950A61de0dE520ba7",
   "PoolAddressProvider": "0xb0811a1FC9Fb9972ee683Ba04c32Cb828Bcf587B",
-  "snapshotBatch": 2880,
+  "snapshotBatch": 256,
   "startBlock": 192053,
-  "polling": 10,
-  "startSnapshotBlock": 4321078
+  "polling": 168,
+  "startSnapshotBlock": 192053
 }

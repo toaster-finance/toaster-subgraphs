@@ -1,13 +1,13 @@
 {
-  "version": "0.0.13",
+  "version": "0.2.0",
   "network": "zksync-era",
   "protocolName": "ZeroLend",
   "Pool": "0x4d9429246EA989C9CeE203B43F6d1C7D83e3B8F8",
   "PoolDataProvider": "0xB73550bC1393207960A385fC8b34790e5133175E",
   "UiPoolDataProvider": "0x8FE0ac76b634B7D343Bd32282B98E9f271B43367",
   "PoolAddressProvider": "0x4f285Ea117eF0067B59853D6d16a5dE8088bA259",
-  "snapshotBatch": 2880,
-  "startBlock": 11627411,
-  "polling": 10,
-  "startSnapshotBlock": 33345369
+  "snapshotBatch": 256,
+  "startBlock": 8776619,
+  "polling": 337,
+  "startSnapshotBlock": 8776619
 }
