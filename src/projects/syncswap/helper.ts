@@ -46,18 +46,21 @@ export class SyncSwapHelper extends InvestmentHelper {
       investment.save();
       const graphId = dataSource.context().getI32("graphId");
       const totalGraphs = dataSource.context().getI32("totalGraphs");
-      log.error("graphId: {}, totalGraphs: {}", [graphId.toString(), totalGraphs.toString()]);
+      log.error("graphId: {}, totalGraphs: {}", [
+        graphId.toString(),
+        totalGraphs.toString(),
+      ]);
       // Create Template
-       const context = new DataSourceContext();
-       context.setString("router", dataSource.context().getString("router"));
-       context.setI32(
-         "snapshotBatch",
-         dataSource.context().getI32("snapshotBatch")
-       );
-       
-       context.setI32("graphId",graphId);
-       context.setI32("totalGraphs", totalGraphs);
-       
+      const context = new DataSourceContext();
+      context.setString("router", dataSource.context().getString("router"));
+      context.setI32(
+        "snapshotBatch",
+        dataSource.context().getI32("snapshotBatch")
+      );
+
+      context.setI32("graphId", graphId);
+      context.setI32("totalGraphs", totalGraphs);
+
       SyncSwapPoolTemplate.createWithContext(this.investmentAddress, context);
     }
 
@@ -74,20 +77,17 @@ export class SyncSwapHelper extends InvestmentHelper {
         "1", // batch iterator
         reserves.get_reserve0().toString(),
         reserves.get_reserve1().toString(),
-        pool.totalSupply().toString(),
       ]
     );
   }
 
   getLiquidityInfo(block: ethereum.Block): LiquidityInfo {
-    const pool = SyncSwapPool.bind(this.investmentAddress);
     const investment = this.getOrCreateInvestment(block);
-    const reserves = pool.getReserves();
-    const reserve0 = reserves.get_reserve0();
-    const reserve1 = reserves.get_reserve1();
-    const totalSupply = pool.totalSupply();
-
-    return new LiquidityInfo(investment, reserve0, reserve1, totalSupply);
+    return new LiquidityInfo(
+      investment,
+      BigInt.fromString(investment.meta[1]),
+      BigInt.fromString(investment.meta[2])
+    );
   }
 }
 
@@ -95,8 +95,6 @@ class LiquidityInfo {
   constructor(
     readonly investment: Investment,
     readonly reserve0: BigInt,
-    readonly reserve1: BigInt,
-    readonly totalSupply: BigInt
+    readonly reserve1: BigInt
   ) {}
-
 }

@@ -33,7 +33,6 @@ export class CompoundV2Helper extends InvestmentHelper {
   }
 
   getUnderlyingToken(): Address {
-
     const callResult = cToken.bind(this.investmentAddress).try_underlying();
     const cTokenAddress = callResult.reverted ? Address.zero() : callResult.value;
     return cTokenAddress;

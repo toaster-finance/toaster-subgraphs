@@ -5,7 +5,7 @@ import { Bytes } from "@graphprotocol/graph-ts";
 export function calcGraphId(bytes: Bytes): i32 {
   return 1 + (bytes[bytes.length - 1] % 16);
 }
-// @dev Calculate protoInit for aave by owner
-export function calcBatchIdFromAddress(bytes: Bytes): i32 {
+// @dev Calculate batchId by owner address
+export function calcBatchIdFromAddr(bytes: Bytes): i32 {
   return bytes[0] % 256;
 }

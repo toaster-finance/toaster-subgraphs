@@ -47,7 +47,7 @@ async function upsert(allowProjectNotFound: boolean = false) {
     const [chainId, projectName] = key.split('_') as [string, string];
 
     const project = allProjects.find(
-      (p) => p.chainId === +chainId && p.name === projectName,
+      (p) => p.chainId == +chainId && p.name == projectName,
     );
     if (!project) {
       if (allowProjectNotFound) throw new Error(`Project not found: ${key}`);
@@ -140,8 +140,8 @@ async function upsert(allowProjectNotFound: boolean = false) {
       if (!investments[i]) return;
       const subgraphId = investments[i].find(
         (i) =>
-          i.address.toLowerCase() === invest.address.toLowerCase() &&
-          i.tag.toLowerCase() === (invest.tag ?? '').toLowerCase(),
+          i.address.toLowerCase() == invest.address.toLowerCase() &&
+          i.tag.toLowerCase() == (invest.tag ?? '').toLowerCase(),
       )?.id;
 
       if (!subgraphId) {

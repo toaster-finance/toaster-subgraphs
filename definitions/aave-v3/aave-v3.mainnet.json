@@ -1,5 +1,5 @@
 {
-  "version": "2.1.0",
+  "version": "2.1.1",
   "network": "mainnet",
   "protocolName": "AaveV3",
   "Pool": "0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2",

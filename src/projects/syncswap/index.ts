@@ -35,11 +35,13 @@ function lp2Amounts(
 
 export function handleBlock(block: ethereum.Block): void {
   const pool = SyncSwapPool.bind(dataSource.address());
+  const totalSupply = pool.totalSupply();
   const l = new SyncSwapHelper(pool._address).getLiquidityInfo(block);
 
   const init = i32(parseInt(l.investment.meta[0]));
   const batch = dataSource.context().getI32("snapshotBatch");
   const positions = l.investment.positions.load();
+
   for (let i = init; i < positions.length; i += batch) {
     const position = positions[i];
     if (position.closed) continue;
@@ -50,7 +52,7 @@ export function handleBlock(block: ethereum.Block): void {
         Address.fromBytes(position.owner),
         "",
         PositionType.Invest,
-        lp2Amounts(l.reserve0, l.reserve1, position.liquidity, l.totalSupply),
+        lp2Amounts(l.reserve0, l.reserve1, position.liquidity, totalSupply),
         [],
         position.liquidity,
         []
@@ -80,32 +82,22 @@ const BURN_TOPIC =
 const TRANSFER_TOPIC =
   "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
 
+// assert `Sync` event is emitted before `Mint` event => reserves are updated
 export function handleMint(event: Mint): void {
   if (event.params.liquidity.equals(BigInt.zero())) return;
-  
+  const owner = event.params.to;
+  if (!matchAddress(owner)) return;
+
   const pool = SyncSwapPool.bind(dataSource.address());
   const helper = new SyncSwapHelper(pool._address);
   const l = helper.getLiquidityInfo(event.block);
 
-  const owner = event.params.to;
-  if (!matchAddress(owner)) return;
   // 최초블록부터 트래킹한 경우, dbPosition이 없으면 처음 투자하는 것
   const dbPosition = helper.findPosition(owner, "");
   let ownerBalance = event.params.liquidity;
   if (dbPosition != null) {
     ownerBalance = dbPosition.liquidity.plus(event.params.liquidity);
   }
-
-  // 그러나 최초블록부터 트래킹하지 않는 경우, dbPosition이 없어도
-  // 그것이 처음 투자인 건지 기존에 투자했었는지 알 수 없음
-  // let ownerBalance: BigInt;
-  // let dbPosition = helper.findPosition(owner, "");
-  // if (dbPosition) {
-  //   const liquidity = dbPosition.liquidity;
-  //   ownerBalance = liquidity.minus(event.params.liquidity);
-  // } else {
-  //   ownerBalance = pool.balanceOf(owner);
-  // }
 
   const totalSupply = pool.totalSupply();
   savePositionChange(
@@ -131,6 +123,7 @@ export function handleMint(event: Mint): void {
   );
 }
 
+// assert `Burn` event is emitted before `Mint` event => reserves are updated
 export function handleBurn(event: Burn): void {
   if (event.params.liquidity.equals(BigInt.zero())) return;
 
@@ -192,7 +185,8 @@ export function handleTransfer(event: Transfer): void {
     event.params.from.equals(Address.zero()) ||
     event.params.to.equals(Address.zero()) ||
     event.params.from.equals(router) ||
-    event.params.to.equals(router)
+    event.params.to.equals(router) ||
+    (!matchAddress(event.params.from) && !matchAddress(event.params.to))
   )
     return;
   const receipt = event.receipt;
@@ -224,14 +218,14 @@ export function handleTransfer(event: Transfer): void {
   }
 
   // Just Transfer
+  const totalSupply = pool.totalSupply();
   const dInput = lp2Amounts(
     l.reserve0,
     l.reserve1,
     event.params.value,
-    l.totalSupply
+    totalSupply
   );
-  const totalSupply = pool.totalSupply();
-  if (!matchAddress(event.params.from))
+  if (matchAddress(event.params.from))
     savePositionChange(
       event,
       PositionChangeAction.Send,
@@ -249,7 +243,7 @@ export function handleTransfer(event: Transfer): void {
       []
     );
 
-  if (!matchAddress(event.params.to))
+  if (matchAddress(event.params.to))
     savePositionChange(
       event,
       PositionChangeAction.Receive,
@@ -279,6 +273,6 @@ export function handleSync(event: Sync): void {
     i.meta[0],
     event.params.reserve0.toString(),
     event.params.reserve1.toString(),
-  ]
+  ];
   i.save();
 }

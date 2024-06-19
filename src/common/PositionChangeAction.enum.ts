@@ -5,11 +5,12 @@ export enum PositionChangeAction {
   Borrow,
   Repay,
   Liquidate,
+  LiquidateReward,
   Send,
   Receive,
   Stake,
   Unstake,
-  Compound
+  Compound,
 }
 
 const actions = [
@@ -19,6 +20,7 @@ const actions = [
   "Borrow",
   "Repay",
   "Liquidate",
+  "LiquidateReward",
   "Send",
   "Receive",
   "Stake",

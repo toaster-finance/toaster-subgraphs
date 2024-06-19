@@ -14,7 +14,7 @@ dataSources:
     context:
       graphId:
         type: Int
-        data: {{graphId}} 
+        data: {{graphId}}
       totalGraphs:
         type: Int
         data: {{totalGraphs}}
@@ -23,7 +23,7 @@ dataSources:
         data: "{{COMP}}"
       snapshotBatch:
         type: Int
-        data: {{snapshotBatch}} 
+        data: {{snapshotBatch}}
       startSnapshotBlock:
         type: Int
         data: {{startSnapshotBlock}}
@@ -48,14 +48,12 @@ dataSources:
           handler: handleMarketEntered
         - event: DistributedBorrowerComp(indexed address,indexed address,uint256,uint256)
           handler: handleDistributedBorrower
+          receipt: true
         - event: DistributedSupplierComp(indexed address,indexed address,uint256,uint256)
           handler: handleDistributedSupplier
-      file: ./src/projects/compound-v2/index.ts
-      blockHandlers:
-        - handler: handleBlock
-          filter:
-            kind: polling
-            every: {{polling}}
+          receipt: true
+      file: ./src/projects/compound-v2/comptroller.ts
+
 templates:
   - kind: ethereum/contract
     name: cToken
@@ -90,5 +88,9 @@ templates:
           handler: handleLiquidateBorrow
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTransfer
-    
-  
+          receipt: true
+      blockHandlers:
+        - handler: handleBlock
+          filter:
+            kind: polling
+            every: {{polling}}

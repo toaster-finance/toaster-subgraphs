@@ -27,7 +27,7 @@ import { getContextAddress } from "../../common/helpers/contextHelper";
 import { AaveV3Helper } from "./helper";
 import { aToken } from "../../../generated/templates";
 import { matchAddress } from "../../common/matchAddress";
-import { calcGraphId, calcBatchIdFromAddress } from "../../common/calcGraphId";
+import { calcBatchIdFromAddr } from "../../common/calcGraphId";
 
 //PositionType.Invest: it means deposit (deposit amount is positive, withdraw amount is negative)
 //PositionType.Borrow: it means borrow (borrow amount is positive, repay amount is negative)
@@ -90,7 +90,7 @@ export function handleTransfer(event: Transfer): void {
   let receiver: Address;
   if (event.params.from.equals(Address.zero())) return; // Supply
   if (event.params.to.equals(Address.zero())) return; // Withdraw
-  action = PositionChangeAction.Send;
+
   sender = event.params.from; // aToken amount decrease
   receiver = event.params.to; // aToken amount increase
   const underlying = getContextAddress("underlying");
@@ -99,7 +99,7 @@ export function handleTransfer(event: Transfer): void {
     const senderData = new InvestUserData(sender, underlying, BigInt.zero());
     savePositionChange(
       event,
-      action,
+      PositionChangeAction.Send,
       senderData.helper,
       new PositionParams(
         sender,
@@ -114,6 +114,7 @@ export function handleTransfer(event: Transfer): void {
       []
     );
   }
+  
   if (matchAddress(receiver)) {
     const receiverData = new InvestUserData(
       receiver,
@@ -122,7 +123,7 @@ export function handleTransfer(event: Transfer): void {
     );
     savePositionChange(
       event,
-      action,
+      PositionChangeAction.Receive,
       receiverData.helper,
       new PositionParams(
         receiver,
@@ -267,8 +268,8 @@ export function handleBlock(block: ethereum.Block): void {
     const positions = investment.positions.load();
     for (let j = 0; j < positions.length; j += 1) {
       if (positions[j].closed) continue;
-      const batchId = calcBatchIdFromAddress(positions[j].owner);
-      if (batchId === targetBatchId)
+      const batchId = calcBatchIdFromAddr(positions[j].owner);
+      if (batchId == targetBatchId)
         userSet.add(Address.fromBytes(positions[j].owner));
     }
   }
