@@ -34,6 +34,9 @@ function lp2Amounts(
 ///////////////////////////////////////////
 
 export function handleBlock(block: ethereum.Block): void {
+
+  const startSnapshotBlock = dataSource.context().getI32("startSnapshotBlock");
+  if (block.number < BigInt.fromI32(startSnapshotBlock)) return;
   const pool = SyncSwapPool.bind(dataSource.address());
   const totalSupply = pool.totalSupply();
   const l = new SyncSwapHelper(pool._address).getLiquidityInfo(block);
