@@ -225,24 +225,20 @@
     ]
   },
   "1_Compound V2": {
-    "version": "0.0.5",
+    "version": "0.0.11",
     "subgraphs": [
-      "https://api.studio.thegraph.com/query/76843/id-1-compound-v2-mainnet/v0.0.5",
-      "https://api.studio.thegraph.com/query/76843/id-2-compound-v2-mainnet/v0.0.5",
-      "https://api.studio.thegraph.com/query/76843/id-3-compound-v2-mainnet/v0.0.5",
-      "https://api.studio.thegraph.com/query/76843/id-4-compound-v2-mainnet/v0.0.5",
-      "https://api.studio.thegraph.com/query/76843/id-5-compound-v2-mainnet/v0.0.5",
-      "https://api.studio.thegraph.com/query/76843/id-6-compound-v2-mainnet/v0.0.5",
-      "https://api.studio.thegraph.com/query/76843/id-7-compound-v2-mainnet/v0.0.5",
-      "https://api.studio.thegraph.com/query/76843/id-8-compound-v2-mainnet/v0.0.5",
-      "https://api.studio.thegraph.com/query/76843/id-9-compound-v2-mainnet/v0.0.5",
-      "https://api.studio.thegraph.com/query/76843/id-10-compound-v2-mainnet/v0.0.5",
-      "https://api.studio.thegraph.com/query/76843/id-11-compound-v2-mainnet/v0.0.5",
-      "https://api.studio.thegraph.com/query/76843/id-12-compound-v2-mainnet/v0.0.5",
-      "https://api.studio.thegraph.com/query/76843/id-13-compound-v2-mainnet/v0.0.5",
-      "https://api.studio.thegraph.com/query/76843/id-14-compound-v2-mainnet/v0.0.5",
-      "https://api.studio.thegraph.com/query/76843/id-15-compound-v2-mainnet/v0.0.5",
-      "https://api.studio.thegraph.com/query/76843/id-16-compound-v2-mainnet/v0.0.5"
+      "https://api.studio.thegraph.com/query/70792/id-5-compound-v2-mainnet/v0.0.11",
+      "https://api.studio.thegraph.com/query/70792/id-6-compound-v2-mainnet/v0.0.11",
+      "https://api.studio.thegraph.com/query/70792/id-7-compound-v2-mainnet/v0.0.11",
+      "https://api.studio.thegraph.com/query/70792/id-8-compound-v2-mainnet/v0.0.11",
+      "https://api.studio.thegraph.com/query/70792/id-9-compound-v2-mainnet/v0.0.11",
+      "https://api.studio.thegraph.com/query/70792/id-10-compound-v2-mainnet/v0.0.11",
+      "https://api.studio.thegraph.com/query/70792/id-11-compound-v2-mainnet/v0.0.11",
+      "https://api.studio.thegraph.com/query/70792/id-12-compound-v2-mainnet/v0.0.11",
+      "https://api.studio.thegraph.com/query/70792/id-13-compound-v2-mainnet/v0.0.11",
+      "https://api.studio.thegraph.com/query/70792/id-14-compound-v2-mainnet/v0.0.11",
+      "https://api.studio.thegraph.com/query/70792/id-15-compound-v2-mainnet/v0.0.11",
+      "https://api.studio.thegraph.com/query/70792/id-16-compound-v2-mainnet/v0.0.11"
     ]
   },
   "56_Venus Protocol": {
@@ -252,7 +248,7 @@
     ]
   },
   "59144_Mendi Finance": {
-    "version":"0.0.2",
+    "version": "0.0.2",
     "subgraphs": [
       "https://api.studio.thegraph.com/query/70792/test-mendi-finance-linea/v0.0.2"
     ]
@@ -422,7 +418,9 @@
       "https://api.studio.thegraph.com/query/70792/id-16-zerolend-linea/v0.2.0"
     ]
   },
-  "81457_Zerolend": { "subgraphs": [] },
+  "81457_Zerolend": {
+    "subgraphs": []
+  },
   "324_Syncswap": {
     "version": "0.1.1",
     "subgraphs": [

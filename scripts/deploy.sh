@@ -68,7 +68,6 @@ else
     exit 1
 fi
 
-# 버전 업그레이드 (예: 0.1.1 -> 0.2.0)
 IFS='.' read -r -a version_parts <<<"$version"
 major="${version_parts[0]}"
 minor="${version_parts[1]}"
@@ -102,9 +101,10 @@ else
     echo "Error: Graph authentication key not found. Please check your .env."$env" file."
     exit 1
 fi
-#
+
+jq --arg new_version "$new_version" --arg key "$key" '.[$key].version = $new_version' ./update/config/subgraphs.json >temp.json && mv temp.json ./update/config/subgraphs.json
 if [ "$subgraphs_length" -eq 16 ]; then
-    jq --arg key "$key" '.[$key] = []' ./update/config/subgraphs.json >temp.json && mv temp.json ./update/config/subgraphs.json
+    jq --arg key "$key" '.[$key].subgraphs = []' ./update/config/subgraphs.json >temp.json && mv temp.json ./update/config/subgraphs.json
     for ((i = 0; i < totalGraphs; i++)); do
         echo "Running iteration with graphId=$((i + 1))"
         graphId=$((i + 1))
@@ -143,8 +143,7 @@ if [ "$subgraphs_length" -eq 16 ]; then
         fi
         if [[ -n "$query_url" ]]; then
             echo "Saving query URL to file: $query_url"
-            jq --arg query_url "$query_url" --arg key "$key" '.[$key] += [$query_url]' ./update/config/subgraphs.json >temp.json && mv temp.json ./update/config/subgraphs.json
-            jq --arg new_version "$query_url" --arg key "$key" '.[$key] += $new_version' ./update/config/subgraphs.json >temp.json && mv temp.json ./update/config/subgraphs.json
+            jq --arg query_url "$query_url" --arg key "$key" '.[$key].subgraphs += [$query_url]' ./update/config/subgraphs.json >temp.json && mv temp.json ./update/config/subgraphs.json
         fi
     done
 else
@@ -178,15 +177,16 @@ else
     fi
     # 출력에서 URL 추출
     query_url=$(echo "$deploy_output" | awk '/Queries \(HTTP\):/{print $NF}')
+
+    # URL이 유효한지 확인하고 파일에 저장
+    if [[ -n "$query_url" ]]; then
+        echo "Saving query URL to file: $query_url"
+        jq --arg query_url "$query_url" --arg key "$key" '.[$key].subgraphs += [$query_url]' ./update/config/subgraphs.json >temp.json && mv temp.json ./update/config/subgraphs.json
+    fi
 fi
 
-# URL이 유효한지 확인하고 파일에 저장
-if [[ -n "$query_url" ]]; then
-    echo "Saving query URL to file: $query_url"
-    jq -r --arg key "$key" --arg query_url "$query_url" '.[$key] = $query_url' subgraphs.json >temp.json && mv temp.json subgraphs.json
-fi
 # Check
-new_subgraphs_length=$(jq ".$key.subgraphs | length" "./update/subgraphs.json")
+new_subgraphs_length=$(jq --arg key "$key" '.[$key].subgraphs | length' "./update/config/subgraphs.json")
 if [ "$new_subgraphs_length" -ne "$subgraphs_length" ]; then
     echo "Error: Subgraphs length mismatch. Expected $subgraphs_length, got $new_subgraphs_length"
     exit 1
