@@ -52,12 +52,12 @@ export class SyncSwapHelper extends InvestmentHelper {
       ]);
       // Create Template
       const context = new DataSourceContext();
-      context.setString("router", dataSource.context().getString("router"));
+      context.setString("router1", dataSource.context().getString("router1"));
+      context.setString("router2", dataSource.context().getString("router2"));
       context.setI32(
         "snapshotBatch",
         dataSource.context().getI32("snapshotBatch")
       );
-      context.setI32("startSnapshotBlock", dataSource.context().getI32("startSnapshotBlock"));
       context.setI32("graphId", graphId);
       context.setI32("totalGraphs", totalGraphs);
 

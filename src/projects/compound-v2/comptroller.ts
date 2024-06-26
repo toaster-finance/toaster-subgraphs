@@ -248,7 +248,6 @@ export function handleDistributedSupplier(
       return log.data[2].toBigInt().notEqual(BigInt.zero());
     }
   );
-
   const claimLog = getLog(
     event,
     TRANSFER_TOPIC,

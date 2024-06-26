@@ -300,6 +300,7 @@ export function handleBlock(block: ethereum.Block):void {
  * Also handle liquidateBorrow seizeTokens transfer event
  */
 export function handleTransfer(event: Transfer): void {
+
   if (event.params.value.equals(BigInt.zero())) return;
   if (event.params.from.equals(event.address)) return; // Supply
   if (event.params.to.equals(event.address)) return; // Withdraw
@@ -334,7 +335,7 @@ export function handleTransfer(event: Transfer): void {
         [investPos.meta[0]]
       ),
       [sendingAmount.neg()], // + : deposit, - :withdraw
-      [BigInt.zero()]
+      [BigInt.zero(),]
     );
   }
 
