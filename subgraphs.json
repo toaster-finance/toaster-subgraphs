@@ -287,5 +287,22 @@
     "https://api.studio.thegraph.com/query/70792/id-15-zerolend-linea/v0.2.0",
     "https://api.studio.thegraph.com/query/70792/id-16-zerolend-linea/v0.2.0"
   ],
-  "81457_Zerolend": []
+  "81457_Zerolend": [
+    "https://api.studio.thegraph.com/query/70792/id-1-zerolend-blast-mainnet/v0.2.1",
+    "https://api.studio.thegraph.com/query/70792/id-2-zerolend-blast-mainnet/v0.2.1",
+    "https://api.studio.thegraph.com/query/70792/id-3-zerolend-blast-mainnet/v0.2.1",
+    "https://api.studio.thegraph.com/query/70792/id-4-zerolend-blast-mainnet/v0.2.1",
+    "https://api.studio.thegraph.com/query/70792/id-5-zerolend-blast-mainnet/v0.2.1",
+    "https://api.studio.thegraph.com/query/70792/id-6-zerolend-blast-mainnet/v0.2.1",
+    "https://api.studio.thegraph.com/query/70792/id-7-zerolend-blast-mainnet/v0.2.1",
+    "https://api.studio.thegraph.com/query/70792/id-8-zerolend-blast-mainnet/v0.2.1",
+    "https://api.studio.thegraph.com/query/70792/id-9-zerolend-blast-mainnet/v0.2.1",
+    "https://api.studio.thegraph.com/query/70792/id-10-zerolend-blast-mainnet/v0.2.1",
+    "https://api.studio.thegraph.com/query/70792/id-11-zerolend-blast-mainnet/v0.2.1",
+    "https://api.studio.thegraph.com/query/70792/id-12-zerolend-blast-mainnet/v0.2.1",
+    "https://api.studio.thegraph.com/query/70792/id-13-zerolend-blast-mainnet/v0.2.1",
+    "https://api.studio.thegraph.com/query/70792/id-14-zerolend-blast-mainnet/v0.2.1",
+    "https://api.studio.thegraph.com/query/70792/id-15-zerolend-blast-mainnet/v0.2.1",
+    "https://api.studio.thegraph.com/query/70792/id-16-zerolend-blast-mainnet/v0.2.1"
+  ]
 }

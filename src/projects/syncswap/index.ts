@@ -15,6 +15,7 @@ import { filterLogs, logAt, logFindFirst } from "../../common/filterEventLogs";
 import { hash2Address } from "../../common/helpers/hashHelper";
 import { SyncSwapHelper } from "./helper";
 import { matchAddress } from "../../common/matchAddress";
+import { getContextAddress } from "../../common/helpers/contextHelper";
 
 function lp2Amounts(
   reserve0: BigInt,
@@ -177,16 +178,17 @@ export function handleBurn(event: Burn): void {
 
 export function handleTransfer(event: Transfer): void {
   if (event.params.value.equals(BigInt.zero())) return;
+  const router1 = getContextAddress("router1");
+  const router2 = getContextAddress("router2");
 
-  const router = Address.fromHexString(
-    dataSource.context().getString("router")
-  );
   if (
+    (!matchAddress(event.params.from) && !matchAddress(event.params.to)) ||
     event.params.from.equals(Address.zero()) ||
     event.params.to.equals(Address.zero()) ||
-    event.params.from.equals(router) ||
-    event.params.to.equals(router) ||
-    (!matchAddress(event.params.from) && !matchAddress(event.params.to))
+    event.params.from.equals(router1) ||
+    event.params.to.equals(router1) ||
+    event.params.from.equals(router2) ||
+    event.params.to.equals(router2)
   )
     return;
   const receipt = event.receipt;
