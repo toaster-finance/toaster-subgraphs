@@ -58,6 +58,7 @@ export class SyncSwapHelper extends InvestmentHelper {
         "snapshotBatch",
         dataSource.context().getI32("snapshotBatch")
       );
+      context.setI32("startSnapshotBlock", dataSource.context().getI32("startSnapshotBlock"));
       context.setI32("graphId", graphId);
       context.setI32("totalGraphs", totalGraphs);
 

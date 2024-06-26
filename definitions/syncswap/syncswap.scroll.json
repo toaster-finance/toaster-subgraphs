@@ -7,5 +7,6 @@
   "router1": "0x80e38291e06339d10AAB483C65695D004dBD5C69",
   "router2": "0xFD541D0e2773a189450A70F06bC7eDd3C1DC9115",
   "snapshotBatch": 8,
-  "polling": 3600
+  "polling": 3600,
+  "startSnapshotBlock": 1
 }
