@@ -59,21 +59,22 @@ protocolName=$(echo "$protocolName" | awk '{
     print
 }')
 # netwok2ChainId 에서 network에 대응하는 chainId를 가져옴.
-chainId=$(jq -r --arg network "$network" '.[$network]' network2ChainId.json)
+chainId=$(jq -r --arg network "$network" '.[$network]' update/config/network2ChainId.json)
 key="$chainId"_"$protocolName"
-jq --arg key "$key" '.[$key] = []' subgraphs.json >temp.json && mv temp.json subgraphs.json
+touch update/config/temp.json
+jq --arg key "$key" '.[$key] = []' update/config/subgraphs.json > update/config/temp.json && mv update/config/temp.json update/config/subgraphs.json
 # 명령어 실행
 for ((i = 0; i < totalGraphs; i++)); do
     echo "Running iteration with graphId=$((i + 1))"
     graphId=$((i + 1))
     # JSON 파일에 graphId 및 totalGraphs 값을 추가하여 temp.json 파일 생성
-    jq ".graphId = $graphId | .totalGraphs = $totalGraphs" definitions/"$protocol"/"$protocol"."$network".json >temp.json
+    jq ".graphId = $graphId | .totalGraphs = $totalGraphs" definitions/"$protocol"/"$protocol"."$network".json > update/config/temp.json
 
     # mustache 명령어를 사용하여 템플릿 렌더링
-    mustache temp.json definitions/"$protocol"/subgraph."$protocol".yaml >subgraph.yaml
+    mustache update/config/temp.json definitions/"$protocol"/subgraph."$protocol".yaml >subgraph.yaml
 
     # temp.json 파일 삭제
-    rm temp.json
+    rm update/config/temp.json
 
     graph codegen
 
@@ -101,7 +102,7 @@ for ((i = 0; i < totalGraphs; i++)); do
     fi
     if [[ -n "$query_url" ]]; then
         echo "Saving query URL to file: $query_url"
-        jq --arg query_url "$query_url" --arg key "$key" '.[$key] += [$query_url]' subgraphs.json >temp.json && mv temp.json subgraphs.json
+        jq --arg query_url "$query_url" --arg key "$key" '.[$key] += [$query_url]' update/config/subgraphs.json >update/config/temp.json && mv update/config/temp.json update/config/subgraphs.json
     fi
 done
 rm subgraph.yaml

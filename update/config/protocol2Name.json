@@ -1,13 +1,13 @@
 {
-    "syncswap": "SyncSwap",
-    "zerolend": "ZeroLend",
-    "compound-v2": "Compound V2",
-    "spark": "Spark",
-    "aave-v3": "Aave V3",
-    "layerbank": "LayerBank",
-    "uniswap-v3": "Uniswap V3",
-    "mendi-finance": "Medi Finance",
-    "ambient": "Ambient",
-    "pancakeswap-v3": "Pancakeswap V3",
-    "venus-protocol":"Venus Protocol"
+  "syncswap": "SyncSwap",
+  "zerolend": "ZeroLend",
+  "compound-v2": "Compound V2",
+  "spark": "Spark",
+  "aave-v3": "Aave V3",
+  "layerbank": "LayerBank",
+  "uniswap-v3": "Uniswap V3",
+  "mendi-finance": "Medi Finance",
+  "ambient": "Ambient",
+  "pancakeswap-v3": "Pancakeswap V3",
+  "venus-protocol": "Venus Protocol"
 }

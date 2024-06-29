@@ -16,6 +16,7 @@ import { hash2Address } from "../../common/helpers/hashHelper";
 import { SyncSwapHelper } from "./helper";
 import { matchAddress } from "../../common/matchAddress";
 import { getContextAddress } from "../../common/helpers/contextHelper";
+import { calcBatchIdFromAddr } from "../../common/calcGraphId";
 
 function lp2Amounts(
   reserve0: BigInt,
@@ -43,11 +44,13 @@ export function handleBlock(block: ethereum.Block): void {
   const totalSupply = pool.totalSupply();
   const l = new SyncSwapHelper(pool._address).getLiquidityInfo(block);
 
-  const init = i32(parseInt(l.investment.meta[0]));
-  const batch = dataSource.context().getI32("snapshotBatch");
+  const currentBatchId = i32(parseInt(l.investment.meta[0]));
   const positions = l.investment.positions.load();
 
-  for (let i = init; i < positions.length; i += batch) {
+  for (let i = 0; i < positions.length; i += 1) {
+    const addrBatchId = calcBatchIdFromAddr(positions[i].owner);
+    if (addrBatchId != currentBatchId) continue;
+
     const position = positions[i];
     if (position.closed) continue;
     savePositionSnapshot(
@@ -65,8 +68,9 @@ export function handleBlock(block: ethereum.Block): void {
     );
   }
 
+  const batch = dataSource.context().getI32("snapshotBatch");
   l.investment.meta = [
-    ((init + 1) % batch).toString(),
+    ((currentBatchId + 1) % batch).toString(),
     l.investment.meta[1],
     l.investment.meta[2],
   ];

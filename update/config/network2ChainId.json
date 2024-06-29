@@ -1,13 +1,13 @@
 {
-    "mainnet": 1,
-    "optimism" :10,
-    "bsc": 56,
-    "matic": 137,
-    "arbitrum-one":42161,
-    "mode-mainnet": 34443,
-    "zksync-era":324,
-    "linea":59144,
-    "scroll":534352,
-    "blast-mainnet":81457,
-    "base":8453
+  "mainnet": 1,
+  "optimism": 10,
+  "bsc": 56,
+  "matic": 137,
+  "arbitrum-one": 42161,
+  "mode-mainnet": 34443,
+  "zksync-era": 324,
+  "linea": 59144,
+  "scroll": 534352,
+  "blast-mainnet": 81457,
+  "base": 8453
 }

@@ -66,6 +66,9 @@ dataSources:
       snapshotBatch:
         type: Int
         data: {{snapshotBatch}} # 12 hours
+      startSnapshotBlock:
+        type: Int
+        data: {{startSnapshotBlock}}
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7

@@ -46,10 +46,7 @@ export class SyncSwapHelper extends InvestmentHelper {
       investment.save();
       const graphId = dataSource.context().getI32("graphId");
       const totalGraphs = dataSource.context().getI32("totalGraphs");
-      log.error("graphId: {}, totalGraphs: {}", [
-        graphId.toString(),
-        totalGraphs.toString(),
-      ]);
+
       // Create Template
       const context = new DataSourceContext();
       context.setString("router1", dataSource.context().getString("router1"));
