@@ -1,12 +1,12 @@
 {
-  "version": "1.3.0",
+  "version": "1.4.2",
   "network": "scroll",
   "classicFactory": "0x37BAc764494c8db4e54BDE72f6965beA9fa0AC2d",
   "stableFactory": "0xE4CF807E351b56720B17A59094179e7Ed9dD3727",
   "aquaFactory": "0x87aeb51d606056F48D241C4072f55ACd9D937018",
   "router1": "0x80e38291e06339d10AAB483C65695D004dBD5C69",
   "router2": "0xFD541D0e2773a189450A70F06bC7eDd3C1DC9115",
-  "snapshotBatch": 8,
-  "polling": 3600,
+  "snapshotBatch": 16,
+  "polling": 1800,
   "startSnapshotBlock": 1
 }

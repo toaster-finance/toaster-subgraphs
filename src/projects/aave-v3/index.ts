@@ -249,7 +249,7 @@ export function handleBlock(block: ethereum.Block): void {
 
   const investments = protocol.investments.load();
   const targetBatchId = protocol._batchIterator.toI32();
-  const batch = dataSource.context().getI32("snapshotBatch");
+  const batch = dataSource.context().getI32("snapshotBatch"); // 256
   const pool = dataSource.address();
   const uiDataProvider = UiPoolDataProvider.bind(
     getContextAddress("uiDataProvider")
@@ -268,7 +268,7 @@ export function handleBlock(block: ethereum.Block): void {
     const positions = investment.positions.load();
     for (let j = 0; j < positions.length; j += 1) {
       if (positions[j].closed) continue;
-      const batchId = calcBatchIdFromAddr(positions[j].owner);
+      const batchId = calcBatchIdFromAddr(positions[j].owner, batch);
       if (batchId == targetBatchId)
         userSet.add(Address.fromBytes(positions[j].owner));
     }

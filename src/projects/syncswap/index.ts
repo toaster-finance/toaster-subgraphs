@@ -47,8 +47,9 @@ export function handleBlock(block: ethereum.Block): void {
   const currentBatchId = i32(parseInt(l.investment.meta[0]));
   const positions = l.investment.positions.load();
 
+  const batch = dataSource.context().getI32("snapshotBatch"); // 256
   for (let i = 0; i < positions.length; i += 1) {
-    const addrBatchId = calcBatchIdFromAddr(positions[i].owner);
+    const addrBatchId = calcBatchIdFromAddr(positions[i].owner, batch);
     if (addrBatchId != currentBatchId) continue;
 
     const position = positions[i];
@@ -68,7 +69,6 @@ export function handleBlock(block: ethereum.Block): void {
     );
   }
 
-  const batch = dataSource.context().getI32("snapshotBatch");
   l.investment.meta = [
     ((currentBatchId + 1) % batch).toString(),
     l.investment.meta[1],

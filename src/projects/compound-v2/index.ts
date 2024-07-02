@@ -234,7 +234,7 @@ export function handleBlock(block: ethereum.Block):void {
   const investment = helper.getOrCreateInvestment(block);
   const positions = investment.positions.load();
 
-  const batch = dataSource.context().getI32("snapshotBatch");
+  const batch = dataSource.context().getI32("snapshotBatch"); // 256
   const targetBatchId = protocol._batchIterator.toI32();
   const supplyIdx = helper.getSupplyIndex();
   const borrowIdx = helper.getBorrowIndex();
@@ -242,7 +242,7 @@ export function handleBlock(block: ethereum.Block):void {
   for (let i = 0; i < positions.length; i++) {
     const pos = positions[i];
     if (pos.closed) continue;
-    const batchId = calcBatchIdFromAddr(pos.owner);
+    const batchId = calcBatchIdFromAddr(pos.owner, batch);
     if (batchId != targetBatchId) continue;
 
     const snapshot = helper.getAccountSnapshot(Address.fromBytes(pos.owner));

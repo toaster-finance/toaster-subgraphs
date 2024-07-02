@@ -271,27 +271,6 @@
       "https://api.studio.thegraph.com/query/70792/test-layerbank-scroll/v0.0.1"
     ]
   },
-  "324_SyncSwap": {
-    "version": "0.1.0",
-    "subgraphs": [
-      "https://api.studio.thegraph.com/query/70792/id-1-syncswap-zksync-era/v0.1.0",
-      "https://api.studio.thegraph.com/query/70792/id-2-syncswap-zksync-era/v0.1.0",
-      "https://api.studio.thegraph.com/query/70792/id-3-syncswap-zksync-era/v0.1.0",
-      "https://api.studio.thegraph.com/query/70792/id-4-syncswap-zksync-era/v0.1.0",
-      "https://api.studio.thegraph.com/query/70792/id-5-syncswap-zksync-era/v0.1.0",
-      "https://api.studio.thegraph.com/query/70792/id-6-syncswap-zksync-era/v0.1.0",
-      "https://api.studio.thegraph.com/query/70792/id-7-syncswap-zksync-era/v0.1.0",
-      "https://api.studio.thegraph.com/query/70792/id-8-syncswap-zksync-era/v0.1.0",
-      "https://api.studio.thegraph.com/query/70792/id-9-syncswap-zksync-era/v0.1.0",
-      "https://api.studio.thegraph.com/query/70792/id-10-syncswap-zksync-era/v0.1.0",
-      "https://api.studio.thegraph.com/query/70792/id-11-syncswap-zksync-era/v0.1.0",
-      "https://api.studio.thegraph.com/query/70792/id-12-syncswap-zksync-era/v0.1.0",
-      "https://api.studio.thegraph.com/query/70792/id-13-syncswap-zksync-era/v0.1.0",
-      "https://api.studio.thegraph.com/query/70792/id-14-syncswap-zksync-era/v0.1.0",
-      "https://api.studio.thegraph.com/query/70792/id-15-syncswap-zksync-era/v0.1.0",
-      "https://api.studio.thegraph.com/query/70792/id-16-syncswap-zksync-era/v0.1.0"
-    ]
-  },
   "1_ZeroLend": {
     "version": "0.2.0",
     "subgraphs": [
@@ -311,48 +290,6 @@
       "https://api.studio.thegraph.com/query/70792/id-14-zerolend-mainnet/v0.2.0",
       "https://api.studio.thegraph.com/query/70792/id-15-zerolend-mainnet/v0.2.0",
       "https://api.studio.thegraph.com/query/70792/id-16-zerolend-mainnet/v0.2.0"
-    ]
-  },
-  "534352_SyncSwap": {
-    "version": "0.1.0",
-    "subgraphs": [
-      "https://api.studio.thegraph.com/query/70792/id-1-syncswap-scroll/v0.1.0",
-      "https://api.studio.thegraph.com/query/70792/id-2-syncswap-scroll/v0.1.0",
-      "https://api.studio.thegraph.com/query/70792/id-3-syncswap-scroll/v0.1.0",
-      "https://api.studio.thegraph.com/query/70792/id-4-syncswap-scroll/v0.1.0",
-      "https://api.studio.thegraph.com/query/70792/id-5-syncswap-scroll/v0.1.0",
-      "https://api.studio.thegraph.com/query/70792/id-6-syncswap-scroll/v0.1.0",
-      "https://api.studio.thegraph.com/query/70792/id-7-syncswap-scroll/v0.1.0",
-      "https://api.studio.thegraph.com/query/70792/id-8-syncswap-scroll/v0.1.0",
-      "https://api.studio.thegraph.com/query/70792/id-9-syncswap-scroll/v0.1.0",
-      "https://api.studio.thegraph.com/query/70792/id-10-syncswap-scroll/v0.1.0",
-      "https://api.studio.thegraph.com/query/70792/id-11-syncswap-scroll/v0.1.0",
-      "https://api.studio.thegraph.com/query/70792/id-12-syncswap-scroll/v0.1.0",
-      "https://api.studio.thegraph.com/query/70792/id-13-syncswap-scroll/v0.1.0",
-      "https://api.studio.thegraph.com/query/70792/id-14-syncswap-scroll/v0.1.0",
-      "https://api.studio.thegraph.com/query/70792/id-15-syncswap-scroll/v0.1.0",
-      "https://api.studio.thegraph.com/query/70792/id-16-syncswap-scroll/v0.1.0"
-    ]
-  },
-  "59144_SyncSwap": {
-    "version": "0.1.0",
-    "subgraphs": [
-      "https://api.studio.thegraph.com/query/70792/id-1-syncswap-linea/v0.1.0",
-      "https://api.studio.thegraph.com/query/70792/id-2-syncswap-linea/v0.1.0",
-      "https://api.studio.thegraph.com/query/70792/id-3-syncswap-linea/v0.1.0",
-      "https://api.studio.thegraph.com/query/70792/id-4-syncswap-linea/v0.1.0",
-      "https://api.studio.thegraph.com/query/70792/id-5-syncswap-linea/v0.1.0",
-      "https://api.studio.thegraph.com/query/70792/id-6-syncswap-linea/v0.1.0",
-      "https://api.studio.thegraph.com/query/70792/id-7-syncswap-linea/v0.1.0",
-      "https://api.studio.thegraph.com/query/70792/id-8-syncswap-linea/v0.1.0",
-      "https://api.studio.thegraph.com/query/70792/id-9-syncswap-linea/v0.1.0",
-      "https://api.studio.thegraph.com/query/70792/id-10-syncswap-linea/v0.1.0",
-      "https://api.studio.thegraph.com/query/70792/id-11-syncswap-linea/v0.1.0",
-      "https://api.studio.thegraph.com/query/70792/id-12-syncswap-linea/v0.1.0",
-      "https://api.studio.thegraph.com/query/70792/id-13-syncswap-linea/v0.1.0",
-      "https://api.studio.thegraph.com/query/70792/id-14-syncswap-linea/v0.1.0",
-      "https://api.studio.thegraph.com/query/70792/id-15-syncswap-linea/v0.1.0",
-      "https://api.studio.thegraph.com/query/70792/id-16-syncswap-linea/v0.1.0"
     ]
   },
   "324_ZeroLend": {
@@ -421,57 +358,36 @@
   "81457_Zerolend": {
     "subgraphs": []
   },
-  "324_Syncswap": [
-    "https://api.studio.thegraph.com/query/67380/id-1-syncswap-zksync-era/v1.3.0",
-    "https://api.studio.thegraph.com/query/67380/id-2-syncswap-zksync-era/v1.3.0",
-    "https://api.studio.thegraph.com/query/67380/id-3-syncswap-zksync-era/v1.3.0",
-    "https://api.studio.thegraph.com/query/67380/id-4-syncswap-zksync-era/v1.3.0",
-    "https://api.studio.thegraph.com/query/67380/id-5-syncswap-zksync-era/v1.3.0",
-    "https://api.studio.thegraph.com/query/67380/id-6-syncswap-zksync-era/v1.3.0",
-    "https://api.studio.thegraph.com/query/67380/id-7-syncswap-zksync-era/v1.3.0",
-    "https://api.studio.thegraph.com/query/67380/id-8-syncswap-zksync-era/v1.3.0",
-    "https://api.studio.thegraph.com/query/67380/id-9-syncswap-zksync-era/v1.3.0",
-    "https://api.studio.thegraph.com/query/67380/id-10-syncswap-zksync-era/v1.3.0",
-    "https://api.studio.thegraph.com/query/67380/id-11-syncswap-zksync-era/v1.3.0",
-    "https://api.studio.thegraph.com/query/67380/id-12-syncswap-zksync-era/v1.3.0",
-    "https://api.studio.thegraph.com/query/67380/id-14-syncswap-zksync-era/v1.3.0",
-    "https://api.studio.thegraph.com/query/67380/id-15-syncswap-zksync-era/v1.3.0",
-    "https://api.studio.thegraph.com/query/67380/id-16-syncswap-zksync-era/v1.3.0"
-  ],
+  "534352_Syncswap": [],
   "59144_Syncswap": [
-    "https://api.studio.thegraph.com/query/67380/id-1-syncswap-linea/v1.3.0",
-    "https://api.studio.thegraph.com/query/67380/id-2-syncswap-linea/v1.3.0",
-    "https://api.studio.thegraph.com/query/67380/id-3-syncswap-linea/v1.3.0",
-    "https://api.studio.thegraph.com/query/67380/id-4-syncswap-linea/v1.3.0",
-    "https://api.studio.thegraph.com/query/67380/id-5-syncswap-linea/v1.3.0",
-    "https://api.studio.thegraph.com/query/67380/id-6-syncswap-linea/v1.3.0",
-    "https://api.studio.thegraph.com/query/67380/id-7-syncswap-linea/v1.3.0",
-    "https://api.studio.thegraph.com/query/67380/id-8-syncswap-linea/v1.3.0",
-    "https://api.studio.thegraph.com/query/67380/id-9-syncswap-linea/v1.3.0",
-    "https://api.studio.thegraph.com/query/67380/id-10-syncswap-linea/v1.3.0",
-    "https://api.studio.thegraph.com/query/67380/id-11-syncswap-linea/v1.3.0",
-    "https://api.studio.thegraph.com/query/67380/id-12-syncswap-linea/v1.3.0",
-    "https://api.studio.thegraph.com/query/67380/id-13-syncswap-linea/v1.3.0",
-    "https://api.studio.thegraph.com/query/67380/id-14-syncswap-linea/v1.3.0",
-    "https://api.studio.thegraph.com/query/67380/id-15-syncswap-linea/v1.3.0",
-    "https://api.studio.thegraph.com/query/67380/id-16-syncswap-linea/v1.3.0"
+    "https://api.studio.thegraph.com/query/67380/id-6-syncswap-linea/v1.4.2",
+    "https://api.studio.thegraph.com/query/67380/id-7-syncswap-linea/v1.4.2",
+    "https://api.studio.thegraph.com/query/67380/id-8-syncswap-linea/v1.4.2",
+    "https://api.studio.thegraph.com/query/67380/id-9-syncswap-linea/v1.4.2",
+    "https://api.studio.thegraph.com/query/67380/id-10-syncswap-linea/v1.4.2",
+    "https://api.studio.thegraph.com/query/67380/id-11-syncswap-linea/v1.4.2",
+    "https://api.studio.thegraph.com/query/67380/id-12-syncswap-linea/v1.4.2",
+    "https://api.studio.thegraph.com/query/67380/id-13-syncswap-linea/v1.4.2",
+    "https://api.studio.thegraph.com/query/67380/id-14-syncswap-linea/v1.4.2",
+    "https://api.studio.thegraph.com/query/67380/id-15-syncswap-linea/v1.4.2",
+    "https://api.studio.thegraph.com/query/67380/id-16-syncswap-linea/v1.4.2"
   ],
-  "534352_Syncswap": [
-    "https://api.studio.thegraph.com/query/67380/id-1-syncswap-scroll/v1.3.0",
-    "https://api.studio.thegraph.com/query/67380/id-2-syncswap-scroll/v1.3.0",
-    "https://api.studio.thegraph.com/query/67380/id-3-syncswap-scroll/v1.3.0",
-    "https://api.studio.thegraph.com/query/67380/id-4-syncswap-scroll/v1.3.0",
-    "https://api.studio.thegraph.com/query/67380/id-5-syncswap-scroll/v1.3.0",
-    "https://api.studio.thegraph.com/query/67380/id-6-syncswap-scroll/v1.3.0",
-    "https://api.studio.thegraph.com/query/67380/id-7-syncswap-scroll/v1.3.0",
-    "https://api.studio.thegraph.com/query/67380/id-8-syncswap-scroll/v1.3.0",
-    "https://api.studio.thegraph.com/query/67380/id-9-syncswap-scroll/v1.3.0",
-    "https://api.studio.thegraph.com/query/67380/id-10-syncswap-scroll/v1.3.0",
-    "https://api.studio.thegraph.com/query/67380/id-11-syncswap-scroll/v1.3.0",
-    "https://api.studio.thegraph.com/query/67380/id-12-syncswap-scroll/v1.3.0",
-    "https://api.studio.thegraph.com/query/67380/id-13-syncswap-scroll/v1.3.0",
-    "https://api.studio.thegraph.com/query/67380/id-14-syncswap-scroll/v1.3.0",
-    "https://api.studio.thegraph.com/query/67380/id-15-syncswap-scroll/v1.3.0",
-    "https://api.studio.thegraph.com/query/67380/id-16-syncswap-scroll/v1.3.0"
+  "324_Syncswap": [
+    "https://api.studio.thegraph.com/query/67380/id-1-syncswap-zksync-era/v1.4.1",
+    "https://api.studio.thegraph.com/query/67380/id-2-syncswap-zksync-era/v1.4.1",
+    "https://api.studio.thegraph.com/query/67380/id-3-syncswap-zksync-era/v1.4.1",
+    "https://api.studio.thegraph.com/query/67380/id-4-syncswap-zksync-era/v1.4.1",
+    "https://api.studio.thegraph.com/query/67380/id-5-syncswap-zksync-era/v1.4.1",
+    "https://api.studio.thegraph.com/query/67380/id-6-syncswap-zksync-era/v1.4.1",
+    "https://api.studio.thegraph.com/query/67380/id-7-syncswap-zksync-era/v1.4.1",
+    "https://api.studio.thegraph.com/query/67380/id-8-syncswap-zksync-era/v1.4.1",
+    "https://api.studio.thegraph.com/query/67380/id-9-syncswap-zksync-era/v1.4.1",
+    "https://api.studio.thegraph.com/query/67380/id-10-syncswap-zksync-era/v1.4.1",
+    "https://api.studio.thegraph.com/query/67380/id-11-syncswap-zksync-era/v1.4.1",
+    "https://api.studio.thegraph.com/query/67380/id-12-syncswap-zksync-era/v1.4.1",
+    "https://api.studio.thegraph.com/query/67380/id-13-syncswap-zksync-era/v1.4.1",
+    "https://api.studio.thegraph.com/query/67380/id-14-syncswap-zksync-era/v1.4.1",
+    "https://api.studio.thegraph.com/query/67380/id-15-syncswap-zksync-era/v1.4.1",
+    "https://api.studio.thegraph.com/query/67380/id-16-syncswap-zksync-era/v1.4.1"
   ]
 }

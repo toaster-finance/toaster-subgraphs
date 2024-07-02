@@ -1,12 +1,12 @@
 {
-  "version": "1.3.0",
+  "version": "1.4.1",
   "network": "zksync-era",
   "classicFactory": "0xf2DAd89f2788a8CD54625C60b55cD3d2D0ACa7Cb",
   "stableFactory": "0x5b9f21d407F35b10CbfDDca17D5D84b129356ea3",
   "aquaFactory": "0x0754870C1aAb00eDCFABDF4e6FEbDD30e90f327d",
   "router1": "0x2da10A1e27bF85cEdD8FFb1AbBe97e53391C0295",
   "router2": "0x9B5def958d0f3b6955cBEa4D5B7809b2fb26b059",
-  "snapshotBatch": 360,
-  "polling": 240,
+  "snapshotBatch": 256,
+  "polling": 337,
   "startSnapshotBlock": 35000000
 }
