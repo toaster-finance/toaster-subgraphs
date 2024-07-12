@@ -36,12 +36,13 @@ function lp2Amounts(
 ///////////////////////////////////////////
 
 export function handleBlock(block: ethereum.Block): void {
-
   const startSnapshotBlock = dataSource.context().getI32("startSnapshotBlock");
   if (block.number < BigInt.fromI32(startSnapshotBlock)) return;
-  
+
   const pool = SyncSwapPool.bind(dataSource.address());
-  const totalSupply = pool.totalSupply();
+  const try_totalSupply = pool.try_totalSupply();
+  if (try_totalSupply.reverted) return;
+  const totalSupply = try_totalSupply.value;
   const l = new SyncSwapHelper(pool._address).getLiquidityInfo(block);
 
   const currentBatchId = i32(parseInt(l.investment.meta[0]));
@@ -147,9 +148,10 @@ export function handleBurn(event: Burn): void {
       hash2Address(log.topics[2]).equals(event.address)
     );
   });
-  if (!lpToPool) throw new Error("handleBurn: lpToPool not found");
 
-  const owner = hash2Address(lpToPool.topics[1]);
+  const owner = lpToPool
+    ? hash2Address(lpToPool.topics[1])
+    : event.params.sender;
   if (!matchAddress(owner)) return;
   let ownerBalance: BigInt;
   let dbPosition = helper.findPosition(owner, "");

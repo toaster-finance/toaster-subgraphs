@@ -2,6 +2,7 @@ import { UiPoolDataProvider } from "./../../../generated/Pool/UiPoolDataProvider
 import {
   Address,
   BigInt,
+  Bytes,
   DataSourceContext,
   dataSource,
   ethereum,
@@ -28,6 +29,7 @@ import { AaveV3Helper } from "./helper";
 import { aToken } from "../../../generated/templates";
 import { matchAddress } from "../../common/matchAddress";
 import { calcBatchIdFromAddr } from "../../common/calcGraphId";
+import { logFindFirst } from "../../common/filterEventLogs";
 
 //PositionType.Invest: it means deposit (deposit amount is positive, withdraw amount is negative)
 //PositionType.Borrow: it means borrow (borrow amount is positive, repay amount is negative)
@@ -83,17 +85,86 @@ export function handleWithdraw(event: Withdraw): void {
   );
 }
 
+const MINT_TOPIC =
+  "0x458f5fa412d0f69b08dd84872b0215675cc67bc1d5b6fd93300a1c3878b86196";
+const BURN_TOPIC =
+  "0x4cf25bc1d991c17529c25213d3cc0cda295eeaad5f13f361969b12ea48015f90";
 export function handleTransfer(event: Transfer): void {
   if (event.params.value.equals(BigInt.zero())) return;
-  let action: PositionChangeAction;
+
+  const underlying = getContextAddress("underlying");
+
   let sender: Address;
   let receiver: Address;
-  if (event.params.from.equals(Address.zero())) return; // Supply
+  if (event.params.from.equals(Address.zero())) {
+    const receipt = event.receipt;
+    if (receipt == null) return;
+
+    // in case of depositETH
+    const mintLog = logFindFirst(receipt.logs, event, (log, event) => {
+      if (log.logIndex <= event.logIndex) return false;
+      if (log.address.notEqual(event.address)) return false;
+      return log.topics[0].equals(Bytes.fromHexString(MINT_TOPIC));
+    });
+    if (mintLog == null) return; // burn
+    const data = new InvestUserData(event.params.to, underlying, BigInt.zero());
+
+    savePositionChange(
+      event,
+      PositionChangeAction.Deposit,
+      data.helper,
+      new PositionParams(
+        event.params.to,
+        "",
+        PositionType.Invest,
+        [data.underlyingAmount],
+        [],
+        BigInt.zero(),
+        [data.stableDebt.toString(), data.variavbleDebt.toString()] // stable debt / variable debt
+      ),
+      [event.params.value], // + : deposit, - :withdraw
+      []
+    );
+  }
+
   if (event.params.to.equals(Address.zero())) return; // Withdraw
+
+  // withdrawETH
+  const WETHGateway = getContextAddress("WETHGateway");
+  if (event.params.to.equals(WETHGateway)) {
+    const receipt = event.receipt;
+    if (receipt == null) return;
+    const burnLog = logFindFirst(receipt.logs, event, (log, event) => {
+      if (log.logIndex <= event.logIndex) return false;
+      if (log.address.notEqual(event.address)) return false;
+      return log.topics[0].equals(Bytes.fromHexString(BURN_TOPIC));
+    });
+    if (burnLog == null) return; // just transfer to WETHGateway
+    const data = new InvestUserData(
+      event.params.from,
+      underlying,
+      BigInt.zero()
+    );
+    savePositionChange(
+      event,
+      PositionChangeAction.Withdraw,
+      data.helper,
+      new PositionParams(
+        event.params.from,
+        "",
+        PositionType.Invest,
+        [data.underlyingAmount],
+        [],
+        BigInt.zero(),
+        [data.stableDebt.toString(), data.variavbleDebt.toString()] // stable debt / variable debt
+      ),
+      [event.params.value.neg()], // + : deposit, - :withdraw
+      []
+    );
+  }
 
   sender = event.params.from; // aToken amount decrease
   receiver = event.params.to; // aToken amount increase
-  const underlying = getContextAddress("underlying");
   const sendingAmount = event.params.value;
   if (matchAddress(sender)) {
     const senderData = new InvestUserData(sender, underlying, BigInt.zero());
@@ -114,7 +185,7 @@ export function handleTransfer(event: Transfer): void {
       []
     );
   }
-  
+
   if (matchAddress(receiver)) {
     const receiverData = new InvestUserData(
       receiver,
@@ -274,7 +345,7 @@ export function handleBlock(block: ethereum.Block): void {
     }
   }
   users = userSet.values();
-  userSet = new Set()
+  userSet = new Set();
 
   const reserveData_try =
     uiDataProvider.try_getReservesData(poolAddressProvider);
@@ -355,6 +426,10 @@ function createATokenTemplate(
   aTokenContext.setString(
     "dataProvider",
     getContextAddress("dataProvider").toHexString()
+  );
+  aTokenContext.setString(
+    "WETHGateway",
+    getContextAddress("WETHGateway").toHexString()
   );
   aTokenContext.setI32("graphId", dataSource.context().getI32("graphId"));
   aTokenContext.setI32(

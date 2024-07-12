@@ -1,9 +1,9 @@
 {
-  "version": "1.4.2",
+  "version": "1.4.3",
   "network": "linea",
   "classicFactory": "0x37BAc764494c8db4e54BDE72f6965beA9fa0AC2d",
   "stableFactory": "0xE4CF807E351b56720B17A59094179e7Ed9dD3727",
-  "aquaFactory": "0x87aeb51d606056F48D241C4072f55ACd9D937018",
+  "aquaFactory": "0x1080EE857D165186aF7F8d63e8ec510C28A6d1Ea",
   "router1": "0x80e38291e06339d10AAB483C65695D004dBD5C69",
   "router2": "0xc2a1947d2336b2af74d5813dc9ca6e0c3b3e8a1e",
   "snapshotBatch": 16,
