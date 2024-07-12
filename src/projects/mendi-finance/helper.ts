@@ -28,7 +28,7 @@ export class CompoundV2Helper extends InvestmentHelper {
     return new InvestmentInfo(
       [underlying],
       [this.compAddr],
-      []
+      ["0"]
     );
   }
 

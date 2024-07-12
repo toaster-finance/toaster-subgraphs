@@ -26,7 +26,6 @@ import { Protocol } from "../../../generated/schema";
 import { getProtocolId } from "../../common/helpers/investmentHelper";
 import { getContextAddress } from "../../common/helpers/contextHelper";
 import { AaveV3Helper } from "./helper";
-import { aToken } from "../../../generated/templates";
 import { matchAddress } from "../../common/matchAddress";
 import { calcBatchIdFromAddr } from "../../common/calcGraphId";
 import { logFindFirst } from "../../common/filterEventLogs";
@@ -58,7 +57,6 @@ export function handleSupply(event: Supply): void {
     [event.params.amount], // + : deposit, - :withdraw
     []
   );
-  createATokenTemplate(underlying, event.address);
 }
 
 export function handleWithdraw(event: Withdraw): void {
@@ -372,7 +370,7 @@ export function handleBlock(block: ethereum.Block): void {
       if (totalDebt.gt(BigInt.zero()))
         savePositionSnapshot(
           block,
-          new AaveV3Helper(pool, userReserve.underlyingAsset.toHexString()),
+          new AaveV3Helper(pool, userReserve.underlyingAsset),
           new PositionParams(
             user,
             "",
@@ -388,13 +386,12 @@ export function handleBlock(block: ethereum.Block): void {
         );
       // for collateral
       if (userReserve.scaledATokenBalance.notEqual(BigInt.zero())) {
-        const liquidity = userReserve.scaledATokenBalance;
         const balance = userReserve.scaledATokenBalance
           .times(reserveData[d].liquidityIndex)
           .div(BigInt.fromI32(10).pow(27));
         savePositionSnapshot(
           block,
-          new AaveV3Helper(pool, userReserve.underlyingAsset.toHexString()),
+          new AaveV3Helper(pool, userReserve.underlyingAsset),
           new PositionParams(
             user,
             "",
@@ -410,31 +407,4 @@ export function handleBlock(block: ethereum.Block): void {
   }
   protocol._batchIterator = BigInt.fromI32((targetBatchId + 1) % batch);
   protocol.save();
-}
-
-// create atoken template
-function createATokenTemplate(
-  underlying: Address,
-  aTokenAddress: Address
-): void {
-  const aTokenContext = new DataSourceContext();
-  aTokenContext.setString(
-    "protocolName",
-    dataSource.context().getString("protocolName")
-  );
-  aTokenContext.setString("underlying", underlying.toHexString());
-  aTokenContext.setString(
-    "dataProvider",
-    getContextAddress("dataProvider").toHexString()
-  );
-  aTokenContext.setString(
-    "WETHGateway",
-    getContextAddress("WETHGateway").toHexString()
-  );
-  aTokenContext.setI32("graphId", dataSource.context().getI32("graphId"));
-  aTokenContext.setI32(
-    "totalGraphs",
-    dataSource.context().getI32("totalGraphs")
-  );
-  aToken.createWithContext(aTokenAddress, aTokenContext);
 }

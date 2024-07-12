@@ -9,12 +9,13 @@ export class InvestUserData {
   underlyingAmount: BigInt;
   stableDebt: BigInt;
   variavbleDebt: BigInt;
+  
   constructor(owner: Address, underlying: Address, amount: BigInt) {
     const pool = dataSource.address();
+    this.helper = new AaveV3Helper(pool, underlying);
     const poolDataProvider = PoolDataProvider.bind(
       getContextAddress("dataProvider")
     );
-    this.helper = new AaveV3Helper(pool, underlying.toHexString());
     const posId = this.helper.getInvestPositionId(owner, "");
     const position = Position.load(posId);
 
@@ -41,7 +42,7 @@ export class BorrowUserData {
     const poolDataProvider = PoolDataProvider.bind(
       getContextAddress("dataProvider")
     );
-    this.helper = new AaveV3Helper(pool, underlying.toHexString());
+    this.helper = new AaveV3Helper(pool, underlying);
 
     const userData = poolDataProvider.getUserReserveData(underlying, owner);
     this.underlyingAmount = userData.getCurrentATokenBalance();
