@@ -1,0 +1,424 @@
+{
+  "1_Uniswap V3": {
+    "vesion": "0.4.1",
+    "subgraphs": [
+      "https://api.studio.thegraph.com/query/67380/test-uniswap-v3-mainnet/v0.4.1"
+    ]
+  },
+  "56_Uniswap V3": {
+    "vesion": "0.4.1",
+    "subgraphs": [
+      "https://api.studio.thegraph.com/query/67380/test-uniswap-v3-bsc/v0.4.1"
+    ]
+  },
+  "137_Uniswap V3": {
+    "version": "0.4.1",
+    "subgraphs": [
+      "https://api.studio.thegraph.com/query/67380/test-uniswap-v3-matic/v0.4.1"
+    ]
+  },
+  "42161_Uniswap V3": {
+    "version": "0.4.3",
+    "subgraphs": [
+      "https://api.studio.thegraph.com/query/67380/test-uniswap-v3-arbitrum-one/v0.4.3"
+    ]
+  },
+  "10_Uniswap V3": {
+    "version": "0.4.1",
+    "subgraphs": [
+      "https://api.studio.thegraph.com/query/67380/test-uniswap-v3-optimism/v0.4.1"
+    ]
+  },
+  "8453_Uniswap V3": {
+    "version": "0.4.1",
+    "subgraphs": [
+      "https://api.studio.thegraph.com/query/67380/test-uniswap-v3-base/v0.4.1"
+    ]
+  },
+  "56_Pancakeswap V3": {
+    "version": "0.4.1",
+    "subgraphs": [
+      "https://api.studio.thegraph.com/query/67380/test-pancakeswap-v3-bsc/v0.4.1"
+    ]
+  },
+  "8453_Pancakeswap V3": {
+    "version": "0.4.1",
+    "subgraphs": [
+      "https://api.studio.thegraph.com/query/67380/test-pancakeswap-v3-base/v0.4.1"
+    ]
+  },
+  "42161_Pancakeswap V3": {
+    "version": "0.4.1",
+    "subgraphs": [
+      "https://api.studio.thegraph.com/query/67380/test-pancakeswap-v3-arbitrum-o/v0.4.1"
+    ]
+  },
+  "59144_Pancakeswap V3": {
+    "version": "0.4.1",
+    "subgraphs": [
+      "https://api.studio.thegraph.com/query/67380/test-pancakeswap-v3-linea/v0.4.1"
+    ]
+  },
+  "81457_Ambient": {
+    "version": "3.0.0",
+    "subgraphs": [
+      "https://api.studio.thegraph.com/query/70792/test-ambient-blast-mainnet/v3.0.0"
+    ]
+  },
+  "534352_Ambient": {
+    "version": "3.0.0",
+    "subgraphs": [
+      "https://api.studio.thegraph.com/query/70792/test-ambient-scroll/v3.0.0"
+    ]
+  },
+  "42161_Aave V3": {
+    "version": "2.1.1",
+    "subgraphs": [
+      "https://api.studio.thegraph.com/query/70792/id-1-aave-v3-arbitrum-one/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-2-aave-v3-arbitrum-one/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-3-aave-v3-arbitrum-one/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-4-aave-v3-arbitrum-one/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-5-aave-v3-arbitrum-one/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-6-aave-v3-arbitrum-one/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-7-aave-v3-arbitrum-one/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-8-aave-v3-arbitrum-one/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-9-aave-v3-arbitrum-one/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-10-aave-v3-arbitrum-one/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-11-aave-v3-arbitrum-one/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-12-aave-v3-arbitrum-one/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-13-aave-v3-arbitrum-one/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-14-aave-v3-arbitrum-one/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-15-aave-v3-arbitrum-one/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-16-aave-v3-arbitrum-one/v2.1.1"
+    ]
+  },
+  "1_Aave V3": {
+    "version": "2.1.1",
+    "subgraphs": [
+      "https://api.studio.thegraph.com/query/70792/id-1-aave-v3-mainnet/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-2-aave-v3-mainnet/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-3-aave-v3-mainnet/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-4-aave-v3-mainnet/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-5-aave-v3-mainnet/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-6-aave-v3-mainnet/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-7-aave-v3-mainnet/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-8-aave-v3-mainnet/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-9-aave-v3-mainnet/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-10-aave-v3-mainnet/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-11-aave-v3-mainnet/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-12-aave-v3-mainnet/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-13-aave-v3-mainnet/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-14-aave-v3-mainnet/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-15-aave-v3-mainnet/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-16-aave-v3-mainnet/v2.1.1"
+    ]
+  },
+  "534352_Aave V3": [
+    "https://api.studio.thegraph.com/query/67380/id-1-aave-v3-scroll/v2.2.4",
+    "https://api.studio.thegraph.com/query/67380/id-2-aave-v3-scroll/v2.2.4",
+    "https://api.studio.thegraph.com/query/67380/id-3-aave-v3-scroll/v2.2.4",
+    "https://api.studio.thegraph.com/query/67380/id-4-aave-v3-scroll/v2.2.4",
+    "https://api.studio.thegraph.com/query/67380/id-5-aave-v3-scroll/v2.2.4",
+    "https://api.studio.thegraph.com/query/67380/id-6-aave-v3-scroll/v2.2.4",
+    "https://api.studio.thegraph.com/query/67380/id-7-aave-v3-scroll/v2.2.4",
+    "https://api.studio.thegraph.com/query/67380/id-8-aave-v3-scroll/v2.2.4",
+    "https://api.studio.thegraph.com/query/67380/id-9-aave-v3-scroll/v2.2.4",
+    "https://api.studio.thegraph.com/query/67380/id-10-aave-v3-scroll/v2.2.4",
+    "https://api.studio.thegraph.com/query/67380/id-11-aave-v3-scroll/v2.2.4",
+    "https://api.studio.thegraph.com/query/67380/id-12-aave-v3-scroll/v2.2.4",
+    "https://api.studio.thegraph.com/query/67380/id-13-aave-v3-scroll/v2.2.4",
+    "https://api.studio.thegraph.com/query/67380/id-14-aave-v3-scroll/v2.2.4",
+    "https://api.studio.thegraph.com/query/67380/id-15-aave-v3-scroll/v2.2.4",
+    "https://api.studio.thegraph.com/query/67380/id-16-aave-v3-scroll/v2.2.4"
+  ],
+  "8453_Aave V3": {
+    "version": "2.1.1",
+    "subgraphs": [
+      "https://api.studio.thegraph.com/query/70792/id-1-aave-v3-base/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-2-aave-v3-base/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-3-aave-v3-base/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-4-aave-v3-base/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-5-aave-v3-base/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-6-aave-v3-base/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-7-aave-v3-base/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-8-aave-v3-base/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-9-aave-v3-base/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-10-aave-v3-base/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-11-aave-v3-base/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-12-aave-v3-base/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-13-aave-v3-base/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-14-aave-v3-base/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-15-aave-v3-base/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-16-aave-v3-base/v2.1.1"
+    ]
+  },
+  "137_Aave V3": {
+    "version": "2.1.1",
+    "subgraphs": [
+      "https://api.studio.thegraph.com/query/70792/id-1-aave-v3-matic/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-2-aave-v3-matic/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-3-aave-v3-matic/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-4-aave-v3-matic/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-5-aave-v3-matic/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-6-aave-v3-matic/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-7-aave-v3-matic/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-8-aave-v3-matic/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-9-aave-v3-matic/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-10-aave-v3-matic/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-11-aave-v3-matic/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-12-aave-v3-matic/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-13-aave-v3-matic/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-14-aave-v3-matic/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-15-aave-v3-matic/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-16-aave-v3-matic/v2.1.1"
+    ]
+  },
+  "56_Aave V3": {
+    "version": "2.1.1",
+    "subgraphs": [
+      "https://api.studio.thegraph.com/query/70792/id-1-aave-v3-bsc/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-2-aave-v3-bsc/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-3-aave-v3-bsc/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-4-aave-v3-bsc/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-5-aave-v3-bsc/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-6-aave-v3-bsc/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-7-aave-v3-bsc/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-8-aave-v3-bsc/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-9-aave-v3-bsc/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-10-aave-v3-bsc/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-11-aave-v3-bsc/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-12-aave-v3-bsc/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-13-aave-v3-bsc/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-14-aave-v3-bsc/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-15-aave-v3-bsc/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-16-aave-v3-bsc/v2.1.1"
+    ]
+  },
+  "10_Aave V3": {
+    "version": "2.1.1",
+    "subgraphs": [
+      "https://api.studio.thegraph.com/query/70792/id-1-aave-v3-optimism/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-2-aave-v3-optimism/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-3-aave-v3-optimism/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-4-aave-v3-optimism/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-5-aave-v3-optimism/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-6-aave-v3-optimism/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-7-aave-v3-optimism/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-8-aave-v3-optimism/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-9-aave-v3-optimism/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-10-aave-v3-optimism/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-11-aave-v3-optimism/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-12-aave-v3-optimism/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-13-aave-v3-optimism/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-14-aave-v3-optimism/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-15-aave-v3-optimism/v2.1.1",
+      "https://api.studio.thegraph.com/query/70792/id-16-aave-v3-optimism/v2.1.1"
+    ]
+  },
+  "1_Spark": {
+    "version": "0.0.7",
+    "subgraphs": [
+      "https://api.studio.thegraph.com/query/70792/test-spark-mainnet/v0.0.7"
+    ]
+  },
+  "1_Compound V2": {
+    "version": "0.0.11",
+    "subgraphs": [
+      "https://api.studio.thegraph.com/query/70792/id-5-compound-v2-mainnet/v0.0.11",
+      "https://api.studio.thegraph.com/query/70792/id-6-compound-v2-mainnet/v0.0.11",
+      "https://api.studio.thegraph.com/query/70792/id-7-compound-v2-mainnet/v0.0.11",
+      "https://api.studio.thegraph.com/query/70792/id-8-compound-v2-mainnet/v0.0.11",
+      "https://api.studio.thegraph.com/query/70792/id-9-compound-v2-mainnet/v0.0.11",
+      "https://api.studio.thegraph.com/query/70792/id-10-compound-v2-mainnet/v0.0.11",
+      "https://api.studio.thegraph.com/query/70792/id-11-compound-v2-mainnet/v0.0.11",
+      "https://api.studio.thegraph.com/query/70792/id-12-compound-v2-mainnet/v0.0.11",
+      "https://api.studio.thegraph.com/query/70792/id-13-compound-v2-mainnet/v0.0.11",
+      "https://api.studio.thegraph.com/query/70792/id-14-compound-v2-mainnet/v0.0.11",
+      "https://api.studio.thegraph.com/query/70792/id-15-compound-v2-mainnet/v0.0.11",
+      "https://api.studio.thegraph.com/query/70792/id-16-compound-v2-mainnet/v0.0.11"
+    ]
+  },
+  "56_Venus Protocol": {
+    "version": "0.0.6",
+    "subgraphs": [
+      "https://api.studio.thegraph.com/query/70792/test-venus-protocol-bsc/v0.0.6"
+    ]
+  },
+  "59144_Mendi Finance": [
+    "https://api.studio.thegraph.com/query/70792/id-1-mendi-finance-linea/v0.1.1",
+    "https://api.studio.thegraph.com/query/70792/id-2-mendi-finance-linea/v0.1.1",
+    "https://api.studio.thegraph.com/query/70792/id-3-mendi-finance-linea/v0.1.1",
+    "https://api.studio.thegraph.com/query/70792/id-4-mendi-finance-linea/v0.1.1",
+    "https://api.studio.thegraph.com/query/70792/id-5-mendi-finance-linea/v0.1.1",
+    "https://api.studio.thegraph.com/query/70792/id-6-mendi-finance-linea/v0.1.1",
+    "https://api.studio.thegraph.com/query/70792/id-7-mendi-finance-linea/v0.1.1",
+    "https://api.studio.thegraph.com/query/70792/id-8-mendi-finance-linea/v0.1.1",
+    "https://api.studio.thegraph.com/query/70792/id-9-mendi-finance-linea/v0.1.1",
+    "https://api.studio.thegraph.com/query/70792/id-10-mendi-finance-linea/v0.1.1",
+    "https://api.studio.thegraph.com/query/70792/id-11-mendi-finance-linea/v0.1.1",
+    "https://api.studio.thegraph.com/query/70792/id-12-mendi-finance-linea/v0.1.1",
+    "https://api.studio.thegraph.com/query/70792/id-13-mendi-finance-linea/v0.1.1",
+    "https://api.studio.thegraph.com/query/70792/id-14-mendi-finance-linea/v0.1.1",
+    "https://api.studio.thegraph.com/query/70792/id-15-mendi-finance-linea/v0.1.1",
+    "https://api.studio.thegraph.com/query/70792/id-16-mendi-finance-linea/v0.1.1"
+  ],
+  "59144_LayerBank": {
+    "version": "0.0.1",
+    "subgraphs": [
+      "https://api.studio.thegraph.com/query/70792/test-layerbank-linea/v0.0.1"
+    ]
+  },
+  "34443_LayerBank": {
+    "version": "0.0.1",
+    "subgraphs": [
+      "https://api.studio.thegraph.com/query/70792/test-layerbank-v2-mode-mainnet/v0.0.1"
+    ]
+  },
+  "534352_LayerBank": {
+    "version": "0.0.1",
+    "subgraphs": [
+      "https://api.studio.thegraph.com/query/70792/test-layerbank-scroll/v0.0.1"
+    ]
+  },
+  "1_ZeroLend": {
+    "version": "0.2.0",
+    "subgraphs": [
+      "https://api.studio.thegraph.com/query/70792/id-1-zerolend-mainnet/v0.2.0",
+      "https://api.studio.thegraph.com/query/70792/id-2-zerolend-mainnet/v0.2.0",
+      "https://api.studio.thegraph.com/query/70792/id-3-zerolend-mainnet/v0.2.0",
+      "https://api.studio.thegraph.com/query/70792/id-4-zerolend-mainnet/v0.2.0",
+      "https://api.studio.thegraph.com/query/70792/id-5-zerolend-mainnet/v0.2.0",
+      "https://api.studio.thegraph.com/query/70792/id-6-zerolend-mainnet/v0.2.0",
+      "https://api.studio.thegraph.com/query/70792/id-7-zerolend-mainnet/v0.2.0",
+      "https://api.studio.thegraph.com/query/70792/id-8-zerolend-mainnet/v0.2.0",
+      "https://api.studio.thegraph.com/query/70792/id-9-zerolend-mainnet/v0.2.0",
+      "https://api.studio.thegraph.com/query/70792/id-10-zerolend-mainnet/v0.2.0",
+      "https://api.studio.thegraph.com/query/70792/id-11-zerolend-mainnet/v0.2.0",
+      "https://api.studio.thegraph.com/query/70792/id-12-zerolend-mainnet/v0.2.0",
+      "https://api.studio.thegraph.com/query/70792/id-13-zerolend-mainnet/v0.2.0",
+      "https://api.studio.thegraph.com/query/70792/id-14-zerolend-mainnet/v0.2.0",
+      "https://api.studio.thegraph.com/query/70792/id-15-zerolend-mainnet/v0.2.0",
+      "https://api.studio.thegraph.com/query/70792/id-16-zerolend-mainnet/v0.2.0"
+    ]
+  },
+  "324_ZeroLend": {
+    "version": "0.2.0",
+    "subgraphs": [
+      "https://api.studio.thegraph.com/query/70792/id-1-zerolend-zksync-era/v0.2.0",
+      "https://api.studio.thegraph.com/query/70792/id-2-zerolend-zksync-era/v0.2.0",
+      "https://api.studio.thegraph.com/query/70792/id-3-zerolend-zksync-era/v0.2.0",
+      "https://api.studio.thegraph.com/query/70792/id-4-zerolend-zksync-era/v0.2.0",
+      "https://api.studio.thegraph.com/query/70792/id-5-zerolend-zksync-era/v0.2.0",
+      "https://api.studio.thegraph.com/query/70792/id-6-zerolend-zksync-era/v0.2.0",
+      "https://api.studio.thegraph.com/query/70792/id-7-zerolend-zksync-era/v0.2.0",
+      "https://api.studio.thegraph.com/query/70792/id-8-zerolend-zksync-era/v0.2.0",
+      "https://api.studio.thegraph.com/query/70792/id-9-zerolend-zksync-era/v0.2.0",
+      "https://api.studio.thegraph.com/query/70792/id-10-zerolend-zksync-era/v0.2.0",
+      "https://api.studio.thegraph.com/query/70792/id-11-zerolend-zksync-era/v0.2.0",
+      "https://api.studio.thegraph.com/query/70792/id-12-zerolend-zksync-era/v0.2.0",
+      "https://api.studio.thegraph.com/query/70792/id-13-zerolend-zksync-era/v0.2.0",
+      "https://api.studio.thegraph.com/query/70792/id-14-zerolend-zksync-era/v0.2.0",
+      "https://api.studio.thegraph.com/query/70792/id-15-zerolend-zksync-era/v0.2.0",
+      "https://api.studio.thegraph.com/query/70792/id-16-zerolend-zksync-era/v0.2.0"
+    ]
+  },
+  "81457_ZeroLend": {
+    "version": "0.2.0",
+    "subgraphs": [
+      "https://api.studio.thegraph.com/query/70792/id-1-zerolend-blast-mainnet/v0.2.0",
+      "https://api.studio.thegraph.com/query/70792/id-2-zerolend-blast-mainnet/v0.2.0",
+      "https://api.studio.thegraph.com/query/70792/id-3-zerolend-blast-mainnet/v0.2.0",
+      "https://api.studio.thegraph.com/query/70792/id-4-zerolend-blast-mainnet/v0.2.0",
+      "https://api.studio.thegraph.com/query/70792/id-5-zerolend-blast-mainnet/v0.2.0",
+      "https://api.studio.thegraph.com/query/70792/id-6-zerolend-blast-mainnet/v0.2.0",
+      "https://api.studio.thegraph.com/query/70792/id-7-zerolend-blast-mainnet/v0.2.0",
+      "https://api.studio.thegraph.com/query/70792/id-8-zerolend-blast-mainnet/v0.2.0",
+      "https://api.studio.thegraph.com/query/70792/id-9-zerolend-blast-mainnet/v0.2.0",
+      "https://api.studio.thegraph.com/query/70792/id-10-zerolend-blast-mainnet/v0.2.0",
+      "https://api.studio.thegraph.com/query/70792/id-11-zerolend-blast-mainnet/v0.2.0",
+      "https://api.studio.thegraph.com/query/70792/id-12-zerolend-blast-mainnet/v0.2.0",
+      "https://api.studio.thegraph.com/query/70792/id-13-zerolend-blast-mainnet/v0.2.0",
+      "https://api.studio.thegraph.com/query/70792/id-14-zerolend-blast-mainnet/v0.2.0",
+      "https://api.studio.thegraph.com/query/70792/id-15-zerolend-blast-mainnet/v0.2.0",
+      "https://api.studio.thegraph.com/query/70792/id-16-zerolend-blast-mainnet/v0.2.0"
+    ]
+  },
+  "59144_ZeroLend": {
+    "version": "0.2.0",
+    "subgraphs": [
+      "https://api.studio.thegraph.com/query/70792/id-1-zerolend-linea/v0.2.0",
+      "https://api.studio.thegraph.com/query/70792/id-2-zerolend-linea/v0.2.0",
+      "https://api.studio.thegraph.com/query/70792/id-3-zerolend-linea/v0.2.0",
+      "https://api.studio.thegraph.com/query/70792/id-4-zerolend-linea/v0.2.0",
+      "https://api.studio.thegraph.com/query/70792/id-5-zerolend-linea/v0.2.0",
+      "https://api.studio.thegraph.com/query/70792/id-6-zerolend-linea/v0.2.0",
+      "https://api.studio.thegraph.com/query/70792/id-7-zerolend-linea/v0.2.0",
+      "https://api.studio.thegraph.com/query/70792/id-8-zerolend-linea/v0.2.0",
+      "https://api.studio.thegraph.com/query/70792/id-9-zerolend-linea/v0.2.0",
+      "https://api.studio.thegraph.com/query/70792/id-10-zerolend-linea/v0.2.0",
+      "https://api.studio.thegraph.com/query/70792/id-11-zerolend-linea/v0.2.0",
+      "https://api.studio.thegraph.com/query/70792/id-12-zerolend-linea/v0.2.0",
+      "https://api.studio.thegraph.com/query/70792/id-13-zerolend-linea/v0.2.0",
+      "https://api.studio.thegraph.com/query/70792/id-14-zerolend-linea/v0.2.0",
+      "https://api.studio.thegraph.com/query/70792/id-15-zerolend-linea/v0.2.0",
+      "https://api.studio.thegraph.com/query/70792/id-16-zerolend-linea/v0.2.0"
+    ]
+  },
+  "81457_Zerolend": {
+    "subgraphs": []
+  },
+  "534352_Syncswap": [
+    "https://api.studio.thegraph.com/query/67380/id-1-syncswap-scroll/v1.4.3",
+    "https://api.studio.thegraph.com/query/67380/id-2-syncswap-scroll/v1.4.3",
+    "https://api.studio.thegraph.com/query/67380/id-3-syncswap-scroll/v1.4.3",
+    "https://api.studio.thegraph.com/query/67380/id-4-syncswap-scroll/v1.4.3",
+    "https://api.studio.thegraph.com/query/67380/id-5-syncswap-scroll/v1.4.3",
+    "https://api.studio.thegraph.com/query/67380/id-6-syncswap-scroll/v1.4.3",
+    "https://api.studio.thegraph.com/query/67380/id-7-syncswap-scroll/v1.4.3",
+    "https://api.studio.thegraph.com/query/67380/id-8-syncswap-scroll/v1.4.3",
+    "https://api.studio.thegraph.com/query/67380/id-9-syncswap-scroll/v1.4.3",
+    "https://api.studio.thegraph.com/query/67380/id-10-syncswap-scroll/v1.4.3",
+    "https://api.studio.thegraph.com/query/67380/id-11-syncswap-scroll/v1.4.3",
+    "https://api.studio.thegraph.com/query/67380/id-12-syncswap-scroll/v1.4.3",
+    "https://api.studio.thegraph.com/query/67380/id-13-syncswap-scroll/v1.4.3",
+    "https://api.studio.thegraph.com/query/67380/id-14-syncswap-scroll/v1.4.3",
+    "https://api.studio.thegraph.com/query/67380/id-15-syncswap-scroll/v1.4.3",
+    "https://api.studio.thegraph.com/query/67380/id-16-syncswap-scroll/v1.4.3"
+  ],
+  "59144_Syncswap": [
+    "https://api.studio.thegraph.com/query/67380/id-1-syncswap-linea/v1.4.3",
+    "https://api.studio.thegraph.com/query/67380/id-2-syncswap-linea/v1.4.3",
+    "https://api.studio.thegraph.com/query/67380/id-3-syncswap-linea/v1.4.3",
+    "https://api.studio.thegraph.com/query/67380/id-4-syncswap-linea/v1.4.3",
+    "https://api.studio.thegraph.com/query/67380/id-5-syncswap-linea/v1.4.3",
+    "https://api.studio.thegraph.com/query/67380/id-6-syncswap-linea/v1.4.3",
+    "https://api.studio.thegraph.com/query/67380/id-7-syncswap-linea/v1.4.3",
+    "https://api.studio.thegraph.com/query/67380/id-8-syncswap-linea/v1.4.3",
+    "https://api.studio.thegraph.com/query/67380/id-9-syncswap-linea/v1.4.3",
+    "https://api.studio.thegraph.com/query/67380/id-10-syncswap-linea/v1.4.3",
+    "https://api.studio.thegraph.com/query/67380/id-11-syncswap-linea/v1.4.3",
+    "https://api.studio.thegraph.com/query/67380/id-12-syncswap-linea/v1.4.3",
+    "https://api.studio.thegraph.com/query/67380/id-13-syncswap-linea/v1.4.3",
+    "https://api.studio.thegraph.com/query/67380/id-14-syncswap-linea/v1.4.3",
+    "https://api.studio.thegraph.com/query/67380/id-15-syncswap-linea/v1.4.3",
+    "https://api.studio.thegraph.com/query/67380/id-16-syncswap-linea/v1.4.3"
+  ],
+  "324_Syncswap": [
+    "https://api.studio.thegraph.com/query/67380/id-1-syncswap-zksync-era/v1.4.2",
+    "https://api.studio.thegraph.com/query/67380/id-2-syncswap-zksync-era/v1.4.2",
+    "https://api.studio.thegraph.com/query/67380/id-3-syncswap-zksync-era/v1.4.2",
+    "https://api.studio.thegraph.com/query/67380/id-4-syncswap-zksync-era/v1.4.2",
+    "https://api.studio.thegraph.com/query/67380/id-5-syncswap-zksync-era/v1.4.2",
+    "https://api.studio.thegraph.com/query/67380/id-6-syncswap-zksync-era/v1.4.2",
+    "https://api.studio.thegraph.com/query/67380/id-7-syncswap-zksync-era/v1.4.2",
+    "https://api.studio.thegraph.com/query/67380/id-8-syncswap-zksync-era/v1.4.2",
+    "https://api.studio.thegraph.com/query/67380/id-9-syncswap-zksync-era/v1.4.2",
+    "https://api.studio.thegraph.com/query/67380/id-10-syncswap-zksync-era/v1.4.2",
+    "https://api.studio.thegraph.com/query/67380/id-11-syncswap-zksync-era/v1.4.2",
+    "https://api.studio.thegraph.com/query/67380/id-12-syncswap-zksync-era/v1.4.2",
+    "https://api.studio.thegraph.com/query/67380/id-13-syncswap-zksync-era/v1.4.2",
+    "https://api.studio.thegraph.com/query/67380/id-14-syncswap-zksync-era/v1.4.2",
+    "https://api.studio.thegraph.com/query/67380/id-15-syncswap-zksync-era/v1.4.2",
+    "https://api.studio.thegraph.com/query/67380/id-16-syncswap-zksync-era/v1.4.2"
+  ]
+}
