@@ -148,9 +148,10 @@ export class AmbientHelper extends InvestmentHelper {
     }
   }
   tickToPositionTag(tickLower: i32, tickUpper: i32): string {
-    return tickLower.toString() + "_" + tickUpper.toString();
+    const positionTag = tickLower.toString() + "_" + tickUpper.toString();
+    return positionTag.replaceAll('-', '!');
   }
   tagToTicks(tag: string): i32[] {
-    return tag.split("_").map<i32>((x) => BigInt.fromString(x).toI32());
+    return tag.replaceAll('!', '-').split("_").map<i32>((x) => BigInt.fromString(x).toI32());
   }
 }
