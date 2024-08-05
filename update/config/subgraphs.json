@@ -60,15 +60,17 @@
     ]
   },
   "81457_Ambient": {
-    "version": "3.0.0",
+    "version": "3.0.1",
     "subgraphs": [
-      "https://api.studio.thegraph.com/query/70792/test-ambient-blast-mainnet/v3.0.0"
+      "https://api.studio.thegraph.com/query/70792/test-ambient-blast-mainnet/v3.0.0",
+      "https://api.studio.thegraph.com/query/70792/test-ambient-blast-mainnet/v3.0.1"
     ]
   },
   "534352_Ambient": {
-    "version": "3.0.0",
+    "version": "3.0.5",
     "subgraphs": [
-      "https://api.studio.thegraph.com/query/70792/test-ambient-scroll/v3.0.0"
+      "https://api.studio.thegraph.com/query/70792/test-ambient-scroll/v3.0.0",
+      "https://api.studio.thegraph.com/query/70792/test-ambient-scroll/v3.0.5"
     ]
   },
   "42161_Aave V3": {
