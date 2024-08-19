@@ -50,13 +50,10 @@ export function handleWarmCmd(event: CrocWarmCmd): void {
   const data = new WarmCmdEventData(event, params);
   const positionTag = data.helper.tickToPositionTag(data.tl, data.tu);
 
-  const crocSwapDex = dataSource.address();
-  if (!event.transaction.to) throw new Error("Unreachable error");
-  const owner = event.transaction.to!.equals(crocSwapDex)
-    ? event.transaction.from
-    : event.transaction.to;
+  const owner = findOwner(event);
   if (!matchAddress(owner)) return;
-  const positionId = data.helper.getInvestPositionId(owner!, positionTag);
+
+  const positionId = data.helper.getInvestPositionId(owner, positionTag);
   const position = Position.load(positionId);
   let principals: AmbientPrincipal;
   let rewards: AmbientReward;
@@ -96,7 +93,9 @@ export function handleWarmCmd(event: CrocWarmCmd): void {
       rewardAmountDelta = [BigInt.zero(), BigInt.zero()];
       tag = data.helper.tickToPositionTag(data.tl, data.tu);
       if (!position) {
-        log.warning("Unreachable: Invalid Position", [event.transaction.hash.toHexString()]);
+        log.warning("Unreachable: Invalid Position", [
+          event.transaction.hash.toHexString(),
+        ]);
         return;
       }
 
@@ -177,7 +176,7 @@ export function handleWarmCmd(event: CrocWarmCmd): void {
     changeAction,
     data.helper,
     new PositionParams(
-      owner!,
+      owner,
       data.helper.tickToPositionTag(data.tl, data.tu), // tag
       PositionType.Invest, // type
       [principals.amount0, principals.amount1], // inputAmounts
@@ -193,17 +192,16 @@ export function handleWarmCmd(event: CrocWarmCmd): void {
 export function handleMicroMintRange(event: CrocMicroMintRange): void {
   const invetmentAddress = dataSource.address();
   const data = new MicroMintRangeEventData(event, invetmentAddress);
-  const crocSwapDex = dataSource.address();
-  const owner = event.transaction.to!.equals(crocSwapDex)
-    ? event.transaction.from
-    : event.transaction.to;
+
+  const owner = findOwner(event);
   if (!matchAddress(owner)) return;
+
   savePositionChange(
     event,
     PositionChangeAction.Deposit,
     data.helper,
     new PositionParams(
-      owner!,
+      owner,
       data.helper.tickToPositionTag(data.tl, data.tu), // tag
       PositionType.Invest, // type
       [data.principals.amount0, data.principals.amount1], // inputAmounts
@@ -220,17 +218,14 @@ export function handleMicroBurnRange(event: CrocMicroBurnRange): void {
   const invetmentAddress = dataSource.address();
   const data = new MicroBurnRangeEventData(event, invetmentAddress);
 
-  const crocSwapDex = dataSource.address();
-  const owner = event.transaction.to!.equals(crocSwapDex)
-    ? event.transaction.from
-    : event.transaction.to;
+  const owner = findOwner(event);
   if (!matchAddress(owner)) return;
   savePositionChange(
     event,
     PositionChangeAction.Withdraw,
     data.helper,
     new PositionParams(
-      owner!,
+      owner,
       data.helper.tickToPositionTag(data.tl, data.tu), // tag
       PositionType.Invest, // type
       [data.principals.amount0, data.principals.amount1], // inputAmounts
@@ -246,17 +241,15 @@ export function handleMicroBurnRange(event: CrocMicroBurnRange): void {
 export function handleMicroMintAmbient(event: CrocMicroMintAmbient): void {
   const invetmentAddress = dataSource.address();
   const data = new MicroMintAmbientEventData(event, invetmentAddress);
-  const crocSwapDex = dataSource.address();
-  const owner = event.transaction.to!.equals(crocSwapDex)
-    ? event.transaction.from
-    : event.transaction.to;
+
+  const owner = findOwner(event);
   if (!matchAddress(owner)) return;
   savePositionChange(
     event,
     PositionChangeAction.Withdraw,
     data.helper,
     new PositionParams(
-      owner!,
+      owner,
       AmbientHelper.AMBIENT_POSITION, // tag
       PositionType.Invest, // type
       [data.principals.amount0, data.principals.amount1], // inputAmounts
@@ -271,17 +264,16 @@ export function handleMicroMintAmbient(event: CrocMicroMintAmbient): void {
 export function handleMicroBurnAmbient(event: CrocMicroBurnAmbient): void {
   const invetmentAddress = dataSource.address();
   const data = new MicroBurnAmbientEventData(event, invetmentAddress);
-  const crocSwapDex = dataSource.address();
-  const owner = event.transaction.to!.equals(crocSwapDex)
-    ? event.transaction.from
-    : event.transaction.to;
+
+  const owner = findOwner(event);
   if (!matchAddress(owner)) return;
+
   savePositionChange(
     event,
     PositionChangeAction.Withdraw,
     data.helper,
     new PositionParams(
-      owner!,
+      owner,
       AmbientHelper.AMBIENT_POSITION, // tag
       PositionType.Invest, // type
       [data.principals.amount0, data.principals.amount1], // inputAmounts
@@ -397,6 +389,14 @@ export function decodeWarmPathCode(code: i32): AmbientCode {
     default:
       return AmbientCode.Error;
   }
+}
+
+function findOwner(event: ethereum.Event): Address {
+  const to = event.transaction.to;
+  if (!to) throw new Error("Unreachable error");
+
+  const crocSwapDex = dataSource.address();
+  return to.equals(crocSwapDex) ? event.transaction.from : to;
 }
 
 // export function handleCrocKnockout(event: CrocKnockoutCmd): void {

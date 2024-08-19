@@ -1,4 +1,5 @@
 {
+  "version": "1.0.0",
   "network": "blast-mainnet",
   "Dex": "0xaAaaaAAAFfe404EE9433EEf0094b6382D81fb958",
   "Query": "0xA3BD3bE19012De72190c885FB270beb93e36a8A7",

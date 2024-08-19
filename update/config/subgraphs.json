@@ -80,10 +80,14 @@
       "https://api.studio.thegraph.com/query/70792/test-ambient-blast-mainnet/v3.0.0"
     ]
   },
-  "534352_Ambient": {
-    "version": "3.0.1",
-    "subgraphs": []
-  },
+  "534352_Ambient": [
+    "https://api.studio.thegraph.com/query/70792/id-1-ambient-scroll/v1.0.0",
+    "https://api.studio.thegraph.com/query/70792/id-2-ambient-scroll/v1.0.0",
+    "https://api.studio.thegraph.com/query/70792/id-3-ambient-scroll/v1.0.0",
+    "https://api.studio.thegraph.com/query/70792/id-4-ambient-scroll/v1.0.0",
+    "https://api.studio.thegraph.com/query/70792/id-5-ambient-scroll/v1.0.0",
+    "https://api.studio.thegraph.com/query/70792/id-6-ambient-scroll/v1.0.0"
+  ],
   "42161_Aave V3": {
     "version": "2.1.1",
     "subgraphs": [
