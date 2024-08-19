@@ -4,7 +4,7 @@
 network=""
 protocol=""
 env=""
-
+graphId="null"
 # 모든 인자를 반복하며 처리
 for arg in "$@"; do
     case "$arg" in
@@ -148,6 +148,7 @@ if [ "$subgraphs_length" -eq 16 ]; then
     done
 else
     # JSON 파일에 graphId 및 totalGraphs 값을 추가하여 temp.json 파일 생성
+    echo definitions/"$protocol"/"$protocol"."$network".json
     jq ".graphId = $graphId | .totalGraphs = $totalGraphs" definitions/"$protocol"/"$protocol"."$network".json >temp.json
 
     # mustache 명령어를 사용하여 템플릿 렌더링

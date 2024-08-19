@@ -60,7 +60,7 @@
     ]
   },
   "81457_Ambient": {
-    "version": "3.0.0",
+    "version": "3.0.1",
     "subgraphs": [
       "https://api.studio.thegraph.com/query/70792/test-ambient-blast-mainnet/v3.0.0",
       "https://api.studio.thegraph.com/query/70792/test-ambient-blast-mainnet/v3.0.0",
@@ -127,22 +127,22 @@
     ]
   },
   "534352_Aave V3": [
-    "https://api.studio.thegraph.com/query/70792/id-1-aave-v3-scroll/v2.2.0",
-    "https://api.studio.thegraph.com/query/70792/id-2-aave-v3-scroll/v2.2.0",
-    "https://api.studio.thegraph.com/query/70792/id-3-aave-v3-scroll/v2.2.0",
-    "https://api.studio.thegraph.com/query/70792/id-4-aave-v3-scroll/v2.2.0",
-    "https://api.studio.thegraph.com/query/70792/id-5-aave-v3-scroll/v2.2.0",
-    "https://api.studio.thegraph.com/query/70792/id-6-aave-v3-scroll/v2.2.0",
-    "https://api.studio.thegraph.com/query/70792/id-7-aave-v3-scroll/v2.2.0",
-    "https://api.studio.thegraph.com/query/70792/id-8-aave-v3-scroll/v2.2.0",
-    "https://api.studio.thegraph.com/query/70792/id-9-aave-v3-scroll/v2.2.0",
-    "https://api.studio.thegraph.com/query/70792/id-10-aave-v3-scroll/v2.2.0",
-    "https://api.studio.thegraph.com/query/70792/id-11-aave-v3-scroll/v2.2.0",
-    "https://api.studio.thegraph.com/query/70792/id-12-aave-v3-scroll/v2.2.0",
-    "https://api.studio.thegraph.com/query/70792/id-13-aave-v3-scroll/v2.2.0",
-    "https://api.studio.thegraph.com/query/70792/id-14-aave-v3-scroll/v2.2.0",
-    "https://api.studio.thegraph.com/query/70792/id-15-aave-v3-scroll/v2.2.0",
-    "https://api.studio.thegraph.com/query/70792/id-16-aave-v3-scroll/v2.2.0"
+    "https://api.studio.thegraph.com/query/67380/id-1-aave-v3-scroll/v2.2.4",
+    "https://api.studio.thegraph.com/query/67380/id-2-aave-v3-scroll/v2.2.4",
+    "https://api.studio.thegraph.com/query/67380/id-3-aave-v3-scroll/v2.2.4",
+    "https://api.studio.thegraph.com/query/67380/id-4-aave-v3-scroll/v2.2.4",
+    "https://api.studio.thegraph.com/query/67380/id-5-aave-v3-scroll/v2.2.4",
+    "https://api.studio.thegraph.com/query/67380/id-6-aave-v3-scroll/v2.2.4",
+    "https://api.studio.thegraph.com/query/67380/id-7-aave-v3-scroll/v2.2.4",
+    "https://api.studio.thegraph.com/query/67380/id-8-aave-v3-scroll/v2.2.4",
+    "https://api.studio.thegraph.com/query/67380/id-9-aave-v3-scroll/v2.2.4",
+    "https://api.studio.thegraph.com/query/67380/id-10-aave-v3-scroll/v2.2.4",
+    "https://api.studio.thegraph.com/query/67380/id-11-aave-v3-scroll/v2.2.4",
+    "https://api.studio.thegraph.com/query/67380/id-12-aave-v3-scroll/v2.2.4",
+    "https://api.studio.thegraph.com/query/67380/id-13-aave-v3-scroll/v2.2.4",
+    "https://api.studio.thegraph.com/query/67380/id-14-aave-v3-scroll/v2.2.4",
+    "https://api.studio.thegraph.com/query/67380/id-15-aave-v3-scroll/v2.2.4",
+    "https://api.studio.thegraph.com/query/67380/id-16-aave-v3-scroll/v2.2.4"
   ],
   "8453_Aave V3": {
     "version": "2.1.1",
@@ -257,12 +257,24 @@
       "https://api.studio.thegraph.com/query/70792/test-venus-protocol-bsc/v0.0.6"
     ]
   },
-  "59144_Mendi Finance": {
-    "version": "0.0.2",
-    "subgraphs": [
-      "https://api.studio.thegraph.com/query/70792/test-mendi-finance-linea/v0.0.2"
-    ]
-  },
+  "59144_Mendi Finance": [
+    "https://api.studio.thegraph.com/query/70792/id-1-mendi-finance-linea/v0.1.1",
+    "https://api.studio.thegraph.com/query/70792/id-2-mendi-finance-linea/v0.1.1",
+    "https://api.studio.thegraph.com/query/70792/id-3-mendi-finance-linea/v0.1.1",
+    "https://api.studio.thegraph.com/query/70792/id-4-mendi-finance-linea/v0.1.1",
+    "https://api.studio.thegraph.com/query/70792/id-5-mendi-finance-linea/v0.1.1",
+    "https://api.studio.thegraph.com/query/70792/id-6-mendi-finance-linea/v0.1.1",
+    "https://api.studio.thegraph.com/query/70792/id-7-mendi-finance-linea/v0.1.1",
+    "https://api.studio.thegraph.com/query/70792/id-8-mendi-finance-linea/v0.1.1",
+    "https://api.studio.thegraph.com/query/70792/id-9-mendi-finance-linea/v0.1.1",
+    "https://api.studio.thegraph.com/query/70792/id-10-mendi-finance-linea/v0.1.1",
+    "https://api.studio.thegraph.com/query/70792/id-11-mendi-finance-linea/v0.1.1",
+    "https://api.studio.thegraph.com/query/70792/id-12-mendi-finance-linea/v0.1.1",
+    "https://api.studio.thegraph.com/query/70792/id-13-mendi-finance-linea/v0.1.1",
+    "https://api.studio.thegraph.com/query/70792/id-14-mendi-finance-linea/v0.1.1",
+    "https://api.studio.thegraph.com/query/70792/id-15-mendi-finance-linea/v0.1.1",
+    "https://api.studio.thegraph.com/query/70792/id-16-mendi-finance-linea/v0.1.1"
+  ],
   "59144_LayerBank": {
     "version": "0.0.1",
     "subgraphs": [

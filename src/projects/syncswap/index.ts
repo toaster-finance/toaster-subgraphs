@@ -45,10 +45,10 @@ export function handleBlock(block: ethereum.Block): void {
   const totalSupply = try_totalSupply.value;
   const l = new SyncSwapHelper(pool._address).getLiquidityInfo(block);
 
-  const currentBatchId = i32(parseInt(l.investment.meta[0]));
   const positions = l.investment.positions.load();
-
+  const currentBatchId = i32(parseInt(l.investment.meta[0]));
   const batch = dataSource.context().getI32("snapshotBatch"); // 256
+
   for (let i = 0; i < positions.length; i += 1) {
     const addrBatchId = calcBatchIdFromAddr(positions[i].owner, batch);
     if (addrBatchId != currentBatchId) continue;

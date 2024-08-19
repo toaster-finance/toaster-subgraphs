@@ -30,6 +30,9 @@ dataSources:
       poolAddressProvider:
         type: String
         data: "{{PoolAddressProvider}}"
+      WETHGateway:
+        type: String
+        data: "{{WETHGateway}}"
       snapshotBatch:
         type: Int
         data: {{snapshotBatch}} 

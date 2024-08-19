@@ -1,5 +1,5 @@
 {
-  "version": "2.2.0",
+  "version": "2.2.4",
   "network": "scroll",
   "protocolName": "AaveV3",
   "Pool": "0x11fCfe756c05AD438e312a7fd934381537D3cFfe",
