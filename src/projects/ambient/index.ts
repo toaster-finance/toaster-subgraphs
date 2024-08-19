@@ -32,6 +32,7 @@ import {
   MicroMintRangeEventData,
   WarmCmdEventData,
 } from "./type";
+import { matchAddress } from "../../common/matchAddress";
 //docs.ambient.finance/developers/dex-contract-interface/knockout-lp-calls
 
 export function handleWarmCmd(event: CrocWarmCmd): void {
@@ -54,7 +55,7 @@ export function handleWarmCmd(event: CrocWarmCmd): void {
   const owner = event.transaction.to!.equals(crocSwapDex)
     ? event.transaction.from
     : event.transaction.to;
-
+  if (!matchAddress(owner)) return;
   const positionId = data.helper.getInvestPositionId(owner!, positionTag);
   const position = Position.load(positionId);
   let principals: AmbientPrincipal;
@@ -196,6 +197,7 @@ export function handleMicroMintRange(event: CrocMicroMintRange): void {
   const owner = event.transaction.to!.equals(crocSwapDex)
     ? event.transaction.from
     : event.transaction.to;
+  if (!matchAddress(owner)) return;
   savePositionChange(
     event,
     PositionChangeAction.Deposit,
@@ -222,6 +224,7 @@ export function handleMicroBurnRange(event: CrocMicroBurnRange): void {
   const owner = event.transaction.to!.equals(crocSwapDex)
     ? event.transaction.from
     : event.transaction.to;
+  if (!matchAddress(owner)) return;
   savePositionChange(
     event,
     PositionChangeAction.Withdraw,
@@ -247,6 +250,7 @@ export function handleMicroMintAmbient(event: CrocMicroMintAmbient): void {
   const owner = event.transaction.to!.equals(crocSwapDex)
     ? event.transaction.from
     : event.transaction.to;
+  if (!matchAddress(owner)) return;
   savePositionChange(
     event,
     PositionChangeAction.Withdraw,
@@ -271,6 +275,7 @@ export function handleMicroBurnAmbient(event: CrocMicroBurnAmbient): void {
   const owner = event.transaction.to!.equals(crocSwapDex)
     ? event.transaction.from
     : event.transaction.to;
+  if (!matchAddress(owner)) return;
   savePositionChange(
     event,
     PositionChangeAction.Withdraw,
