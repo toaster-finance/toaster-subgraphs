@@ -1,4 +1,4 @@
-import { Investment, Position, Protocol } from "./../../../generated/schema";
+import { Investment, Protocol } from "./../../../generated/schema";
 import {
   Address,
   BigInt,
@@ -8,7 +8,6 @@ import {
 } from "@graphprotocol/graph-ts";
 import { MarketEntered } from "./../../../generated/Comptroller/Comptroller";
 import { CompoundV2Helper } from "./helper";
-
 import { savePositionChange } from "../../common/savePositionChange";
 import { PositionChangeAction } from "../../common/PositionChangeAction.enum";
 import { PositionParams } from "../../common/helpers/positionHelper";
@@ -24,6 +23,7 @@ import {
 import { getContextAddress } from "../../common/helpers/contextHelper";
 import { getProtocolId } from "../../common/helpers/investmentHelper";
 import { cToken as cTokenTemplate } from "../../../generated/templates";
+import { cToken } from "./../../../generated/templates/cToken/cToken";
 import { savePositionSnapshot } from "../../common/savePositionSnapshot";
 import { matchAddress } from "../../common/matchAddress";
 import { calcBatchIdFromAddr } from "../../common/calcGraphId";
@@ -45,6 +45,7 @@ export function handleMarketEntered(event: MarketEntered): void {
   cTokenContext.setI32("graphId", ctx.getI32("graphId"));
   cTokenContext.setI32("totalGraphs", ctx.getI32("totalGraphs"));
   cTokenContext.setI32("snapshotBatch", ctx.getI32("snapshotBatch"));
+  cTokenContext.setI32("startSnapshotBlock", ctx.getI32("startSnapshotBlock"));
   cTokenTemplate.createWithContext(cTokenAddr, cTokenContext);
 }
 
@@ -52,7 +53,7 @@ export function handleMint(event: Mint): void {
   const owner = event.params.minter;
   if (!matchAddress(owner)) return;
 
-  const dInputAmount = event.params.mintTokens;
+  const dInputAmount = event.params.mintAmount;
   const comptrollerAddr = getContextAddress("Comptroller");
   const mendiAddr = getContextAddress("COMP");
   const helper = new CompoundV2Helper(
@@ -60,15 +61,9 @@ export function handleMint(event: Mint): void {
     comptrollerAddr,
     mendiAddr
   );
-  const posId = helper.getInvestPositionId(owner, "");
-  const position = Position.load(posId);
   // get current underlying amount
-  let inputAmount: BigInt;
-  if (position) {
-    inputAmount = helper.getUnderlyingAmount(owner);
-  } else {
-    inputAmount = BigInt.zero();
-  }
+  const inputAmount = helper.getUnderlyingAmount(owner);
+
   savePositionChange(
     event,
     PositionChangeAction.Deposit,
@@ -93,7 +88,7 @@ export function handleRedeem(event: Redeem): void {
   const owner = event.params.redeemer;
   if (!matchAddress(owner)) return;
 
-  const dInputAmount = event.params.redeemTokens;
+  const dInputAmount = event.params.redeemAmount;
   const comptrollerAddr = getContextAddress("Comptroller");
   const mendiAddr = getContextAddress("COMP");
   const helper = new CompoundV2Helper(
@@ -240,6 +235,9 @@ export function handleLiquidateBorrow(event: LiquidateBorrow): void {
 }
 
 export function handleBlock(block: ethereum.Block): void {
+  const startSnapshotBlock = dataSource.context().getI32("startSnapshotBlock");
+  if (block.number < BigInt.fromI32(startSnapshotBlock)) return;
+
   const protocol = Protocol.load(getProtocolId(CompoundV2Helper.protocolName));
   if (!protocol) return;
 
@@ -300,53 +298,63 @@ export function handleBlock(block: ethereum.Block): void {
 
 export function handleTransfer(event: Transfer): void {
   if (event.params.value.equals(BigInt.zero())) return;
-  let action: PositionChangeAction;
-  let sender: Address;
-  let receiver: Address;
-  if (event.params.from.equals(Address.zero())) return; // Supply
-  if (event.params.to.equals(Address.zero())) return; // Withdraw
-  action = PositionChangeAction.Send;
-  sender = event.params.from; // aToken amount decrease
-  receiver = event.params.to; // aToken amount increase
+  if (event.params.from.equals(event.address)) return; // Supply
+  if (event.params.to.equals(event.address)) return; // Withdraw
+
+  if (!matchAddress(event.params.from) && !matchAddress(event.params.to))
+    return;
+
+  const sender = event.params.from; // aToken amount decrease
+  const receiver = event.params.to; // aToken amount increase
+  const sendingTokenAmount = event.params.value;
+  const exchangeRate = cToken.bind(event.address).exchangeRateStored();
+  const sendingAmount = sendingTokenAmount
+    .times(exchangeRate)
+    .div(BigInt.fromI32(10).pow(18));
+
   const helper = new CompoundV2Helper(
     event.address,
     getContextAddress("Comptroller"),
     getContextAddress("COMP")
   );
-  const senderUnderlyingAmount = helper.getUnderlyingAmount(sender);
-  const receiverUnderlyingAmount = helper.getUnderlyingAmount(receiver);
-  const sendingAmount = event.params.value;
-  savePositionChange(
-    event,
-    action,
-    helper,
-    new PositionParams(
-      sender,
-      "",
-      PositionType.Invest,
-      [senderUnderlyingAmount],
-      [],
-      BigInt.zero(),
-      []
-    ),
-    [sendingAmount.neg()], // + : deposit, - :withdraw
-    [BigInt.zero()]
-  );
 
-  savePositionChange(
-    event,
-    action,
-    helper,
-    new PositionParams(
-      receiver,
-      "",
-      PositionType.Invest,
-      [receiverUnderlyingAmount],
-      [],
-      BigInt.zero(),
+  if (matchAddress(sender)) {
+    const senderUnderlyingAmount = helper.getUnderlyingAmount(sender);
+    savePositionChange(
+      event,
+      PositionChangeAction.Send,
+      helper,
+      new PositionParams(
+        sender,
+        "",
+        PositionType.Invest,
+        [senderUnderlyingAmount],
+        [],
+        BigInt.zero(),
+        []
+      ),
+      [sendingAmount.neg()], // + : deposit, - :withdraw
       []
-    ),
-    [sendingAmount],
-    [BigInt.zero()]
-  );
+    );
+  }
+
+  if (matchAddress(receiver)) {
+    const receiverUnderlyingAmount = helper.getUnderlyingAmount(receiver);
+    savePositionChange(
+      event,
+      PositionChangeAction.Receive,
+      helper,
+      new PositionParams(
+        receiver,
+        "",
+        PositionType.Invest,
+        [receiverUnderlyingAmount],
+        [],
+        BigInt.zero(),
+        []
+      ),
+      [sendingAmount],
+      []
+    );
+  }
 }

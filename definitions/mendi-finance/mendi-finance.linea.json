@@ -1,10 +1,10 @@
 {
-  "version": "0.1.1",
+  "version": "0.1.7",
   "network": "linea",
   "Comptroller": "0x1b4d3b0421dDc1eB216D230Bc01527422Fb93103",
   "COMP": "0x43E8809ea748EFf3204ee01F08872F063e44065f",
   "snapshotBatch": 16,
   "polling": 2700,
   "startBlock": 215960,
-  "startSnapshotBlock": 4435566
+  "startSnapshotBlock": 6600000
 }

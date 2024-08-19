@@ -257,24 +257,7 @@
       "https://api.studio.thegraph.com/query/70792/test-venus-protocol-bsc/v0.0.6"
     ]
   },
-  "59144_Mendi Finance": [
-    "https://api.studio.thegraph.com/query/70792/id-1-mendi-finance-linea/v0.1.1",
-    "https://api.studio.thegraph.com/query/70792/id-2-mendi-finance-linea/v0.1.1",
-    "https://api.studio.thegraph.com/query/70792/id-3-mendi-finance-linea/v0.1.1",
-    "https://api.studio.thegraph.com/query/70792/id-4-mendi-finance-linea/v0.1.1",
-    "https://api.studio.thegraph.com/query/70792/id-5-mendi-finance-linea/v0.1.1",
-    "https://api.studio.thegraph.com/query/70792/id-6-mendi-finance-linea/v0.1.1",
-    "https://api.studio.thegraph.com/query/70792/id-7-mendi-finance-linea/v0.1.1",
-    "https://api.studio.thegraph.com/query/70792/id-8-mendi-finance-linea/v0.1.1",
-    "https://api.studio.thegraph.com/query/70792/id-9-mendi-finance-linea/v0.1.1",
-    "https://api.studio.thegraph.com/query/70792/id-10-mendi-finance-linea/v0.1.1",
-    "https://api.studio.thegraph.com/query/70792/id-11-mendi-finance-linea/v0.1.1",
-    "https://api.studio.thegraph.com/query/70792/id-12-mendi-finance-linea/v0.1.1",
-    "https://api.studio.thegraph.com/query/70792/id-13-mendi-finance-linea/v0.1.1",
-    "https://api.studio.thegraph.com/query/70792/id-14-mendi-finance-linea/v0.1.1",
-    "https://api.studio.thegraph.com/query/70792/id-15-mendi-finance-linea/v0.1.1",
-    "https://api.studio.thegraph.com/query/70792/id-16-mendi-finance-linea/v0.1.1"
-  ],
+  "59144_Mendi Finance": [],
   "59144_LayerBank": {
     "version": "0.0.1",
     "subgraphs": [
@@ -381,22 +364,22 @@
     "subgraphs": []
   },
   "534352_Syncswap": [
-    "https://api.studio.thegraph.com/query/67380/id-1-syncswap-scroll/v1.4.3",
-    "https://api.studio.thegraph.com/query/67380/id-2-syncswap-scroll/v1.4.3",
-    "https://api.studio.thegraph.com/query/67380/id-3-syncswap-scroll/v1.4.3",
-    "https://api.studio.thegraph.com/query/67380/id-4-syncswap-scroll/v1.4.3",
-    "https://api.studio.thegraph.com/query/67380/id-5-syncswap-scroll/v1.4.3",
-    "https://api.studio.thegraph.com/query/67380/id-6-syncswap-scroll/v1.4.3",
-    "https://api.studio.thegraph.com/query/67380/id-7-syncswap-scroll/v1.4.3",
-    "https://api.studio.thegraph.com/query/67380/id-8-syncswap-scroll/v1.4.3",
-    "https://api.studio.thegraph.com/query/67380/id-9-syncswap-scroll/v1.4.3",
-    "https://api.studio.thegraph.com/query/67380/id-10-syncswap-scroll/v1.4.3",
-    "https://api.studio.thegraph.com/query/67380/id-11-syncswap-scroll/v1.4.3",
-    "https://api.studio.thegraph.com/query/67380/id-12-syncswap-scroll/v1.4.3",
-    "https://api.studio.thegraph.com/query/67380/id-13-syncswap-scroll/v1.4.3",
-    "https://api.studio.thegraph.com/query/67380/id-14-syncswap-scroll/v1.4.3",
-    "https://api.studio.thegraph.com/query/67380/id-15-syncswap-scroll/v1.4.3",
-    "https://api.studio.thegraph.com/query/67380/id-16-syncswap-scroll/v1.4.3"
+    "https://api.studio.thegraph.com/query/67380/id-1-syncswap-scroll/v1.4.4",
+    "https://api.studio.thegraph.com/query/67380/id-2-syncswap-scroll/v1.4.4",
+    "https://api.studio.thegraph.com/query/67380/id-3-syncswap-scroll/v1.4.4",
+    "https://api.studio.thegraph.com/query/67380/id-4-syncswap-scroll/v1.4.4",
+    "https://api.studio.thegraph.com/query/67380/id-5-syncswap-scroll/v1.4.4",
+    "https://api.studio.thegraph.com/query/67380/id-6-syncswap-scroll/v1.4.4",
+    "https://api.studio.thegraph.com/query/67380/id-7-syncswap-scroll/v1.4.4",
+    "https://api.studio.thegraph.com/query/67380/id-8-syncswap-scroll/v1.4.4",
+    "https://api.studio.thegraph.com/query/67380/id-9-syncswap-scroll/v1.4.4",
+    "https://api.studio.thegraph.com/query/67380/id-10-syncswap-scroll/v1.4.4",
+    "https://api.studio.thegraph.com/query/67380/id-11-syncswap-scroll/v1.4.4",
+    "https://api.studio.thegraph.com/query/67380/id-12-syncswap-scroll/v1.4.4",
+    "https://api.studio.thegraph.com/query/67380/id-13-syncswap-scroll/v1.4.4",
+    "https://api.studio.thegraph.com/query/67380/id-14-syncswap-scroll/v1.4.4",
+    "https://api.studio.thegraph.com/query/67380/id-15-syncswap-scroll/v1.4.4",
+    "https://api.studio.thegraph.com/query/67380/id-16-syncswap-scroll/v1.4.4"
   ],
   "59144_Syncswap": [
     "https://api.studio.thegraph.com/query/67380/id-1-syncswap-linea/v1.4.3",

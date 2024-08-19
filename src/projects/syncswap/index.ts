@@ -153,16 +153,9 @@ export function handleBurn(event: Burn): void {
     ? hash2Address(lpToPool.topics[1])
     : event.params.sender;
   if (!matchAddress(owner)) return;
-  let ownerBalance: BigInt;
-  let dbPosition = helper.findPosition(owner, "");
-  if (dbPosition) {
-    const liquidity = dbPosition.liquidity;
-    ownerBalance = liquidity.minus(event.params.liquidity);
-  } else {
-    ownerBalance = pool.balanceOf(owner);
-  }
-
+  const ownerBalance = pool.balanceOf(owner);
   const totalSupply = pool.totalSupply();
+  
   savePositionChange(
     event,
     PositionChangeAction.Withdraw,
