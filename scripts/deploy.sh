@@ -145,6 +145,7 @@ if [ "$subgraphs_length" -eq 16 ]; then
             echo "Saving query URL to file: $query_url"
             jq --arg query_url "$query_url" --arg key "$key" '.[$key].subgraphs += [$query_url]' ./update/config/subgraphs.json >temp.json && mv temp.json ./update/config/subgraphs.json
         fi
+        sleep 3
     done
 else
     # JSON 파일에 graphId 및 totalGraphs 값을 추가하여 temp.json 파일 생성
