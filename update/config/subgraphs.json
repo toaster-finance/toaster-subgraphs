@@ -60,21 +60,46 @@
     ]
   },
   "81457_Ambient": {
-    "version": "3.0.2",
-    "subgraphs": []
+    "version": "3.0.14",
+    "subgraphs": [
+      "https://api.studio.thegraph.com/query/70792/id-1-ambient-blast-mainnet/v3.0.14",
+      "https://api.studio.thegraph.com/query/70792/id-2-ambient-blast-mainnet/v3.0.14",
+      "https://api.studio.thegraph.com/query/70792/id-3-ambient-blast-mainnet/v3.0.14",
+      "https://api.studio.thegraph.com/query/70792/id-4-ambient-blast-mainnet/v3.0.14",
+      "https://api.studio.thegraph.com/query/70792/id-5-ambient-blast-mainnet/v3.0.14",
+      "https://api.studio.thegraph.com/query/70792/id-6-ambient-blast-mainnet/v3.0.14",
+      "https://api.studio.thegraph.com/query/70792/id-7-ambient-blast-mainnet/v3.0.14",
+      "https://api.studio.thegraph.com/query/70792/id-8-ambient-blast-mainnet/v3.0.14",
+      "https://api.studio.thegraph.com/query/70792/id-9-ambient-blast-mainnet/v3.0.14",
+      "https://api.studio.thegraph.com/query/70792/id-10-ambient-blast-mainnet/v3.0.14",
+      "https://api.studio.thegraph.com/query/70792/id-11-ambient-blast-mainnet/v3.0.14",
+      "https://api.studio.thegraph.com/query/70792/id-12-ambient-blast-mainnet/v3.0.14",
+      "https://api.studio.thegraph.com/query/70792/id-13-ambient-blast-mainnet/v3.0.14",
+      "https://api.studio.thegraph.com/query/70792/id-15-ambient-blast-mainnet/v3.0.14",
+      "https://api.studio.thegraph.com/query/70792/id-16-ambient-blast-mainnet/v3.0.14",
+      "https://api.studio.thegraph.com/query/70792/id-14-ambient-blast-mainnet/v3.0.14"
+    ]
   },
   "534352_Ambient": {
-    "version": "1.0.5",
+    "version": "1.0.8",
     "subgraphs": [
-      "https://api.studio.thegraph.com/query/70792/id-1-ambient-scroll/v1.0.5",
-      "https://api.studio.thegraph.com/query/70792/id-2-ambient-scroll/v1.0.5",
-      "https://api.studio.thegraph.com/query/70792/id-3-ambient-scroll/v1.0.5",
-      "https://api.studio.thegraph.com/query/70792/id-4-ambient-scroll/v1.0.5",
-      "https://api.studio.thegraph.com/query/70792/id-5-ambient-scroll/v1.0.5",
-      "https://api.studio.thegraph.com/query/70792/id-6-ambient-scroll/v1.0.5",
-      "https://api.studio.thegraph.com/query/70792/id-14-ambient-scroll/v1.0.5",
-      "https://api.studio.thegraph.com/query/70792/id-15-ambient-scroll/v1.0.5",
-      "https://api.studio.thegraph.com/query/70792/id-16-ambient-scroll/v1.0.5"
+      "https://api.studio.thegraph.com/query/70792/id-1-ambient-scroll/v1.0.8",
+      "https://api.studio.thegraph.com/query/70792/id-2-ambient-scroll/v1.0.8",
+      "https://api.studio.thegraph.com/query/70792/id-3-ambient-scroll/v1.0.8",
+      "https://api.studio.thegraph.com/query/70792/id-4-ambient-scroll/v1.0.8",
+      "https://api.studio.thegraph.com/query/70792/id-5-ambient-scroll/v1.0.8",
+      "https://api.studio.thegraph.com/query/70792/id-6-ambient-scroll/v1.0.8",
+      "https://api.studio.thegraph.com/query/70792/id-7-ambient-scroll/v1.0.8",
+      "https://api.studio.thegraph.com/query/70792/id-8-ambient-scroll/v1.0.8",
+      "https://api.studio.thegraph.com/query/70792/id-9-ambient-scroll/v1.0.8",
+      "https://api.studio.thegraph.com/query/70792/id-10-ambient-scroll/v1.0.8",
+      "https://api.studio.thegraph.com/query/70792/id-11-ambient-scroll/v1.0.8",
+      "https://api.studio.thegraph.com/query/70792/id-12-ambient-scroll/v1.0.8",
+      "https://api.studio.thegraph.com/query/70792/id-13-ambient-scroll/v1.0.8",
+      "https://api.studio.thegraph.com/query/70792/id-14-ambient-scroll/v1.0.8",
+      "https://api.studio.thegraph.com/query/70792/id-15-ambient-scroll/v1.0.8",
+      "https://api.studio.thegraph.com/query/70792/id-16-ambient-scroll/v1.0.8"
+      
     ]
   },
   "42161_Aave V3": {
