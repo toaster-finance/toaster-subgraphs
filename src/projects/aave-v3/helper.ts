@@ -13,6 +13,7 @@ import { PoolDataProvider } from "../../../generated/Pool/PoolDataProvider";
 import { getContextAddress } from "../../common/helpers/contextHelper";
 import { Investment } from "../../../generated/schema";
 import { aToken } from "../../../generated/templates";
+import { PoolAddressProvider } from "../../../generated/Pool/PoolAddressProvider";
 
 /**
  * id: investment id  = "AaveV3{PoolAddress}{UnderlyingToken}"
@@ -35,7 +36,7 @@ export class AaveV3Helper extends InvestmentHelper {
     return new InvestmentInfo(
       [underlyingAddr],
       [],
-      [this.getAtokenAddress(underlyingAddr).toHexString()]
+      [this.getAtoken(underlyingAddr).toHexString()]
     ); // [underlyingTokenAddr], [ ], [aTokenAddr]
   }
 
@@ -68,26 +69,47 @@ export class AaveV3Helper extends InvestmentHelper {
     return investment;
   }
 
-  getAtokenAddress(underlyingAddr: Address): Address {
-    const poolDataProvider = PoolDataProvider.bind(
+  getAtoken(underlyingAddr: Address): Address {
+    let poolDataProvider = PoolDataProvider.bind(
       getContextAddress("dataProvider")
     );
-    const aTokenAddress = poolDataProvider
-      .getReserveTokensAddresses(underlyingAddr)
-      .getATokenAddress();
+    const try_aTokenAddress =
+      poolDataProvider.try_getReserveTokensAddresses(underlyingAddr);
+
+    let aTokenAddress: Address;
+    if (try_aTokenAddress.reverted) {
+      const addrProvider = PoolAddressProvider.bind(
+        getContextAddress("poolAddressProvider")
+      );
+      poolDataProvider = PoolDataProvider.bind(
+        addrProvider.getPoolDataProvider()
+      );
+      console.error(
+        "addrProvider " +
+          addrProvider.getPoolDataProvider().toHexString() +
+          " " +
+          underlyingAddr.toHexString()
+      );
+      aTokenAddress = poolDataProvider
+        .getReserveTokensAddresses(underlyingAddr)
+        .getATokenAddress();
+    } else {
+      aTokenAddress = try_aTokenAddress.value.getATokenAddress();
+    }
+
     return aTokenAddress;
   }
 
   // create atoken template
   createATokenTemplate(underlying: Address): void {
-    const aTokenAddress = this.getAtokenAddress(underlying);
+    const aTokenAddress = this.getAtoken(underlying);
     const aTokenContext = new DataSourceContext();
 
     const ctx = dataSource.context();
     aTokenContext.setString("protocolName", ctx.getString("protocolName"));
     aTokenContext.setI32("graphId", ctx.getI32("graphId"));
     aTokenContext.setI32("totalGraphs", ctx.getI32("totalGraphs"));
-    
+
     aTokenContext.setString("underlying", underlying.toHexString());
     aTokenContext.setString(
       "dataProvider",
@@ -97,7 +119,7 @@ export class AaveV3Helper extends InvestmentHelper {
       "WETHGateway",
       getContextAddress("WETHGateway").toHexString()
     );
-    
+
     aToken.createWithContext(aTokenAddress, aTokenContext);
   }
 }

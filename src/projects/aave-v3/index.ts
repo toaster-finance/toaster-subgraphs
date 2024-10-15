@@ -1,4 +1,7 @@
-import { UiPoolDataProvider } from "./../../../generated/Pool/UiPoolDataProvider";
+import {
+  UiPoolDataProvider,
+  UiPoolDataProvider__getReservesDataResultValue0Struct,
+} from "./../../../generated/Pool/UiPoolDataProvider";
 import {
   Address,
   BigInt,
@@ -20,7 +23,7 @@ import { Transfer } from "../../../generated/templates/aToken/aToken";
 import { PositionParams } from "../../common/helpers/positionHelper";
 import { PositionType } from "../../common/PositionType.enum";
 import { PositionChangeAction } from "../../common/PositionChangeAction.enum";
-import { BorrowUserData, InvestUserData } from "./type";
+import { AaveBorrowUserData, AaveInvestUserData } from "./utils";
 import { savePositionSnapshot } from "../../common/savePositionSnapshot";
 import { Protocol } from "../../../generated/schema";
 import { getProtocolId } from "../../common/helpers/investmentHelper";
@@ -29,6 +32,7 @@ import { AaveV3Helper } from "./helper";
 import { matchAddress } from "../../common/matchAddress";
 import { calcBatchIdFromAddr } from "../../common/calcGraphId";
 import { logFindFirst } from "../../common/filterEventLogs";
+import { PoolAddressProvider } from "../../../generated/Pool/PoolAddressProvider";
 
 //PositionType.Invest: it means deposit (deposit amount is positive, withdraw amount is negative)
 //PositionType.Borrow: it means borrow (borrow amount is positive, repay amount is negative)
@@ -40,7 +44,7 @@ export function handleSupply(event: Supply): void {
   const underlying = event.params.reserve;
   const owner = event.params.onBehalfOf;
   if (!matchAddress(owner)) return;
-  const data = new InvestUserData(owner, underlying, amount);
+  const data = new AaveInvestUserData(owner, underlying, amount);
   savePositionChange(
     event,
     PositionChangeAction.Deposit,
@@ -64,7 +68,7 @@ export function handleWithdraw(event: Withdraw): void {
   const underlying = event.params.reserve;
   const owner = event.params.user;
   if (!matchAddress(owner)) return;
-  const data = new InvestUserData(owner, underlying, amount);
+  const data = new AaveInvestUserData(owner, underlying, amount);
   savePositionChange(
     event,
     PositionChangeAction.Withdraw,
@@ -105,7 +109,11 @@ export function handleTransfer(event: Transfer): void {
       return log.topics[0].equals(Bytes.fromHexString(MINT_TOPIC));
     });
     if (mintLog == null) return; // burn
-    const data = new InvestUserData(event.params.to, underlying, BigInt.zero());
+    const data = new AaveInvestUserData(
+      event.params.to,
+      underlying,
+      BigInt.zero()
+    );
 
     savePositionChange(
       event,
@@ -138,7 +146,7 @@ export function handleTransfer(event: Transfer): void {
       return log.topics[0].equals(Bytes.fromHexString(BURN_TOPIC));
     });
     if (burnLog == null) return; // just transfer to WETHGateway
-    const data = new InvestUserData(
+    const data = new AaveInvestUserData(
       event.params.from,
       underlying,
       BigInt.zero()
@@ -165,7 +173,11 @@ export function handleTransfer(event: Transfer): void {
   receiver = event.params.to; // aToken amount increase
   const sendingAmount = event.params.value;
   if (matchAddress(sender)) {
-    const senderData = new InvestUserData(sender, underlying, BigInt.zero());
+    const senderData = new AaveInvestUserData(
+      sender,
+      underlying,
+      BigInt.zero()
+    );
     savePositionChange(
       event,
       PositionChangeAction.Send,
@@ -185,7 +197,7 @@ export function handleTransfer(event: Transfer): void {
   }
 
   if (matchAddress(receiver)) {
-    const receiverData = new InvestUserData(
+    const receiverData = new AaveInvestUserData(
       receiver,
       underlying,
       BigInt.zero()
@@ -215,7 +227,7 @@ export function handleBorrow(event: Borrow): void {
   const underlying = event.params.reserve;
   const owner = event.params.onBehalfOf;
   if (!matchAddress(owner)) return;
-  const data = new BorrowUserData(owner, underlying);
+  const data = new AaveBorrowUserData(owner, underlying);
   if (data.underlyingAmount.equals(BigInt.zero())) return;
   savePositionChange(
     event,
@@ -238,7 +250,7 @@ export function handleRepay(event: Repay): void {
   const underlying = event.params.reserve;
   const owner = event.params.user;
   if (!matchAddress(owner)) return;
-  const data = new BorrowUserData(owner, underlying);
+  const data = new AaveBorrowUserData(owner, underlying);
   if (data.underlyingAmount.equals(BigInt.zero())) return;
   savePositionChange(
     event,
@@ -263,8 +275,8 @@ export function handleLiquidation(event: LiquidationCall): void {
   const debtAsset = event.params.debtAsset;
   const owner = event.params.user;
   if (!matchAddress(owner)) return;
-  const debtData = new BorrowUserData(owner, debtAsset);
-  const collateralData = new InvestUserData(
+  const debtData = new AaveBorrowUserData(owner, debtAsset);
+  const collateralData = new AaveInvestUserData(
     owner,
     collateralAsset,
     BigInt.zero()
@@ -320,10 +332,6 @@ export function handleBlock(block: ethereum.Block): void {
   const targetBatchId = protocol._batchIterator.toI32();
   const batch = dataSource.context().getI32("snapshotBatch"); // 256
   const pool = dataSource.address();
-  const uiDataProvider = UiPoolDataProvider.bind(
-    getContextAddress("uiDataProvider")
-  );
-  const poolAddressProvider = getContextAddress("poolAddressProvider");
 
   let users: Address[];
 
@@ -345,15 +353,25 @@ export function handleBlock(block: ethereum.Block): void {
   users = userSet.values();
   userSet = new Set();
 
-  const reserveData_try =
-    uiDataProvider.try_getReservesData(poolAddressProvider);
-  if (reserveData_try.reverted) return;
-  const reserveData = reserveData_try.value.getValue0();
+  const addrProvider = getContextAddress("poolAddressProvider");
+  let uiDataProvider = UiPoolDataProvider.bind(
+    getContextAddress("uiDataProvider")
+  );
+  const reserveData_try = uiDataProvider.try_getReservesData(addrProvider);
+  let reserveData: UiPoolDataProvider__getReservesDataResultValue0Struct[];
+  if (reserveData_try.reverted) {
+    uiDataProvider = UiPoolDataProvider.bind(
+      getContextAddress("uiDataProvider_old")
+    );
+    reserveData = uiDataProvider.getReservesData(addrProvider).value0
+  } else {
+    reserveData = reserveData_try.value.getValue0();
+  }
 
   for (let u = 0; u < users.length; u += 1) {
     const user = users[u];
     const userReserve_try = uiDataProvider.try_getUserReservesData(
-      poolAddressProvider,
+      addrProvider,
       user
     );
     if (userReserve_try.reverted) continue;
